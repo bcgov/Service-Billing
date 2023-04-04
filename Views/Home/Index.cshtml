@@ -1,0 +1,22 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+<div class="text-center">
+    <h1 class="display-4">Welcome</h1>
+    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+</div>
+@if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+{
+    <p>This paragraph is displayed because you're in the FO role. Good work!'.</p>
+}
+@if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
+{
+    <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+}
+@if ((await AuthorizationService.AuthorizeAsync(User, "RequireUserRole")).Succeeded)
+{
+    <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+}
