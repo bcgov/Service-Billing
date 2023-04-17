@@ -35,7 +35,7 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
         private DateTime billingCycle; // Not sure of format of this. some custom object class might be better
         private int account; // again, not sure if this is an int. Making an assupmtion
         private int ticketNumber;
-        private string requesterName = "";
+        private string requesterName = ""; //We probably need a proper contact model, not just a string.
         private int serviceCategory; // assuming service categories are a key/value pair fetched form DB. We'll see.
         private int quantity; // not sure yet what the idea is here.
         private double? ammount; // Only use this field to override the Service Category/Rates list/Quantity calculation

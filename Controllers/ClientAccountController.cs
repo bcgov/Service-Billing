@@ -3,27 +3,27 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Service_Billing.Controllers
 {
-    public class ConsumptionsAndServicesControlller : Controller
+    public class ClientAccountController : Controller
     {
-        // GET: ConsumptionsAndServicesControlller
+        // GET: ClientAccountController
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: ConsumptionsAndServicesControlller/Details/5
+        // GET: ClientAccountController/Details/5
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: ConsumptionsAndServicesControlller/Create
+        // GET: ClientAccountController/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Create
+        // POST: ClientAccountController/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
@@ -38,13 +38,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        // GET: ConsumptionsAndServicesControlller/Edit/5
+        // GET: ClientAccountController/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Edit/5
+        // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -59,13 +59,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        // GET: ConsumptionsAndServicesControlller/Delete/5
+        // GET: ClientAccountController/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Delete/5
+        // POST: ClientAccountController/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
