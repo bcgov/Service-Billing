@@ -20,23 +20,4 @@
 {
     <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
 }
-<div id='app'>
-    <div>
-        <h1>Count is: {{ count }}</h1>
-        <br>
-        <p>
-            <button v-on:click="count++">Increment Count!</button>
-        </p>
-        <br>
-    </div>
-</div>
-
-<script>
-    var vueApp = new Vue({
-        el: '#app',
-        data: {
-            count: 0
-        }
-
-    })
-</script>
+@Html.ActionLink("Enter a Bill", "Index", "Billing")

@@ -1,4 +1,5 @@
-﻿@*
+﻿@page
+@*
 Full documentation for bill entry can be found at: https://apps.itsm.gov.bc.ca/confluence/display/GDXSB/Billing+Entry
  How to enter Fixed Consumptions / Monthly Services:
 1.	Receive billable ticket assigned from Service Desk
@@ -38,3 +39,26 @@ In every case:
 *@
 @{
 }
+
+@model BillEntryViewModel
+
+<div id='app'>
+    <div>
+        <h1>Count is: {{ count }}</h1>
+        <br>
+        <p>
+            <button v-on:click="count++">Increment Count!</button>
+        </p>
+        <br>
+    </div>
+</div>
+
+<script>
+    var vueApp = new Vue({
+        el: '#app',
+        data: {
+            count: 0
+        }
+
+    })
+</script>

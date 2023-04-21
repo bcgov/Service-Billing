@@ -1,4 +1,6 @@
-﻿namespace Service_Billing.Models
+﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+
+namespace Service_Billing.Models
 {
     /*6.	Enter data:
 
@@ -28,7 +30,7 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
 7.	Leave empty:
 •	Amount: 
 */
-    public class BillingData
+    public class BillEntryViewModel: PageModel
     {
         private string affectedSiteOrPerson = "";
         private DateTime? requestDate;  // one-time fees only
@@ -42,5 +44,20 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
         private DateTime? serviceStartDate; // only used for Fixed Consumptions / monthly services.
         private DateTime? serviceEndDate;  // only used for Fixed Consumptions / monthly services.
 
+        public int Count { get; set; }
+
+        public void OnGet()
+        {
+            int? tempCount = HttpContext.Session.GetInt32("SessionCount");
+
+            if (tempCount != null)
+            {
+                Count = tempCount.Value;
+            }
+            else
+            {
+                Count = 0;
+            }
+        }
     }
 }

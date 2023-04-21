@@ -6,9 +6,10 @@ namespace Service_Billing.Controllers
     public class BillingControlller : Controller
     {
         // GET: ConsumptionsAndServicesControlller
+        [Route("/Billing")]
         public ActionResult Index()
         {
-            return View();
+            return View("../Billing/BillEntryView");
         }
 
         // GET: ConsumptionsAndServicesControlller/Details/5
