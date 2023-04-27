@@ -1,30 +1,32 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Service_Billing.Models;
 
 namespace Service_Billing.Controllers
 {
     public class BillingControlller : Controller
     {
-        // GET: ConsumptionsAndServicesControlller
+        // GET: BillingControlller
         [Route("/Billing")]
         public ActionResult Index()
         {
-            return View("../Billing/BillEntryView");
+            BillEntryViewModel model = new BillEntryViewModel();
+            return View("../Billing/BillEntryView", model);
         }
 
-        // GET: ConsumptionsAndServicesControlller/Details/5
+        // GET: BillingControlller/Details/5
         public ActionResult Details(int id)
         {
             return View();
         }
 
-        // GET: ConsumptionsAndServicesControlller/Create
+        // GET: BillingControlller/Create
         public ActionResult Create()
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Create
+        // POST: BillingControlller/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(IFormCollection collection)
@@ -39,13 +41,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        // GET: ConsumptionsAndServicesControlller/Edit/5
+        // GET: BillingControlller/Edit/5
         public ActionResult Edit(int id)
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Edit/5
+        // POST: BillingControlller/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Edit(int id, IFormCollection collection)
@@ -60,13 +62,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        // GET: ConsumptionsAndServicesControlller/Delete/5
+        // GET: BillingControlller/Delete/5
         public ActionResult Delete(int id)
         {
             return View();
         }
 
-        // POST: ConsumptionsAndServicesControlller/Delete/5
+        // POST: BillingControlller/Delete/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)

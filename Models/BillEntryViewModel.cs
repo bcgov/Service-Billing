@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.RazorPages;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Service_Billing.Models
 {
@@ -32,32 +33,26 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
 */
     public class BillEntryViewModel: PageModel
     {
-        private string affectedSiteOrPerson = "";
-        private DateTime? requestDate;  // one-time fees only
-        private DateTime billingCycle; // Not sure of format of this. some custom object class might be better
-        private int account; // again, not sure if this is an int. Making an assupmtion
-        private int ticketNumber;
+        private string affectedSiteOrPerson = "Alex is cool and attractive";
+        public DateTime? RequestDate { get; set; }  // one-time fees only
+        public DateTime BillingCycle { get; set; }// Not sure of format of this. some custom object class might be better
+        public int Account { get; set; } // again, not sure if this is an int. Making an assupmtion
+        public int TicketNumber { get; set; }
         private string requesterName = ""; //We probably need a proper contact model, not just a string.
-        private int serviceCategory; // assuming service categories are a key/value pair fetched form DB. We'll see.
-        private int quantity; // not sure yet what the idea is here.
-        private double? ammount; // Only use this field to override the Service Category/Rates list/Quantity calculation
-        private DateTime? serviceStartDate; // only used for Fixed Consumptions / monthly services.
-        private DateTime? serviceEndDate;  // only used for Fixed Consumptions / monthly services.
+        public int ServiceCategory { get; set; } // assuming service categories are a key/value pair fetched form DB. We'll see.
+        public int Quantity { get; set; }// not sure yet what the idea is here.
+        public double? Ammount { get; set; } // Only use this field to override the Service Category/Rates list/Quantity calculation
+        public DateTime? ServiceStartDate { set; get; } // only used for Fixed Consumptions / monthly services.
+        public DateTime? ServiceEndDate { get; set; }  // only used for Fixed Consumptions / monthly services.
 
-        public int Count { get; set; }
-
-        public void OnGet()
-        {
-            int? tempCount = HttpContext.Session.GetInt32("SessionCount");
-
-            if (tempCount != null)
-            {
-                Count = tempCount.Value;
-            }
-            else
-            {
-                Count = 0;
-            }
+        public string AffectedSiteOrPerson { 
+            get { return affectedSiteOrPerson; } 
+            set {  affectedSiteOrPerson = value; } 
         }
+        public string RequesterName { 
+            get {  return requesterName; } 
+            set {  requesterName = value; } 
+        }
+
     }
 }

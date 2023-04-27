@@ -1,4 +1,6 @@
-﻿@page
+﻿@{
+    ViewData["Title"] = "New Bill Entry";
+}
 @*
 Full documentation for bill entry can be found at: https://apps.itsm.gov.bc.ca/confluence/display/GDXSB/Billing+Entry
  How to enter Fixed Consumptions / Monthly Services:
@@ -41,24 +43,23 @@ In every case:
 }
 
 @model BillEntryViewModel
-
+<h1>some text here</h1>
 <div id='app'>
     <div>
-        <h1>Count is: {{ count }}</h1>
+        <h1>Count is: {{ @Model.AffectedSiteOrPerson }}</h1>
         <br>
         <p>
-            <button v-on:click="count++">Increment Count!</button>
+            <button>Increment Count!</button>
         </p>
         <br>
     </div>
 </div>
 
 <script>
+    let data = @Json.Serialize(Model);
     var vueApp = new Vue({
         el: '#app',
-        data: {
-            count: 0
-        }
+        
 
     })
 </script>
