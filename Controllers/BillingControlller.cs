@@ -8,10 +8,10 @@ namespace Service_Billing.Controllers
     {
         // GET: BillingControlller
         [Route("/Billing")]
-        public ActionResult Index()
+        public IActionResult Index()
         {
             BillEntryViewModel model = new BillEntryViewModel();
-            return View("../Billing/BillEntryView", model);
+            return View("../Billing/Index", model);
         }
 
         // GET: BillingControlller/Details/5

@@ -33,7 +33,7 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
 */
     public class BillEntryViewModel: PageModel
     {
-        private string affectedSiteOrPerson = "Alex is cool and attractive";
+        private string affectedSiteOrPerson = "Filler Text from Model";
         public DateTime? RequestDate { get; set; }  // one-time fees only
         public DateTime BillingCycle { get; set; }// Not sure of format of this. some custom object class might be better
         public int Account { get; set; } // again, not sure if this is an int. Making an assupmtion
@@ -45,6 +45,7 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
         public DateTime? ServiceStartDate { set; get; } // only used for Fixed Consumptions / monthly services.
         public DateTime? ServiceEndDate { get; set; }  // only used for Fixed Consumptions / monthly services.
 
+        [ViewData]
         public string AffectedSiteOrPerson { 
             get { return affectedSiteOrPerson; } 
             set {  affectedSiteOrPerson = value; } 

@@ -1,0 +1,28 @@
+﻿
+@model BillEntryViewModel
+@{
+
+}
+
+<div id='app'>
+    <div>
+        data from model: @ViewData.Model.AffectedSiteOrPerson
+    </div>
+    <div>
+        <h1>from model: {{ affected }}</h1>
+        <h1>from local data: {{ message }}</h1>
+        <br>
+    </div>
+</div>
+
+<script>
+    var modelJson = @Html.Raw(Json.Serialize(@Model));
+    console.log(modelJson);
+    var vueApp = new Vue({
+        el: '#app',
+        data: {
+            message: 'Hello Vue!',
+            affected: modelJson.affectedSiteOrPerson
+        }
+    })
+</script>
