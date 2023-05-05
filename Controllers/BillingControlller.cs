@@ -11,6 +11,8 @@ namespace Service_Billing.Controllers
         public IActionResult Index()
         {
             BillEntryViewModel model = new BillEntryViewModel();
+            // Todo: logic for deciding if it's a one-time or ongoing consupmtion goes here
+            model.IsOneTime = false;
             return View("../Billing/Index", model);
         }
 

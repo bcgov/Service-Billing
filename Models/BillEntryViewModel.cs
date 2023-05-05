@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Identity.Client;
 
 namespace Service_Billing.Models
 {
@@ -33,17 +34,18 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
 */
     public class BillEntryViewModel: PageModel
     {
-        private string affectedSiteOrPerson = "Filler Text from Model";
+        private string affectedSiteOrPerson = "Filler Text from Model"; // "URL or IDIR: depending on the service, enter the site or the user ID of the affected person or site. "
         public DateTime? RequestDate { get; set; }  // one-time fees only
-        public DateTime BillingCycle { get; set; }// Not sure of format of this. some custom object class might be better
-        public int Account { get; set; } // again, not sure if this is an int. Making an assupmtion
-        public int TicketNumber { get; set; }
+        public DateTime BillingCycle { get; set; }// Not sure of format of this. some custom object class might be better "Billing Cycle: auto-populates for first day of quarterly cycle, e.g.: 1/1/2018 = Fiscal Year 17/18 Quarter 4"
+        public int Account { get; set; } // see https://citz.sp.gov.bc.ca/sites/GDX/billing/Lists/Organizations/AllItems.aspx
+        public int? TicketNumber { get; set; }
         private string requesterName = ""; //We probably need a proper contact model, not just a string.
         public int ServiceCategory { get; set; } // assuming service categories are a key/value pair fetched form DB. We'll see.
         public int Quantity { get; set; }// not sure yet what the idea is here.
         public double? Ammount { get; set; } // Only use this field to override the Service Category/Rates list/Quantity calculation
         public DateTime? ServiceStartDate { set; get; } // only used for Fixed Consumptions / monthly services.
         public DateTime? ServiceEndDate { get; set; }  // only used for Fixed Consumptions / monthly services.
+        public bool IsOneTime { get; set; }
 
         [ViewData]
         public string AffectedSiteOrPerson { 
