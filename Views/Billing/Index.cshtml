@@ -8,8 +8,10 @@
     <div>
         <h1>Enter a new bill</h1>
         <br>
-        <form method="post">
-            <div class="input-component">
+        @using (Html.BeginForm("Create", "Billing", FormMethod.Post))
+        {
+            
+        <div class="input-component">
                 <label for="site-or-person">Affected Site or Person:</label>
                 <input id="site-or-person" v-model="model.affectedSiteOrPerson" />
             </div>
@@ -71,15 +73,11 @@
                     <input type="date" id="end-date" v-model="model.ServiceEndDate" />
                 </div>
             }
-            <input type="submit" />
-        </form>
+            <input type="submit" value="BillingControlller/Create" />
+        }
     </div>
 </div>
-<template>
-    <div id="bill-form">
 
-    </div>
-</template>
 <script>
     var modelJson = @Html.Raw(Json.Serialize(@Model));
     var vueApp = new Vue({

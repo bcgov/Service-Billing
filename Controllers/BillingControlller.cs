@@ -30,8 +30,9 @@ namespace Service_Billing.Controllers
 
         // POST: BillingControlller/Create
         [HttpPost]
+        [Route("/Billing/Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public ActionResult Create(object obj)
         {
             try
             {
