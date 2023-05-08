@@ -1,0 +1,88 @@
+﻿@model Service_Billing.Models.BillEntryViewModel
+
+@{
+    ViewData["Title"] = "NewBill";
+}
+
+<h1>Enter a new bill</h1>
+
+<h4>BillEntryViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="RequestDate" class="control-label"></label>
+                <input asp-for="RequestDate" class="form-control" />
+                <span asp-validation-for="RequestDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BillingCycle" class="control-label"></label>
+                <input asp-for="BillingCycle" class="form-control" />
+                <span asp-validation-for="BillingCycle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Account" class="control-label"></label>
+                <input asp-for="Account" class="form-control" />
+                <span asp-validation-for="Account" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TicketNumber" class="control-label"></label>
+                <input asp-for="TicketNumber" class="form-control" />
+                <span asp-validation-for="TicketNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ServiceCategory" class="control-label"></label>
+                <input asp-for="ServiceCategory" class="form-control" />
+                <span asp-validation-for="ServiceCategory" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Quantity" class="control-label"></label>
+                <input asp-for="Quantity" class="form-control" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Ammount" class="control-label"></label>
+                <input asp-for="Ammount" class="form-control" />
+                <span asp-validation-for="Ammount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ServiceStartDate" class="control-label"></label>
+                <input asp-for="ServiceStartDate" class="form-control" />
+                <span asp-validation-for="ServiceStartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ServiceEndDate" class="control-label"></label>
+                <input asp-for="ServiceEndDate" class="form-control" />
+                <span asp-validation-for="ServiceEndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group form-check">
+                <label class="form-check-label">
+                    <input class="form-check-input" asp-for="IsOneTime" /> @Html.DisplayNameFor(model => model.IsOneTime)
+                </label>
+            </div>
+            <div class="form-group">
+                <label asp-for="AffectedSiteOrPerson" class="control-label"></label>
+                <input asp-for="AffectedSiteOrPerson" class="form-control" />
+                <span asp-validation-for="AffectedSiteOrPerson" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="RequesterName" class="control-label"></label>
+                <input asp-for="RequesterName" class="form-control" />
+                <span asp-validation-for="RequesterName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

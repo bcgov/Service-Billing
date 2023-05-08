@@ -7,6 +7,7 @@ namespace Service_Billing.Controllers
     public class BillingControlller : Controller
     {
         // GET: BillingControlller
+        
         [Route("/Billing")]
         public IActionResult Index()
         {
@@ -14,6 +15,12 @@ namespace Service_Billing.Controllers
             // Todo: logic for deciding if it's a one-time or ongoing consupmtion goes here
             model.IsOneTime = false;
             return View("../Billing/Index", model);
+        }
+
+        [Route("/Billing/New")]
+        public ActionResult New()
+        {
+            return View("../Billing/New");
         }
 
         // GET: BillingControlller/Details/5
@@ -32,8 +39,9 @@ namespace Service_Billing.Controllers
         [HttpPost]
         [Route("/Billing/Create")]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(object obj)
+        public ActionResult Create(BillEntryViewModel model)
         {
+            return View();
             try
             {
                 return RedirectToAction(nameof(Index));
