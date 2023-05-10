@@ -37,7 +37,8 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
         public BillEntryViewModel() { }
         private string affectedSiteOrPerson = ""; // "URL or IDIR: depending on the service, enter the site or the user ID of the affected person or site. "
         public DateTime? RequestDate { get; set; }  // one-time fees only
-        public DateTime BillingCycle { get; set; }// Not sure of format of this. some custom object class might be better "Billing Cycle: auto-populates for first day of quarterly cycle, e.g.: 1/1/2018 = Fiscal Year 17/18 Quarter 4"
+        public DateTime BillingCycle;// "auto populates with first day of billing cycle"
+        public string fiscalPeriod = ""; // not sure this needs to be in the model since it can always be calculated in the front-end
         public int Account { get; set; } // see https://citz.sp.gov.bc.ca/sites/GDX/billing/Lists/Organizations/AllItems.aspx
         public int? TicketNumber { get; set; }
         private string requesterName = ""; //We probably need a proper contact model, not just a string.
@@ -55,6 +56,44 @@ o	Yes, and round quantity to Integer (default): rounds to a whole number for the
         public string RequesterName { 
             get {  return requesterName; } 
             set {  requesterName = value; } 
+        }
+        public string FiscalPeriod
+        {
+            get { return fiscalPeriod; }
+            set { fiscalPeriod = value; }
+        }
+
+
+        /* Q1: April 1 - June 30th
+        * Q2: July 1 - Sept 30
+        * Q3: Oct 1 - Dec 31
+        * Q4: Jan 1 - March 31 */
+        public int GetBillingQuarter(DateTime? startDate)
+        {
+            int billingQuarter = -1;
+            if (!startDate.HasValue)
+            {
+                startDate = DateTime.Today;
+            }
+            int month = startDate.Value.Month;
+            if(month >= 4 && month <= 6)
+            {
+                return 1;
+            }
+            if (month >= 7 && month <= 9)
+            {
+                return 2;
+            }
+            if (month >= 10 && month <= 12)
+            {
+                return 3;
+            }
+            if (month >= 1 && month <= 3)
+            {
+                return 4;
+            }
+
+            return billingQuarter;
         }
 
     }

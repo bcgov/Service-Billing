@@ -11,16 +11,14 @@ namespace Service_Billing.Controllers
         [Route("/Billing")]
         public IActionResult Index()
         {
-            BillEntryViewModel model = new BillEntryViewModel();
-            // Todo: logic for deciding if it's a one-time or ongoing consupmtion goes here
-            model.IsOneTime = false;
-            return View("../Billing/Index", model);
+            return View("../Billing/Index");
         }
 
         [Route("/Billing/New")]
         public ActionResult New()
         {
-            return View("../Billing/New");
+            BillEntryViewModel model = new BillEntryViewModel();
+            return View("../Billing/New", model);
         }
 
         // GET: BillingControlller/Details/5
