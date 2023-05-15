@@ -4,6 +4,11 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
+//using Service_Billing.DBContext;
+using Microsoft.EntityFrameworkCore;
+using Service_Billing.Models;
+using Microsoft.Extensions.DependencyInjection;
+using Service_Billing.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +25,8 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
+builder.Services.AddDbContext<Service_BillingContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddAuthorization(options =>
 {
@@ -39,6 +46,10 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(20);
     options.Cookie.HttpOnly = true;
 });
+
+//database connection
+builder.Services.AddDbContext<Service_BillingContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext")));
 
 var app = builder.Build();
 
