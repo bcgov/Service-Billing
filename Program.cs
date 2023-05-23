@@ -25,7 +25,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
-builder.Services.AddDbContext<Service_BillingContext>(options =>
+builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddAuthorization(options =>
@@ -48,7 +48,7 @@ builder.Services.AddSession(options =>
 });
 
 //database connection
-builder.Services.AddDbContext<Service_BillingContext>(options =>
+builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext")));
 
 var app = builder.Build();

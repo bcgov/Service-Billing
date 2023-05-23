@@ -1,16 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Identity.Client;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Service_Billing.Models
 {
     // see https://apps.itsm.gov.bc.ca/confluence/display/GDXSB/Account+Setup for client documentation
-    public class ClientAccount: PageModel
+    public class ClientAccount
     {
-        public void OnGet()
-        {
-            ViewData["someString"] = "hello from model";
-        }
-
+        [Key]
+        public int accountId { get; set; }
+        public string? clientName { get; set; }
     }
 }

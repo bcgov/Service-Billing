@@ -12,9 +12,9 @@ namespace Service_Billing
 {
     public class BillEntriesController : Controller
     {
-        private readonly Service_BillingContext _context;
+        private readonly ServiceBillingContext _context;
 
-        public BillEntriesController(Service_BillingContext context)
+        public BillEntriesController(ServiceBillingContext context)
         {
             _context = context;
         }
@@ -22,27 +22,29 @@ namespace Service_Billing
         // GET: BillEntries
         public async Task<IActionResult> Index()
         {
-              return _context.billingData != null ? 
-                          View(await _context.billingData.ToListAsync()) :
-                          Problem("Entity set 'Service_BillingContext.BillEntries'  is null.");
+            return View();
+              //return _context.billingData != null ? 
+              //            View(await _context.billingData.ToListAsync()) :
+              //            Problem("Entity set 'Service_BillingContext.BillEntries'  is null.");
         }
 
         // GET: BillEntries/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.billingData == null)
-            {
-                return NotFound();
-            }
+            return NotFound();
+            //if (id == null || _context.billingData == null)
+            //{
+            //    return NotFound();
+            //}
 
-            var billEntries = await _context.billingData
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (billEntries == null)
-            {
-                return NotFound();
-            }
+            //var billEntries = await _context.billingData
+            //    .FirstOrDefaultAsync(m => m.Id == id);
+            //if (billEntries == null)
+            //{
+            //    return NotFound();
+            //}
 
-            return View(billEntries);
+            //return View(billEntries);
         }
 
         // GET: BillEntries/Create
@@ -70,94 +72,95 @@ namespace Service_Billing
         // GET: BillEntries/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.billingData == null)
-            {
-                return NotFound();
-            }
+            return NotFound(ModelState);
+            //if (id == null || _context.billingData == null)
+            //{
+            //    return NotFound();
+            //}
 
-            var billEntries = await _context.billingData.FindAsync(id);
-            if (billEntries == null)
-            {
-                return NotFound();
-            }
-            return View(billEntries);
+            //var billEntries = await _context.billingData.FindAsync(id);
+            //if (billEntries == null)
+            //{
+            //    return NotFound();
+            //}
+            //return View(billEntries);
         }
 
         // POST: BillEntries/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id")] BillEntries billEntries)
-        {
-            if (id != billEntries.Id)
-            {
-                return NotFound();
-            }
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> Edit(int id, [Bind("Id")] BillEntries billEntries)
+        //{
+        //    if (id != billEntries.Id)
+        //    {
+        //        return NotFound();
+        //    }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(billEntries);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BillEntriesExists(billEntries.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(billEntries);
-        }
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            _context.Update(billEntries);
+        //            await _context.SaveChangesAsync();
+        //        }
+        //        catch (DbUpdateConcurrencyException)
+        //        {
+        //            if (!BillEntriesExists(billEntries.Id))
+        //            {
+        //                return NotFound();
+        //            }
+        //            else
+        //            {
+        //                throw;
+        //            }
+        //        }
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(billEntries);
+        //}
 
         // GET: BillEntries/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null || _context.billingData == null)
-            {
-                return NotFound();
-            }
+        //public async Task<IActionResult> Delete(int? id)
+        //{
+        //    if (id == null || _context.billingData == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            var billEntries = await _context.billingData
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (billEntries == null)
-            {
-                return NotFound();
-            }
+        //    var billEntries = await _context.billingData
+        //        .FirstOrDefaultAsync(m => m.Id == id);
+        //    if (billEntries == null)
+        //    {
+        //        return NotFound();
+        //    }
 
-            return View(billEntries);
-        }
+        //    return View(billEntries);
+        //}
 
-        // POST: BillEntries/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            if (_context.billingData == null)
-            {
-                return Problem("Entity set 'Service_BillingContext.BillEntries'  is null.");
-            }
-            var billEntries = await _context.billingData.FindAsync(id);
-            if (billEntries != null)
-            {
-                _context.billingData.Remove(billEntries);
-            }
+        //// POST: BillEntries/Delete/5
+        //[HttpPost, ActionName("Delete")]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> DeleteConfirmed(int id)
+        //{
+        //    if (_context.billingData == null)
+        //    {
+        //        return Problem("Entity set 'Service_BillingContext.BillEntries'  is null.");
+        //    }
+        //    var billEntries = await _context.billingData.FindAsync(id);
+        //    if (billEntries != null)
+        //    {
+        //        _context.billingData.Remove(billEntries);
+        //    }
             
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
+        //    await _context.SaveChangesAsync();
+        //    return RedirectToAction(nameof(Index));
+        //}
 
-        private bool BillEntriesExists(int id)
-        {
-          return (_context.billingData?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        //private bool BillEntriesExists(int id)
+        //{
+        //  return (_context.billingData?.Any(e => e.Id == id)).GetValueOrDefault();
+        //}
     }
 }
