@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ServiceBilling.API.Application.Features.ClientAccounts
+namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientAccountDetail
 {
     public class GetClientAccountDetailQueryHandler : IRequestHandler<GetClientAccountDetailQuery, ClientAccountDetailVm>
     {
@@ -35,10 +35,10 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts
             var clientTeam = await _clientTeamRepository.GetByIdAsync(@clientAccount.ClientTeamId);
 
             if (clientTeam == null)
-            { 
+            {
                 // throw new NotFoundException(nameof(ClientAccount), request.Id);
             }
-            
+
             clientAccountDto.ClientTeam = _mapper.Map<ClientTeamDto>(clientTeam);
 
             return clientAccountDto;

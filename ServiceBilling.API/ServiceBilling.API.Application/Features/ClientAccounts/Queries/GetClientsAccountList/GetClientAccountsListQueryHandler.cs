@@ -3,7 +3,7 @@ using MediatR;
 using ServiceBilling.API.Application.Contracts.Persistence;
 using ServiceBilling.API.Domain.Entities;
 
-namespace ServiceBilling.API.Application.Features.ClientAccounts
+namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientsAccountList
 {
     public class GetClientAccountsListQueryHandler : IRequestHandler<GetClientAccountsListQuery, IList<ClientAccountsListVm>>
     {
@@ -18,7 +18,7 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts
 
         public async Task<IList<ClientAccountsListVm>> Handle(GetClientAccountsListQuery request, CancellationToken cancellationToken)
         {
-            var allClientAccounts = (await _clientAccountRepository.ListAllAsync());
+            var allClientAccounts = await _clientAccountRepository.ListAllAsync();
             return _mapper.Map<List<ClientAccountsListVm>>(allClientAccounts);
         }
     }

@@ -1,4 +1,4 @@
-﻿namespace ServiceBilling.API.Application.Features.ClientAccounts
+﻿namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientsAccountList
 {
     public class ClientAccountsListVm
     {

@@ -1,6 +1,6 @@
 ﻿using MediatR;
 
-namespace ServiceBilling.API.Application.Features.ClientAccounts
+namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientAccountDetail
 {
     public class GetClientAccountDetailQuery : IRequest<ClientAccountDetailVm>
     {

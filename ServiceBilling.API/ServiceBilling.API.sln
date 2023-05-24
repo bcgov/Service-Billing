@@ -15,9 +15,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastru
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "UI", "UI", "{D077CEC2-78BE-495C-9BB1-3007BA58973D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.API.Domain", "ServiceBilling.API.Domain\ServiceBilling.API.Domain.csproj", "{63E58080-8C66-478F-B2FD-A96BA87E4213}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.API.Domain", "ServiceBilling.API.Domain\ServiceBilling.API.Domain.csproj", "{63E58080-8C66-478F-B2FD-A96BA87E4213}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.API.Application", "ServiceBilling.API.Application\ServiceBilling.API.Application.csproj", "{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.API.Application", "ServiceBilling.API.Application\ServiceBilling.API.Application.csproj", "{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.API.Persistence", "ServiceBilling.API.Persistence\ServiceBilling.API.Persistence.csproj", "{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.BillingManagement.Api", "ServiceBilling.BillingManagement.Api\ServiceBilling.BillingManagement.Api.csproj", "{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +37,14 @@ Global
 		{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -44,6 +56,8 @@ Global
 		{D077CEC2-78BE-495C-9BB1-3007BA58973D} = {3B4B2E24-B783-49D5-95E9-13D99BA81B87}
 		{63E58080-8C66-478F-B2FD-A96BA87E4213} = {9B7DA25E-3E79-4FA4-B84C-3E75875F23CE}
 		{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513} = {9B7DA25E-3E79-4FA4-B84C-3E75875F23CE}
+		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A} = {4D1F093F-90CA-49BA-A43C-7A61AF9AA889}
+		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948} = {5DFB916D-4AF0-4F3A-A147-9D0A29D45893}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {60DB21D3-8BE7-4D80-8D1F-9B3CE3A9BCDB}
