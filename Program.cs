@@ -23,10 +23,17 @@ builder.Services.AddControllersWithViews(options =>
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
 });
-builder.Services.AddRazorPages()
-    .AddMicrosoftIdentityUI();
+
+builder.Services.AddScoped<IBillRepositroy, BillRepository>();
+builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
+
+//database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
+
+builder.Services.AddRazorPages()
+    .AddMicrosoftIdentityUI();
 
 builder.Services.AddAuthorization(options =>
 {
@@ -46,10 +53,6 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromMinutes(20);
     options.Cookie.HttpOnly = true;
 });
-
-//database connection
-builder.Services.AddDbContext<ServiceBillingContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext")));
 
 var app = builder.Build();
 

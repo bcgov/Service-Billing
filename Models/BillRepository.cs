@@ -11,9 +11,7 @@ namespace Service_Billing.Models
             _billingContext = billingContext;
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.Created);
-
-        IEnumerable<Bill> IBillRepositroy.AllBills => throw new NotImplementedException();
+        public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.Title);
 
         public Bill? GetBill(int id)
         {
