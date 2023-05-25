@@ -7,6 +7,6 @@ namespace Service_Billing.Models
         [Key]
         public int serviceId { get; set; }
         public string? name { get; set; }
-        public decimal? uintPrice { get; set; }
+        public decimal? unitPrice { get; set; }
     }
 }

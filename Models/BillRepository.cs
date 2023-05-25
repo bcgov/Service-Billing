@@ -11,16 +11,16 @@ namespace Service_Billing.Models
             _billingContext = billingContext;
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.Title);
+        public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.title);
 
         public Bill? GetBill(int id)
         {
-            return _billingContext.bills.FirstOrDefault(b => b.Id == id);
+            return _billingContext.bills.FirstOrDefault(b => b.id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
         {
-            return _billingContext.bills.Where(b => b.Title.Contains(searchQuery));
+            return _billingContext.bills.Where(b => b.title.Contains(searchQuery));
         }
 
         IEnumerable<Bill> IBillRepositroy.GetBillsByAuthority(string expenseAuthority)
