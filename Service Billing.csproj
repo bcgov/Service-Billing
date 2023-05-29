@@ -8,6 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ServiceBilling.API\**" />
+    <Content Remove="ServiceBilling.API\**" />
+    <EmbeddedResource Remove="ServiceBilling.API\**" />
+    <None Remove="ServiceBilling.API\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.4" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.4" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
@@ -21,6 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="wwwroot\assets\" />
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>

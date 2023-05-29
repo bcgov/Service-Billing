@@ -27,6 +27,7 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddScoped<IBillRepositroy, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
+builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>

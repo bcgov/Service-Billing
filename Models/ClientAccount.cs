@@ -9,23 +9,23 @@ namespace Service_Billing.Models
     {
         [Key]
         [Column("Client_Account_Number")]
-        public int AccountId { get; set; }
+        public int accountId { get; set; }
         [Column("Client_Account_Name")]
-        public string? ClientName { get; set; }
-        public int Client { get; set; }
+        public string? clientName { get; set; }
+        public int client { get; set; }
         [Column("Responsibility_Centre")]
-        public string? ResponsibilityCentre { get; set; }
+        public string? responsibilityCentre { get; set; }
         [Column("Service_Line")]
-        public int ServiceLine { get; set; }
+        public int serviceLine { get; set; }
         public int STOB { get; set; }
-        public int Project { get; set; }
+        public int project { get; set; }
         [Column("Expense_Authority_Name")]
-        public string? Expense_Authority_Name { get; set; }
+        public string? expense_Authority_Name { get; set; }
         [Column("Services_Enabled")]
-        public int[]? ServicesEnabled { get; set; }
+        public string? servicesEnabled { get; set; } // string so we can have a list of id's, like "3, 6, 420"
         [Column("Client_Team")]
-        public int ClientTeam { get; set; }
+        public int clientTeam { get; set; }
         [Column("Created")]
-        public DateOnly dateCreated { get; set; }
+        public DateTime dateCreated { get; set; }
     }
 }

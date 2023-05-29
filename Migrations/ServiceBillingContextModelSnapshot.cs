@@ -72,12 +72,47 @@ namespace Service_Billing.Migrations
                 {
                     b.Property<int>("accountId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Client_Account_Number");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("accountId"));
 
+                    b.Property<int>("STOB")
+                        .HasColumnType("int");
+
+                    b.Property<int>("client")
+                        .HasColumnType("int");
+
                     b.Property<string>("clientName")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Client_Account_Name");
+
+                    b.Property<int>("clientTeam")
+                        .HasColumnType("int")
+                        .HasColumnName("Client_Team");
+
+                    b.Property<DateTime>("dateCreated")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Created");
+
+                    b.Property<string>("expense_Authority_Name")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Expense_Authority_Name");
+
+                    b.Property<int>("project")
+                        .HasColumnType("int");
+
+                    b.Property<string>("responsibilityCentre")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Responsibility_Centre");
+
+                    b.Property<int>("serviceLine")
+                        .HasColumnType("int")
+                        .HasColumnName("Service_Line");
+
+                    b.Property<string>("servicesEnabled")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Services_Enabled");
 
                     b.HasKey("accountId");
 

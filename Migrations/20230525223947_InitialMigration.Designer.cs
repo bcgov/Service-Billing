@@ -12,7 +12,7 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    [Migration("20230519231910_InitialMigration")]
+    [Migration("20230525223947_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -27,46 +27,46 @@ namespace Service_Billing.Migrations
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Created_By")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Expense_Authority_Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Fiscal_Period")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Item_Type")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Ticket_Number_and_Requester_Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Title")
-                        .HasColumnType("nvarchar(max)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("id"));
 
                     b.Property<string>("UOM")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("URL_or_IDIR")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("clientAccountId")
                         .HasColumnType("int");
 
+                    b.Property<string>("createdBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("expenseAuthorityName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("fiscalPeriod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("idirOrUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("itemType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("quantity")
+                        .HasColumnType("int");
+
                     b.Property<int>("serviceCategoryId")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.Property<string>("ticketNumberAndRequesterName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("id");
 
                     b.ToTable("bills");
                 });
@@ -75,12 +75,47 @@ namespace Service_Billing.Migrations
                 {
                     b.Property<int>("accountId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasColumnName("Client_Account_Number");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("accountId"));
 
-                    b.Property<string>("name")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("STOB")
+                        .HasColumnType("int");
+
+                    b.Property<int>("client")
+                        .HasColumnType("int");
+
+                    b.Property<string>("clientName")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Client_Account_Name");
+
+                    b.Property<int>("clientTeam")
+                        .HasColumnType("int")
+                        .HasColumnName("Client_Team");
+
+                    b.Property<DateTime>("dateCreated")
+                        .HasColumnType("datetime2")
+                        .HasColumnName("Created");
+
+                    b.Property<string>("expense_Authority_Name")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Expense_Authority_Name");
+
+                    b.Property<int>("project")
+                        .HasColumnType("int");
+
+                    b.Property<string>("responsibilityCentre")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Responsibility_Centre");
+
+                    b.Property<int>("serviceLine")
+                        .HasColumnType("int")
+                        .HasColumnName("Service_Line");
+
+                    b.Property<string>("servicesEnabled")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Services_Enabled");
 
                     b.HasKey("accountId");
 
@@ -98,7 +133,7 @@ namespace Service_Billing.Migrations
                     b.Property<string>("name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal?>("uintPrice")
+                    b.Property<decimal?>("unitPrice")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("serviceId");

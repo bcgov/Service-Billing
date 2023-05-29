@@ -20,7 +20,7 @@ namespace Service_Billing.Models
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
         {
-            return _billingContext.bills.Where(b => b.title.Contains(searchQuery));
+            return _billingContext.bills.Where(b => !string.IsNullOrEmpty(b.title) && b.title.Contains(searchQuery));
         }
 
         IEnumerable<Bill> IBillRepositroy.GetBillsByAuthority(string expenseAuthority)
