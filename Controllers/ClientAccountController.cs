@@ -1,20 +1,38 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Service_Billing.Models;
+using Service_Billing.ViewModels;
 
 namespace Service_Billing.Controllers
 {
     public class ClientAccountController : Controller
     {
+        private readonly IClientAccountRepository _clientAccountRepository;
+        private readonly IClientTeamRepository _clientTeamRepository;
+
+        public ClientAccountController(IClientAccountRepository clientAccountRepository, IClientTeamRepository clientTeamRepository)
+        {
+            _clientAccountRepository = clientAccountRepository;
+            _clientTeamRepository = clientTeamRepository;
+        }
         // GET: ClientAccountController
         public ActionResult Index()
         {
-            return View();
+            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+
+            return View(new ClientAccountViewModel(clients));
         }
 
         // GET: ClientAccountController/Details/5
         public ActionResult Details(int id)
         {
-            return View();
+            var account = _clientAccountRepository.GetClientAccount(id);
+            if (account == null)
+                return NotFound();
+            //var team = _clientTeamRepository.GetTeamByName(account.clientTeam);
+            //ViewBag.clientTeam = team;
+            return View(account);
         }
 
         // GET: ClientAccountController/Create
@@ -41,22 +59,47 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController/Edit/5
         public ActionResult Edit(int id)
         {
-            return View();
+            var account = _clientAccountRepository.GetClientAccount(id);
+            if (account == null)
+                return NotFound();
+            return View(account);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(int id, IFormCollection collection)
         {
-            try
+            ClientAccount? accountToUpdate =  _clientAccountRepository.GetClientAccount(id);
+            if(accountToUpdate == null)
             {
+                return NotFound();
+            }
+            if(await TryUpdateModelAsync<ClientAccount>(accountToUpdate, "", 
+                a => a.clientName,
+                a => a.client,
+                a => a.responsibilityCentre,
+                a => a.serviceLine,
+                a => a.STOB,
+                a => a.project,
+                a => a.expense_Authority_Name,
+                a => a.servicesEnabled))
+            {
+                try
+                {
+                    await _clientAccountRepository.SaveChangesAsync();
+                }
+                catch (DbUpdateException /* ex */)
+                {
+                    ModelState.AddModelError("", "Unable to save changes. " +
+                        "Try again, and if the problem persists, " +
+                        "see your system administrator.");
+                }
+
                 return RedirectToAction(nameof(Index));
             }
-            catch
-            {
-                return View();
-            }
+
+            return Details(id);
         }
 
         // GET: ClientAccountController/Delete/5

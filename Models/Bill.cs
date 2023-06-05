@@ -21,6 +21,5 @@ namespace Service_Billing.Models
         public DateTime dateCreated;
         public DateTime billingCycle;
         public string? createdBy { get; set; }
-        public string? itemType { get; set; }
     }
 }

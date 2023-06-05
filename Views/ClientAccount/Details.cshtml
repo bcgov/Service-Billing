@@ -1,0 +1,72 @@
+﻿@model Service_Billing.Models.ClientAccount
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>View</h1>
+
+<div>
+    <h4>ClientAccount</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.clientName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.clientName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.client)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.client)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.responsibilityCentre)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.responsibilityCentre)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.serviceLine)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.serviceLine)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.STOB)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.STOB)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.project)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.project)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.expense_Authority_Name)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.expense_Authority_Name)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.servicesEnabled)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.servicesEnabled)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.dateCreated)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.dateCreated)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.accountId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

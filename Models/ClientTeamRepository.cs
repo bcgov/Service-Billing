@@ -11,9 +11,9 @@ namespace Service_Billing.Models
         }
         public IEnumerable<ClientTeam> AllTeams => _billingContext.clientTeams.OrderBy(b => b.teamName);
 
-        public ClientTeam? GetTeamById(int id)
+        public ClientTeam? GetTeamByName(string name)
         {
-            return _billingContext.clientTeams.FirstOrDefault(t => t.teamId == id);
+            return _billingContext.clientTeams.FirstOrDefault(t => t.teamName == name);
         }
 
         public IEnumerable<ClientTeam> GetTeamsByFinancialContact(string contact)

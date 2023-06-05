@@ -16,6 +16,16 @@ namespace Service_Billing.Models
             throw new NotImplementedException();
         }
 
+        public void UpdateClientAccount(ClientAccount account) 
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
         public IEnumerable<ClientAccount> GetAll()
         {
             return _context.clientAccounts.OrderBy(c => c.clientName);

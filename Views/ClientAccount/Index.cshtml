@@ -1,0 +1,18 @@
+﻿@using Service_Billing.ViewModels;
+@model ClientAccountViewModel
+
+<h1>Client Account info</h1>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+
+    @foreach (var account in Model.ClientAccounts)
+    {
+        <div>
+            @account.clientName
+            <a asp-controller="ClientAccount"
+               asp-action="Details"
+               asp-route-id=" @account.accountId">Details</a>
+        </div>
+    }
+
+</div>
