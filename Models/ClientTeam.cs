@@ -7,7 +7,7 @@ namespace Service_Billing.Models
     {
         [Key]
         [Column("Team_Id")]
-        public int teamId { get; set; }
+        public byte teamId { get; set; }
         [Column("Client_Team_Name")]
         public string? teamName { get; set; }
         [Column("Financial_Contacts")]

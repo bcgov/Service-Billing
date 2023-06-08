@@ -1,0 +1,90 @@
+﻿@model Service_Billing.Models.Bill
+
+@{
+    ViewData["Title"] = "Details";
+    ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
+    ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Bill</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Client Account
+        </dt>
+        <dd class = "col-sm-10">
+            @if(clientAccount != null)
+            {
+                @clientAccount.clientName
+            }
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.title)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.title)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.idirOrUrl)
+        </dt>
+        <dd class = "col-sm-10">
+            @if (!String.IsNullOrEmpty(Model.idirOrUrl) && Model.idirOrUrl.ToLower().StartsWith("http"))
+            {
+                <a href="@Model.idirOrUrl" target="blank">@Html.DisplayFor(model => model.idirOrUrl)</a>
+            }
+            else
+            {
+                @Model.idirOrUrl
+            }
+        </dd>
+        <dt class = "col-sm-2">
+            Service Category
+        </dt>
+        <dd class = "col-sm-10">
+            @serviceCategory.businessArea
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.fiscalPeriod)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.fiscalPeriod)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.quantity)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.quantity)
+        </dd>
+        <dt class = "col-sm-2">
+            UOM
+        </dt>
+        <dd class = "col-sm-10">
+            @serviceCategory.UOM
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.expenseAuthorityName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.expenseAuthorityName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.ticketNumberAndRequester)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ticketNumberAndRequester)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.createdBy)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.createdBy)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

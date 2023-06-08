@@ -27,5 +27,19 @@ namespace Service_Billing.Controllers
 
             return View(new BillViewModel(bills, categories, clients));
         }
+
+        public ActionResult Details(int id)
+        {
+            Bill? bill = _billRepository.GetBill(id);
+            if(bill == null)
+            {
+                return NotFound();
+            }
+            ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
+            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.serviceCategoryId);
+            ViewData["clientAccount"] = account != null ? account : "";
+            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+            return View(bill);
+        }
     }
 }

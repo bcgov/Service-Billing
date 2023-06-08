@@ -1,0 +1,42 @@
+﻿@model Service_Billing.Models.ClientTeam
+
+<div>
+    <h4>ClientTeam</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.teamName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.teamName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.financialContacts)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.financialContacts)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.primaryContact)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.primaryContact)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.approvers)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.approvers)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.dateCreated)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.dateCreated)
+        </dd>
+    </dl>
+</div>
+@*<div>
+    <a asp-action="Edit" asp-route-id="@Model?.teamId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>*@

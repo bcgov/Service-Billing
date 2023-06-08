@@ -27,11 +27,11 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController/Details/5
         public ActionResult Details(int id)
         {
-            var account = _clientAccountRepository.GetClientAccount(id);
+            ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
-            //var team = _clientTeamRepository.GetTeamByName(account.clientTeam);
-            //ViewBag.clientTeam = team;
+            ClientTeam? team = _clientTeamRepository.GetTeamById(account.teamId);
+            ViewData["clientTeam"] = team != null? team : "";
             return View(account);
         }
 
