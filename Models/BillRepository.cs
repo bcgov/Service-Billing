@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Service_Billing.Data;
 
 namespace Service_Billing.Models
@@ -54,7 +56,37 @@ namespace Service_Billing.Models
 
         public IEnumerable<Bill> GetPreviousQuarterBills()
         {
-            throw new NotImplementedException();
+            try
+            {
+                string currentFiscalPeriod = DetermineCurrentQuarter();
+                //we need to go to quarter 4 of last year
+                if (currentFiscalPeriod.Contains("Quarter 1"))
+                { //Fiscal 23/24 Quarter 1
+                    int year;
+                    var x = currentFiscalPeriod.Substring(10, 2);
+                    if (!int.TryParse(currentFiscalPeriod.Substring(10, 2), null, out year))
+                    {
+                        throw new Exception("Could not parse year from Fiscal Period string");
+                    }
+                    return _billingContext.bills.Where(b => b.fiscalPeriod == $"Fiscal {year - 2}/{year -1} Quarter 4");
+                }
+                else
+                {
+                    int quarter;
+                    if (!int.TryParse(currentFiscalPeriod.Last().ToString(), null, out quarter))
+                    {
+                        throw new Exception("Could not parse Quarter from Fiscal Period string");
+                    }
+                    currentFiscalPeriod.Remove(currentFiscalPeriod.Length - 1);
+                    currentFiscalPeriod += (quarter - 1);
+                    return _billingContext.bills.Where(b => b.fiscalPeriod == currentFiscalPeriod);
+                }
+            }
+            catch(Exception e) 
+            {
+                //Todo: Add error logging.
+            }
+            return null;
         }
 
         public Bill? GetBill(int id)

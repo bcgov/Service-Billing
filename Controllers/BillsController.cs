@@ -25,7 +25,7 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
-            ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
+         //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
 
             switch (quarter)
             {
