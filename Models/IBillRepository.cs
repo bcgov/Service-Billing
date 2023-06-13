@@ -12,6 +12,7 @@ namespace Service_Billing.Models
         IEnumerable<Bill> GetBillsByAuthority(string expenseAuthority);
         IEnumerable<Bill> GetBillsByBillingCycle(DateOnly billingCycle);
         IEnumerable<Bill> GetBillsByDateRange(DateTime start, DateTime end);
-
+        IEnumerable<Bill> GetCurrentQuarterBills();
+        IEnumerable<Bill> GetPreviousQuarterBills();
     }
 }

@@ -7,6 +7,6 @@
         void Update(ServiceCategory serviceCategory);
         void Delete(ServiceCategory serviceCategory);
         IEnumerable<ServiceCategory> Search(string queryString);
-        ServiceCategory? GetById(int id);
+        ServiceCategory? GetById(int? id);
     }
 }

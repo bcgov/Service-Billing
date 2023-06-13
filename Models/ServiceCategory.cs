@@ -6,7 +6,6 @@ namespace Service_Billing.Models
     public class ServiceCategory
     {
         [Key]
-        [Column("Service Id")]
         public Int16 serviceId { get; set; }
 
         [Column("GDX Bus Area")]

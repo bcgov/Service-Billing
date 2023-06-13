@@ -25,7 +25,7 @@ namespace Service_Billing.Models
             return _context.serviceCategories.OrderBy(s => s.name);
         }
 
-        public ServiceCategory? GetById(int id)
+        public ServiceCategory? GetById(int? id)
         {
             return _context.serviceCategories.FirstOrDefault(s => s.serviceId == id);
         }

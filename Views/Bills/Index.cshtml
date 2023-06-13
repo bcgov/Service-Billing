@@ -4,7 +4,9 @@
 <h1>Bill info</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
-
+    @Html.ActionLink("Current Quarter", "Index", new { quarter = ViewBag.Quarter })
+    @Html.ActionLink("Previous Quarter", "Index", new { quarter = ViewBag.Quarter })
+    @Html.ActionLink("All Quarters", "Index", new { quarter = ViewBag.Quarter })
     @foreach (var bill in Model.Bills)
     {
         <div>@bill.title

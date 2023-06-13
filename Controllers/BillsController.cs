@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Service_Billing.Models;
 using Service_Billing.ViewModels;
 
@@ -19,11 +20,28 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(string quarter)
         {
-            IEnumerable<Bill> bills = _billRepository.AllBills;
+            IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
+
+            switch (quarter)
+            {
+                case "current": default:
+                    ViewBag.Quarter = "Current Quarter";
+                    bills = _billRepository.GetCurrentQuarterBills();
+                    break;
+                case "previous":
+                    ViewBag.Quarter = "Previous Quarter";
+                    bills = _billRepository.GetPreviousQuarterBills();
+                    break;
+                case "all":
+                    ViewBag.Quarter = "All Quarters";
+                    bills = _billRepository.AllBills;
+                    break;
+            }
 
             return View(new BillViewModel(bills, categories, clients));
         }

@@ -65,10 +65,10 @@
             @serviceCategory.UOM
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.expenseAuthorityName)
+            Expense Authority
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.expenseAuthorityName)
+            @clientAccount != null ? clientAccount.expense_Authority_Name : ""
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ticketNumberAndRequester)

@@ -6,26 +6,26 @@ namespace Service_Billing.Models
     public class Bill
     {
         [Key]
-        public int id { get; set; }
-        public int clientAccountId { get; set; }
+        public Int16 id { get; set; }
+        public Int16 clientAccountId { get; set; }
         public string? title { get; set; }
         public string? idirOrUrl { get; set; }
- 
-        public int serviceCategoryId { get; set; }
-        public decimal amount;
+
+        public Int16? serviceCategoryId { get; set; }
+        //public decimal amount;
+
+        [Display(Name = "Fiscal Period")]
         public string? fiscalPeriod { get; set; }
-        //  public decimal Unit_Price; comes from service category lookup
-        public int quantity { get; set; }
-     
-        public string? expenseAuthorityName { get; set; }
-        
+      //  public decimal Unit_Price; //comes from service category lookup
+        public decimal? quantity { get; set; }
+
         [Column("ticketNumberAndRequesterName")]
         [Display(Name = "Ticket Number")]
         public string? ticketNumberAndRequester { get; set; }
-        
-        public DateTime dateModified;
-        public DateTime dateCreated;
-        public DateTime billingCycle;
+
+        public DateTime? dateModified { get; set; }
+        public DateTime? dateCreated { get; set; }
+        public DateTime? billingCycle { get; set; }
         public string? createdBy { get; set; }
     }
 }
