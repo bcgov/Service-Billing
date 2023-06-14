@@ -59,9 +59,6 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.servicesEnabled)
         </dd>
-        <dt class="col-sm-2">
-            Client Team 
-        </dt>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.dateCreated)
         </dt>
@@ -69,7 +66,6 @@
             @Html.DisplayFor(model => model.dateCreated)
         </dd>
         <dd class="col-sm-10" name="clientTeam">
-          @*  @clientTeam.teamName*@
             <partial name="_ClientTeam" model="@clientTeam" />
         </dd>
     </dl>

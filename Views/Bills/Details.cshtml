@@ -35,16 +35,23 @@
             {
                 <a href="@Model.idirOrUrl" target="blank">@Html.DisplayFor(model => model.idirOrUrl)</a>
             }
-            else
+            else if (!String.IsNullOrEmpty(Model.idirOrUrl))
             {
                 @Model.idirOrUrl
+            }
+            else
+            {
+                <br/>
             }
         </dd>
         <dt class = "col-sm-2">
             Service Category
         </dt>
         <dd class = "col-sm-10">
-            @serviceCategory.businessArea
+            @if(serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.businessArea))
+            {
+                @serviceCategory.businessArea
+            }
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.fiscalPeriod)
@@ -62,25 +69,54 @@
             UOM
         </dt>
         <dd class = "col-sm-10">
-            @serviceCategory.UOM
+            @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.UOM))
+            {
+                @serviceCategory.UOM
+            }
+            else
+            {
+                <br />
+            }
         </dd>
         <dt class = "col-sm-2">
             Expense Authority
         </dt>
         <dd class = "col-sm-10">
-            @clientAccount != null ? clientAccount.expense_Authority_Name : ""
+            @if(clientAccount != null && !String.IsNullOrEmpty(clientAccount.expense_Authority_Name))
+            {
+                @clientAccount.expense_Authority_Name<br/>
+            }
+            else
+            {
+                <br />
+            }
         </dd>
+        
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ticketNumberAndRequester)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ticketNumberAndRequester)
+            @if (!String.IsNullOrEmpty(Model.ticketNumberAndRequester))
+            {
+                @Html.DisplayFor(model => model.ticketNumberAndRequester)
+            }
+            else
+            {
+                <br />
+            }
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.createdBy)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.createdBy)
+            @if (!String.IsNullOrEmpty(Model.createdBy))
+            {
+                @Html.DisplayFor(model => model.createdBy)
+            }
+            else
+            {
+                <br />
+            }
         </dd>
     </dl>
 </div>

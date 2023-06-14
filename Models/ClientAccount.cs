@@ -19,7 +19,7 @@ namespace Service_Billing.Models
         public Int16? client { get; set; } // three digit billing code
 
         [Column("Responsibility_Centre")]
-        [Display(Name = "ResponsibilityCenter")]
+        [Display(Name = "Responsibility Center")]
         public string? responsibilityCentre { get; set; }
 
         [Column("Service_Line")]

@@ -4,15 +4,32 @@
 <h1>Client Account info</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
-
-    @foreach (var account in Model.ClientAccounts)
-    {
-        <div>
-            @account.clientName
-            <a asp-controller="ClientAccount"
-               asp-action="Details"
-               asp-route-id=" @account.accountId">Details</a>
-        </div>
-    }
-
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Client #</th>
+                <th scope="col">Responsibility Centre</th>
+                <th scope="col">Expense Authority</th>
+                <th scope="col">Client Team</th>
+                <th scope="col">Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ClientAccount account in Model.ClientAccounts)
+            {
+                <tr>
+                    <td>@account.clientName</td>
+                    <td>@account.client</td>
+                    <td>@account.responsibilityCentre</td>
+                    <td>@account.expense_Authority_Name</td>
+                    <td>@account.clientTeam</td>
+                    <td>
+                        <a asp-controller="ClientAccount"
+                           asp-action="Details"
+                           asp-route-id="@account.accountId">See more</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
 </div>

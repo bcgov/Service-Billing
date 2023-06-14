@@ -27,6 +27,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
          //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
 
+            ViewBag.ServiceCategories = categories.ToList();
             switch (quarter)
             {
                 case "current": default:

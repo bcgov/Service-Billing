@@ -8,11 +8,20 @@ namespace Service_Billing.Models
         [Key]
         public Int16 id { get; set; }
         public Int16 clientAccountId { get; set; }
+
+        [Display(Name = "Client Name")]
+        public string? clientName { get; set; }
+
+        [Display(Name = "Title")]
         public string? title { get; set; }
+
+        [Display(Name = "URL or IDIR")]
         public string? idirOrUrl { get; set; }
 
         public Int16? serviceCategoryId { get; set; }
-        //public decimal amount;
+
+        [Display(Name = "Amount")]
+        public decimal? amount { get; set; }
 
         [Display(Name = "Fiscal Period")]
         public string? fiscalPeriod { get; set; }

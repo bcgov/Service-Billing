@@ -1,5 +1,8 @@
 ﻿@using Service_Billing.ViewModels;
 @model BillViewModel
+@{
+    List<ServiceCategory> serviceCategories = ViewBag.ServiceCategories;
+}
 
 <h1>Bill info</h1>
 
@@ -8,7 +11,7 @@
     @Html.ActionLink("Previous Quarter", "Index", new { quarter = "previous" }) | 
     @Html.ActionLink("All Quarters", "Index", new { quarter = "all" })
 
-    <h2>Fiscal Period Displayed here!</h2>
+    <h2>Fiscal Period: @ViewBag.Quarter</h2>
     <table class="table table-striped">
         <thead>
             <tr>
@@ -27,10 +30,22 @@
             @foreach (var bill in Model.Bills)
             {
                 <tr>
-                    <td>@bill.clientAccountId</td>
+                    <td>@bill.clientName</td>
                     <td>@bill.title</td>
-                    <td>@bill.serviceCategoryId</td>
-                    <td>Amount here</td>
+                    <td>@{
+                            var category = serviceCategories.FirstOrDefault(s => s.serviceId == bill.serviceCategoryId);
+                            if(category != null)
+                            {
+                                @category.name;
+                            }
+                        }
+                        </td>
+                    <td>
+                        @if(bill.amount != null)
+                        {
+                            @String.Format("{0:.##}", bill.amount);
+                        }
+                    </td>
                     @if (ViewBag.quarter == "all")
                     {
                         <td>@bill.fiscalPeriod</td>
@@ -41,12 +56,6 @@
                            asp-route-id="@bill.id">See more</a>
                     </td>
                 </tr>
-                @*<div>
-                    @bill.title
-                    <a asp-controller="Bills"
-                       asp-action="Details"
-                       asp-route-id="@bill.id">Details</a>
-                </div>*@
             }
         </tbody>
     </table>
