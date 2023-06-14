@@ -1,0 +1,110 @@
+﻿@model Service_Billing.Models.Bill
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "_Layout";
+}
+@{
+    List<ServiceCategory> categories = (List<ServiceCategory>)ViewData["ServiceCategories"];
+}
+<h1>Edit</h1>
+
+<h4>Bill</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="id" />
+            <div class="form-group">
+                <label asp-for="clientAccountId" class="control-label"></label>
+                <input asp-for="clientAccountId" class="form-control" />
+                <span asp-validation-for="clientAccountId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="clientName" class="control-label"></label>
+                <input asp-for="clientName" class="form-control" />
+                <span asp-validation-for="clientName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="title" class="control-label"></label>
+                <input asp-for="title" class="form-control" />
+                <span asp-validation-for="title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="idirOrUrl" class="control-label"></label>
+                <input asp-for="idirOrUrl" class="form-control" />
+                <span asp-validation-for="idirOrUrl" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                <label asp-for="serviceCategoryId" class="control-label"></label>
+                <input asp-for="serviceCategoryId" class="form-control" />
+                <span asp-validation-for="serviceCategoryId" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <label for="serviceCategory" class="control-label"></label>
+                <select name="serviceCategory">
+                    @if(categories != null)
+                    {
+                        @foreach(ServiceCategory category in categories)
+                        {
+                            <option value="@category.serviceId">@category.name</option>
+                        }
+                    }
+                </select>
+                @*<span asp-validation-for="serviceCategory" class="text-danger"></span>*@
+            </div>
+            <div class="form-group">
+                <label asp-for="amount" class="control-label"></label>
+                <input asp-for="amount" class="form-control" />
+                <span asp-validation-for="amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="fiscalPeriod" class="control-label"></label>
+                <input asp-for="fiscalPeriod" class="form-control" />
+                <span asp-validation-for="fiscalPeriod" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="quantity" class="control-label"></label>
+                <input asp-for="quantity" class="form-control" />
+                <span asp-validation-for="quantity" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ticketNumberAndRequester" class="control-label"></label>
+                <input asp-for="ticketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="ticketNumberAndRequester" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="dateModified" class="control-label"></label>
+                <input asp-for="dateModified" class="form-control" readonly="true"/>
+                <span asp-validation-for="dateModified" class="text-danger"></span>
+            </div>
+            @*<div class="form-group">
+                <label asp-for="dateCreated" class="control-label"></label>
+                <input asp-for="dateCreated" class="form-control" />
+                <span asp-validation-for="dateCreated" class="text-danger"></span>
+            </div>*@
+            <div class="form-group">
+                <label asp-for="billingCycle" class="control-label"></label>
+                <input asp-for="billingCycle" class="form-control" />
+                <span asp-validation-for="billingCycle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="createdBy" class="control-label"></label>
+                <input asp-for="createdBy" class="form-control" />
+                <span asp-validation-for="createdBy" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

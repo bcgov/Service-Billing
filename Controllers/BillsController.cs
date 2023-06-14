@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
 using Service_Billing.ViewModels;
 
@@ -59,6 +60,57 @@ namespace Service_Billing.Controllers
             ViewData["clientAccount"] = account != null ? account : "";
             ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
             return View(bill);
+        }
+
+        public ActionResult Edit(int id)
+        {
+            Bill? bill = _billRepository.GetBill(id);
+            List<ServiceCategory> categories = _categoryRepository.GetAll().Where(c => c.isActive == true).ToList();
+            ViewData["ServiceCategories"] = categories;
+            if (bill == null)
+                return NotFound();
+            bill.dateModified = DateTime.Now;
+            return View(bill);
+        }
+
+        // POST: ClientAccountController/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, IFormCollection collection)
+        {
+            Bill? billToUpdate = _billRepository.GetBill(id);
+            if (billToUpdate == null)
+            {
+                return NotFound();
+            }
+            if (await TryUpdateModelAsync<Bill>(billToUpdate, "",
+                b => b.clientAccountId,
+                b => b.clientName,
+                b => b.title,
+                b => b.idirOrUrl,
+                b => b.serviceCategoryId,
+                b => b.amount, // should be calculated based on service?
+                b => b.quantity,
+                b => b.ticketNumberAndRequester,
+                b => b.dateModified,
+                b => b.createdBy
+                ))
+            {
+                try
+                {
+                    await _billRepository.SaveChangesAsync();
+                }
+                catch (DbUpdateException /* ex */)
+                {
+                    ModelState.AddModelError("", "Unable to save changes. " +
+                        "Try again, and if the problem persists, " +
+                        "see your system administrator.");
+                }
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            return Details(id);
         }
     }
 }
