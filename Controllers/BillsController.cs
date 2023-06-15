@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
@@ -65,8 +66,10 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
-            List<ServiceCategory> categories = _categoryRepository.GetAll().Where(c => c.isActive == true).ToList();
-            ViewData["ServiceCategories"] = categories;
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();//.Where(c => c.isActive == true);
+            ViewData["ServiceCategories"] = new SelectList(categories,"serviceId", "name");
+            ViewData["categories"] = categories;
+
             if (bill == null)
                 return NotFound();
             bill.dateModified = DateTime.Now;

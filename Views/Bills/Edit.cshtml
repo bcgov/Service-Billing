@@ -5,8 +5,9 @@
     Layout = "_Layout";
 }
 @{
-    List<ServiceCategory> categories = (List<ServiceCategory>)ViewData["ServiceCategories"];
+    IEnumerable<ServiceCategory> categories = ViewData["categories"] as IEnumerable<ServiceCategory>;
 }
+
 <h1>Edit</h1>
 
 <h4>Bill</h4>
@@ -36,24 +37,30 @@
                 <input asp-for="idirOrUrl" class="form-control" />
                 <span asp-validation-for="idirOrUrl" class="text-danger"></span>
             </div>
-            @*<div class="form-group">
-                <label asp-for="serviceCategoryId" class="control-label"></label>
-                <input asp-for="serviceCategoryId" class="form-control" />
-                <span asp-validation-for="serviceCategoryId" class="text-danger"></span>
-            </div>*@
             <div class="form-group">
-                <label for="serviceCategory" class="control-label"></label>
-                <select name="serviceCategory">
-                    @if(categories != null)
+                <label asp-for="serviceCategoryId" class="control-label"></label>
+                <select asp-for="serviceCategoryId" class="form-control">
+                  @*  TODO: deal with default value not being active*@
+                    @foreach(ServiceCategory category in categories)
                     {
-                        @foreach(ServiceCategory category in categories)
+                        if(category.serviceId == Model.serviceCategoryId)
+                        {
+                            <option value="@category.serviceId" selected>@category.name</option>
+                        }
+                        else
                         {
                             <option value="@category.serviceId">@category.name</option>
                         }
                     }
                 </select>
-                @*<span asp-validation-for="serviceCategory" class="text-danger"></span>*@
+                <span asp-validation-for="serviceCategoryId" class="text-danger"></span>
             </div>
+           @* <div class="form-group">
+                <label for="serviceCategoryId" class="control-label">Select list label</label>
+                @Html.DropDownList("ServiceCategories", (IEnumerable
+                <SelectListItem>)ViewData["ServiceCategories"])
+            asp-items="@(new SelectList(Model.EmployeesList, nameof(Employee.Id), nameof(Employee.FullName)))">
+            </div>*@
             <div class="form-group">
                 <label asp-for="amount" class="control-label"></label>
                 <input asp-for="amount" class="form-control" />
