@@ -185,3 +185,11 @@ a {
                 -ms-transform: rotate(180deg);
                 transform: rotate(180deg);
             }
+
+
+.inactive-service-category{
+    color: red;
+}
+.change-category-message{
+    color: mediumorchid;
+}

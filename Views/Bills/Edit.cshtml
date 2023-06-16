@@ -6,6 +6,7 @@
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["categories"] as IEnumerable<ServiceCategory>;
+    bool mustChangeServiceCategory = false;
 }
 
 <h1>Edit</h1>
@@ -39,15 +40,21 @@
             </div>
             <div class="form-group">
                 <label asp-for="serviceCategoryId" class="control-label"></label>
-                <select asp-for="serviceCategoryId" class="form-control">
-                  @*  TODO: deal with default value not being active*@
+                <select asp-for="serviceCategoryId" class="form-control" id="categorySelect">
                     @foreach(ServiceCategory category in categories)
                     {
                         if(category.serviceId == Model.serviceCategoryId)
                         {
-                            <option value="@category.serviceId" selected>@category.name</option>
+                            if(!category.isActive)
+                            {
+                                <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
+                                {
+                                    mustChangeServiceCategory = true;
+                                }
+                            ;
+                            }
                         }
-                        else
+                        else if(category.isActive)
                         {
                             <option value="@category.serviceId">@category.name</option>
                         }
@@ -55,12 +62,10 @@
                 </select>
                 <span asp-validation-for="serviceCategoryId" class="text-danger"></span>
             </div>
-           @* <div class="form-group">
-                <label for="serviceCategoryId" class="control-label">Select list label</label>
-                @Html.DropDownList("ServiceCategories", (IEnumerable
-                <SelectListItem>)ViewData["ServiceCategories"])
-            asp-items="@(new SelectList(Model.EmployeesList, nameof(Employee.Id), nameof(Employee.FullName)))">
-            </div>*@
+                <div class="change-category-message" visible="@mustChangeServiceCategory">
+                    <p>This appears to be an older service category that is no longer active.</p>
+                    <p>A newer, active service category should be selectable from the dropdown list.</p>    
+                </div>
             <div class="form-group">
                 <label asp-for="amount" class="control-label"></label>
                 <input asp-for="amount" class="form-control" />
@@ -114,4 +119,17 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            $("#categorySelect").on("change" , (e) => {
+        
+                @foreach(ServiceCategory category in categories)
+                {
+                  
+                }
+            });
+        });
+    </script>
 }
+
