@@ -46,7 +46,7 @@ namespace Service_Billing.Controllers
                     break;
             }
 
-            return View(new BillViewModel(bills, categories, clients));
+            return View(new AllBillsViewModel(bills, categories, clients));
         }
 
         public ActionResult Details(int id)
@@ -69,11 +69,11 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();//.Where(c => c.isActive == true);
             ViewData["ServiceCategories"] = new SelectList(categories,"serviceId", "name");
             ViewData["categories"] = categories;
-
             if (bill == null)
                 return NotFound();
             bill.dateModified = DateTime.Now;
-            return View(bill);
+            BillViewModel billModel = new BillViewModel(bill, categories);
+            return View(billModel);
         }
 
         // POST: ClientAccountController/Edit/5
@@ -92,7 +92,7 @@ namespace Service_Billing.Controllers
                 b => b.title,
                 b => b.idirOrUrl,
                 b => b.serviceCategoryId,
-                b => b.amount, // should be calculated based on service?
+                b => GetBillAmount(b.serviceCategoryId, b.quantity), // should be calculated based on service?
                 b => b.quantity,
                 b => b.ticketNumberAndRequester,
                 b => b.dateModified,
@@ -114,6 +114,34 @@ namespace Service_Billing.Controllers
             }
 
             return Details(id);
+        }
+
+        [HttpGet]
+        public ActionResult GetBillAmount(short? serviceId,  decimal? quantity)
+        {
+            try
+            {
+                if (serviceId == null || quantity == null)
+                    throw new Exception("Cannot calculate bill amount because categoryId or quantity is null");
+                ServiceCategory category = _categoryRepository.GetById(serviceId);
+                if (category == null)
+                {
+                    throw new Exception($"Service category with id: {serviceId} not found!");
+                }
+                decimal newAmount;
+                if (!decimal.TryParse(category.costs, out newAmount))
+                {
+                    newAmount = 0;
+                }
+                if (category.serviceId == 5)
+                    newAmount = 85;
+                return new JsonResult(newAmount * quantity);
+            }
+            catch (Exception ex)
+            {
+                //TODO: log exception
+                return new JsonResult(ex.Message);
+            }
         }
     }
 }

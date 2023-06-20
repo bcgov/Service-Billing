@@ -1,4 +1,4 @@
-﻿@model Service_Billing.Models.Bill
+﻿@model Service_Billing.ViewModels.BillViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -17,33 +17,33 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="id" />
+            <input type="hidden" asp-for="@Model.bill.id" />
             <div class="form-group">
-                <label asp-for="clientAccountId" class="control-label"></label>
-                <input asp-for="clientAccountId" class="form-control" />
-                <span asp-validation-for="clientAccountId" class="text-danger"></span>
+                <label asp-for="@Model.bill.clientAccountId" class="control-label"></label>
+                <input asp-for="@Model.bill.clientAccountId" class="form-control" id="title-input" />
+                <span asp-validation-for="@Model.bill.clientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="clientName" class="control-label"></label>
-                <input asp-for="clientName" class="form-control" />
-                <span asp-validation-for="clientName" class="text-danger"></span>
+                <label asp-for="@Model.bill.clientName" class="control-label"></label>
+                <input asp-for="@Model.bill.clientName" class="form-control" />
+                <span asp-validation-for="@Model.bill.clientName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="title" class="control-label"></label>
-                <input asp-for="title" class="form-control" />
-                <span asp-validation-for="title" class="text-danger"></span>
+                <label asp-for="@Model.bill.title" class="control-label"></label>
+                <input asp-for="@Model.bill.title" class="form-control" id="title"/>
+                <span asp-validation-for="@Model.bill.title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="idirOrUrl" class="control-label"></label>
-                <input asp-for="idirOrUrl" class="form-control" />
-                <span asp-validation-for="idirOrUrl" class="text-danger"></span>
+                <label asp-for="@Model.bill.idirOrUrl" class="control-label"></label>
+                <input asp-for="@Model.bill.idirOrUrl" class="form-control" />
+                <span asp-validation-for="@Model.bill.idirOrUrl" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="serviceCategoryId" class="control-label"></label>
-                <select asp-for="serviceCategoryId" class="form-control" id="categorySelect">
+                <label asp-for="@Model.bill.serviceCategoryId" class="control-label"></label>
+                <select asp-for="@Model.bill.serviceCategoryId" class="form-control" id="categorySelect">
                     @foreach(ServiceCategory category in categories)
                     {
-                        if(category.serviceId == Model.serviceCategoryId)
+                        if (category.serviceId == Model.bill.serviceCategoryId)
                         {
                             if(!category.isActive)
                             {
@@ -60,36 +60,36 @@
                         }
                     }
                 </select>
-                <span asp-validation-for="serviceCategoryId" class="text-danger"></span>
+                <span asp-validation-for="@Model.bill.serviceCategoryId" class="text-danger"></span>
             </div>
                 <div class="change-category-message" visible="@mustChangeServiceCategory">
                     <p>This appears to be an older service category that is no longer active.</p>
                     <p>A newer, active service category should be selectable from the dropdown list.</p>    
                 </div>
             <div class="form-group">
-                <label asp-for="amount" class="control-label"></label>
-                <input asp-for="amount" class="form-control" />
-                <span asp-validation-for="amount" class="text-danger"></span>
+                <label asp-for="@Model.bill.amount" class="control-label"></label>
+                <input asp-for="@Model.bill.amount" class="form-control" id="amount"/>
+                <span asp-validation-for="@Model.bill.amount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="fiscalPeriod" class="control-label"></label>
-                <input asp-for="fiscalPeriod" class="form-control" />
-                <span asp-validation-for="fiscalPeriod" class="text-danger"></span>
+                <label asp-for="@Model.bill.fiscalPeriod" class="control-label"></label>
+                <input asp-for="@Model.bill.fiscalPeriod" class="form-control" />
+                <span asp-validation-for="@Model.bill.fiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="quantity" class="control-label"></label>
-                <input asp-for="quantity" class="form-control" />
-                <span asp-validation-for="quantity" class="text-danger"></span>
+                <label asp-for="@Model.bill.quantity" class="control-label"></label>
+                <input asp-for="@Model.bill.quantity" class="form-control" id="quantity"/>
+                <span asp-validation-for="@Model.bill.quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ticketNumberAndRequester" class="control-label"></label>
-                <input asp-for="ticketNumberAndRequester" class="form-control" />
-                <span asp-validation-for="ticketNumberAndRequester" class="text-danger"></span>
+                <label asp-for="@Model.bill.ticketNumberAndRequester" class="control-label"></label>
+                <input asp-for="@Model.bill.ticketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="@Model.bill.ticketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="dateModified" class="control-label"></label>
-                <input asp-for="dateModified" class="form-control" readonly="true"/>
-                <span asp-validation-for="dateModified" class="text-danger"></span>
+                <label asp-for="@Model.bill.dateModified" class="control-label"></label>
+                <input asp-for="@Model.bill.dateModified" class="form-control" readonly="true" />
+                <span asp-validation-for="@Model.bill.dateModified" class="text-danger"></span>
             </div>
             @*<div class="form-group">
                 <label asp-for="dateCreated" class="control-label"></label>
@@ -97,14 +97,14 @@
                 <span asp-validation-for="dateCreated" class="text-danger"></span>
             </div>*@
             <div class="form-group">
-                <label asp-for="billingCycle" class="control-label"></label>
-                <input asp-for="billingCycle" class="form-control" />
-                <span asp-validation-for="billingCycle" class="text-danger"></span>
+                <label asp-for="@Model.bill.billingCycle" class="control-label"></label>
+                <input asp-for="@Model.bill.billingCycle" class="form-control" />
+                <span asp-validation-for="@Model.bill.billingCycle" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="createdBy" class="control-label"></label>
-                <input asp-for="createdBy" class="form-control" />
-                <span asp-validation-for="createdBy" class="text-danger"></span>
+                <label asp-for="@Model.bill.createdBy" class="control-label"></label>
+                <input asp-for="@Model.bill.createdBy" class="form-control" />
+                <span asp-validation-for="@Model.bill.createdBy" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -122,14 +122,26 @@
 
     <script>
         $(document).ready(function () {
+            calculateAmount = () => {
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        $("#amount").val(xhr.responseText);
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+            }
             $("#categorySelect").on("change" , (e) => {
-        
-                @foreach(ServiceCategory category in categories)
-                {
-                  
-                }
+               calculateAmount();
             });
+            $("#quantity").on("change", (e) => {
+                calculateAmount();
+            });
+        
         });
+
     </script>
 }
 
