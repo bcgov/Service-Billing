@@ -38,7 +38,9 @@ namespace Service_Billing.Models
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
         {
-            return _context.clientAccounts.Include(c => !string.IsNullOrEmpty(c.clientName) && c.clientName.Contains(queryString));
+            var x =  _context.clientAccounts.Where(c => c.clientName.Contains(queryString)).OrderBy(c => c.clientName);
+            var y = x.ToList();
+            return x;
         }
     }
 }

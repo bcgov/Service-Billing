@@ -5,7 +5,7 @@
     Layout = "_Layout";
 }
 @{
-    IEnumerable<ServiceCategory> categories = ViewData["categories"] as IEnumerable<ServiceCategory>;
+    IEnumerable<ServiceCategory> categories = Model.ServiceCategories as IEnumerable<ServiceCategory>;
     bool mustChangeServiceCategory = false;
 }
 
@@ -18,15 +18,15 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="@Model.bill.id" />
-            <div class="form-group">
+            @*<div class="form-group">
                 <label asp-for="@Model.bill.clientAccountId" class="control-label"></label>
                 <input asp-for="@Model.bill.clientAccountId" class="form-control" id="title-input" />
                 <span asp-validation-for="@Model.bill.clientAccountId" class="text-danger"></span>
-            </div>
+            </div>*@
             <div class="form-group">
-                <label asp-for="@Model.bill.clientName" class="control-label"></label>
-                <input asp-for="@Model.bill.clientName" class="form-control" />
-                <span asp-validation-for="@Model.bill.clientName" class="text-danger"></span>
+                <label asp-for="@Model.Client">Client: </label>
+                <input asp-for="@Model.Client.clientName"id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.Client.clientName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.bill.title" class="control-label"></label>
@@ -62,7 +62,7 @@
                 </select>
                 <span asp-validation-for="@Model.bill.serviceCategoryId" class="text-danger"></span>
             </div>
-                <div class="change-category-message" visible="@mustChangeServiceCategory">
+                <div class="change-category-message" id="categoryWarning" visible="@mustChangeServiceCategory">
                     <p>This appears to be an older service category that is no longer active.</p>
                     <p>A newer, active service category should be selectable from the dropdown list.</p>    
                 </div>
@@ -119,7 +119,7 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
         $(document).ready(function () {
             calculateAmount = () => {
@@ -135,13 +135,42 @@
             }
             $("#categorySelect").on("change" , (e) => {
                calculateAmount();
+                console.log($("#categorySelect").val());
+               if($("#categorySelect").val() < 21){
+                   $("#categoryWarning").hide();
+               }
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();
             });
-        
-        });
 
+            var clientsMatchingSearch = [];
+            $("#clientInput").autocomplete({
+                delay: 500,
+            });
+            $("#clientInput").on("keypress", (e) => {
+                var url = "../../Bills/GetClientsBySearchFilter?query=" + $("#clientInput").val();
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        clientsMatchingSearch = [];
+                        var data = JSON.parse(xhr.response);
+                        
+                        for(const client in data)
+                        {
+                            clientsMatchingSearch.push(data[client].clientName);
+                        }
+
+                        $("#clientInput").autocomplete({
+                            source: clientsMatchingSearch
+                        });
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+            });
+     
+        });
     </script>
 }
 

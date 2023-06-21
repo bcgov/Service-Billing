@@ -27,12 +27,13 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
-         //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
+            //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
 
             ViewBag.ServiceCategories = categories.ToList();
             switch (quarter)
             {
-                case "current": default:
+                case "current":
+                default:
                     ViewBag.Quarter = "Current Quarter";
                     bills = _billRepository.GetCurrentQuarterBills();
                     break;
@@ -52,7 +53,7 @@ namespace Service_Billing.Controllers
         public ActionResult Details(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
-            if(bill == null)
+            if (bill == null)
             {
                 return NotFound();
             }
@@ -67,12 +68,11 @@ namespace Service_Billing.Controllers
         {
             Bill? bill = _billRepository.GetBill(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();//.Where(c => c.isActive == true);
-            ViewData["ServiceCategories"] = new SelectList(categories,"serviceId", "name");
-            ViewData["categories"] = categories;
             if (bill == null)
                 return NotFound();
             bill.dateModified = DateTime.Now;
             BillViewModel billModel = new BillViewModel(bill, categories);
+            billModel.Client = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
             return View(billModel);
         }
 
@@ -117,7 +117,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetBillAmount(short? serviceId,  decimal? quantity)
+        public ActionResult GetBillAmount(short? serviceId, decimal? quantity)
         {
             try
             {
@@ -140,6 +140,21 @@ namespace Service_Billing.Controllers
             catch (Exception ex)
             {
                 //TODO: log exception
+                return new JsonResult(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public ActionResult GetClientsBySearchFilter(string query)
+        {
+            try
+            {
+                IEnumerable<ClientAccount> accounts = _clientAccountRepository.SearchClientAccounts(query);
+                List<ClientAccount> result = accounts.ToList();
+                return new JsonResult(accounts.ToList());
+            }
+            catch (Exception ex)
+            {
                 return new JsonResult(ex.Message);
             }
         }

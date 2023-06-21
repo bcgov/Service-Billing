@@ -7,9 +7,9 @@ namespace Service_Billing.ViewModels
     {
         public Bill bill { get; }
         public IEnumerable<ServiceCategory> ServiceCategories { get; }
-        public IEnumerable<ClientAccount> ClientAccounts { get; }
-        public List<SelectListItem> serviceCategories { set; get; }
-        public List<ServiceCategory> categoriesList { set; get; }
+        public ClientAccount Client { get; set; }
+        //public List<SelectListItem> serviceCategories { set; get; }
+        //public List<ServiceCategory> categoriesList { set; get; }
 
         public SelectListItem selectedCategory { get; set; }
 
@@ -17,7 +17,6 @@ namespace Service_Billing.ViewModels
         {
             this.bill = bill;
             ServiceCategories = serviceCategories;
-            categoriesList = serviceCategories.ToList();
         }
     }
 }
