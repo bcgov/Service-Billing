@@ -5,7 +5,7 @@ using ServiceBilling.API.Domain.Entities;
 
 namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientsAccountList
 {
-    public class GetClientAccountsListQueryHandler : IRequestHandler<GetClientAccountsListQuery, IList<ClientAccountsListVm>>
+    public class GetClientAccountsListQueryHandler : IRequestHandler<GetClientAccountsListQuery, List<ClientAccountsListVm>>
     {
         private readonly IAsyncRepository<ClientAccount> _clientAccountRepository;
         private readonly IMapper _mapper;
@@ -16,7 +16,7 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClie
             _clientAccountRepository = clientAccountRepository;
         }
 
-        public async Task<IList<ClientAccountsListVm>> Handle(GetClientAccountsListQuery request, CancellationToken cancellationToken)
+        public async Task<List<ClientAccountsListVm>> Handle(GetClientAccountsListQuery request, CancellationToken cancellationToken)
         {
             var allClientAccounts = await _clientAccountRepository.ListAllAsync();
             return _mapper.Map<List<ClientAccountsListVm>>(allClientAccounts);

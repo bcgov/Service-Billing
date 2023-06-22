@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ServiceBilling.API.Application.Features.ClientAccounts.Commands.CreateClientAccount
 {
-    internal class CreateClientAccountCommandResponse
+    public class CreateClientAccountCommandResponse
     {
     }
 }
