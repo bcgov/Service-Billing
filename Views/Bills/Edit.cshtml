@@ -140,29 +140,17 @@
                 calculateAmount();
             });
 
-            var clientsMatchingSearch = [];
-            $("#clientInput").autocomplete({
-                source: clientsMatchingSearch,
-                delay: 500,
-                select: function(event, ui){
-                    console.log("Select!");
-                    console.log(ui.item.clientId);
-                    console.log(ui.item.label);
-                    $("#clientIdInput").val(ui.item.clientId);
-                    $("#clientInput").text(ui.item.label);
-                }
-            });
-            $("#clientInput").on("keypress", (e) => {
-                var url = "../../Bills/GetClientsBySearchFilter?query=" + $("#clientInput").val();
+            createClientSelect = () => {
+                var clientsMatchingSearch = [];
+                var url = "../../Bills/GetClients";
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         clientsMatchingSearch = [];
                         var data = JSON.parse(xhr.response);
-                        
-                        for(const client in data)
-                        {
-                            clientsMatchingSearch.push( {label: data[client].clientName, "clientId": data[client].accountId});
+
+                        for (const client in data) {
+                            clientsMatchingSearch.push({ label: data[client].clientName, "clientId": data[client].accountId });
                         }
 
                         $("#clientInput").autocomplete({
@@ -172,8 +160,21 @@
                 };
                 xhr.open('get', url);
                 xhr.send();
-            });
-     
+
+                $("#clientInput").autocomplete({
+                    source: clientsMatchingSearch,
+                    delay: 500,
+                    select: function(event, ui){
+                        console.log("Select!");
+                        console.log(ui.item.clientId);
+                        console.log(ui.item.label);
+                        $("#clientIdInput").val(ui.item.clientId);
+                        $("#clientInput").text(ui.item.label);
+                    },
+                    minLength: 0
+                });
+            }
+            createClientSelect();
         });
     </script>
 }
