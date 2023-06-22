@@ -6,5 +6,6 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts.Commands.Create
     {
         public int Number { get; set; }
         public string Name { get; set; }
+        public Guid ClientTeamId { get; set; }
     }
 }

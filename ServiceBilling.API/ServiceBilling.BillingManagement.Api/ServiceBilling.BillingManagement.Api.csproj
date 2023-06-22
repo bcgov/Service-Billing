@@ -11,10 +11,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MediatR" Version="11.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\ServiceBilling.API.Application\ServiceBilling.API.Application.csproj" />
+    <ProjectReference Include="..\ServiceBilling.API.Infrastructure\ServiceBilling.API.Infrastructure.csproj" />
     <ProjectReference Include="..\ServiceBilling.API.Persistence\ServiceBilling.API.Persistence.csproj" />
   </ItemGroup>
 

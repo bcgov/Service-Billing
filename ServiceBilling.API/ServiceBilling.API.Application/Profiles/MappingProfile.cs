@@ -16,6 +16,7 @@ namespace ServiceBilling.API.Application.Profiles
         public MappingProfile()
         {
             CreateMap<ClientAccount, ClientAccountsListVm>().ReverseMap();
+            CreateMap<CreateClientAccountCommand, ClientAccount>().ReverseMap();
             CreateMap<ClientAccount, ClientAccountDetailVm>().ReverseMap();
             CreateMap<ClientTeam, ClientTeamDto>();
 
