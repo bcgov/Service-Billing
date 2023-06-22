@@ -18,15 +18,16 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="@Model.bill.id" />
-            @*<div class="form-group">
-                <label asp-for="@Model.bill.clientAccountId" class="control-label"></label>
-                <input asp-for="@Model.bill.clientAccountId" class="form-control" id="title-input" />
-                <span asp-validation-for="@Model.bill.clientAccountId" class="text-danger"></span>
-            </div>*@
+          
             <div class="form-group">
-                <label asp-for="@Model.Client">Client: </label>
-                <input asp-for="@Model.Client.clientName"id="clientInput" class="form-control" />
-                <span asp-validation-for="@Model.Client.clientName" class="text-danger"></span>
+                <label asp-for="@Model.bill.clientName">Client: </label>
+                <input asp-for="@Model.bill.clientName"id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.bill.clientName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.bill.clientAccountId">Client ID: </label>
+                <input asp-for="@Model.bill.clientAccountId" id="clientIdInput" class="form-control" />
+                <span asp-validation-for="@Model.bill.clientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.bill.title" class="control-label"></label>
@@ -91,11 +92,6 @@
                 <input asp-for="@Model.bill.dateModified" class="form-control" readonly="true" />
                 <span asp-validation-for="@Model.bill.dateModified" class="text-danger"></span>
             </div>
-            @*<div class="form-group">
-                <label asp-for="dateCreated" class="control-label"></label>
-                <input asp-for="dateCreated" class="form-control" />
-                <span asp-validation-for="dateCreated" class="text-danger"></span>
-            </div>*@
             <div class="form-group">
                 <label asp-for="@Model.bill.billingCycle" class="control-label"></label>
                 <input asp-for="@Model.bill.billingCycle" class="form-control" />
@@ -146,7 +142,15 @@
 
             var clientsMatchingSearch = [];
             $("#clientInput").autocomplete({
+                source: clientsMatchingSearch,
                 delay: 500,
+                select: function(event, ui){
+                    console.log("Select!");
+                    console.log(ui.item.clientId);
+                    console.log(ui.item.label);
+                    $("#clientIdInput").val(ui.item.clientId);
+                    $("#clientInput").text(ui.item.label);
+                }
             });
             $("#clientInput").on("keypress", (e) => {
                 var url = "../../Bills/GetClientsBySearchFilter?query=" + $("#clientInput").val();
@@ -158,7 +162,7 @@
                         
                         for(const client in data)
                         {
-                            clientsMatchingSearch.push(data[client].clientName);
+                            clientsMatchingSearch.push( {label: data[client].clientName, "clientId": data[client].accountId});
                         }
 
                         $("#clientInput").autocomplete({
