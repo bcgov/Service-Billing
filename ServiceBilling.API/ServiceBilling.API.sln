@@ -19,9 +19,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.API.Domain",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.API.Application", "ServiceBilling.API.Application\ServiceBilling.API.Application.csproj", "{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.API.Persistence", "ServiceBilling.API.Persistence\ServiceBilling.API.Persistence.csproj", "{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.API.Persistence", "ServiceBilling.API.Persistence\ServiceBilling.API.Persistence.csproj", "{88798EE3-CA50-4317-BCCF-E0336ABBEA6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.BillingManagement.Api", "ServiceBilling.BillingManagement.Api\ServiceBilling.BillingManagement.Api.csproj", "{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ServiceBilling.BillingManagement.Api", "ServiceBilling.BillingManagement.Api\ServiceBilling.BillingManagement.Api.csproj", "{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBilling.API.Infrastructure", "ServiceBilling.API.Infrastructure\ServiceBilling.API.Infrastructure.csproj", "{67688DF3-2633-40E4-B718-8F087EBDB412}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67688DF3-2633-40E4-B718-8F087EBDB412}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67688DF3-2633-40E4-B718-8F087EBDB412}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67688DF3-2633-40E4-B718-8F087EBDB412}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67688DF3-2633-40E4-B718-8F087EBDB412}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,6 +64,7 @@ Global
 		{B1A1FC09-0F0F-42DA-922E-9C6FF69C4513} = {9B7DA25E-3E79-4FA4-B84C-3E75875F23CE}
 		{88798EE3-CA50-4317-BCCF-E0336ABBEA6A} = {4D1F093F-90CA-49BA-A43C-7A61AF9AA889}
 		{27D4E5DC-6A9D-4665-9E08-F0B5AD512948} = {5DFB916D-4AF0-4F3A-A147-9D0A29D45893}
+		{67688DF3-2633-40E4-B718-8F087EBDB412} = {4D1F093F-90CA-49BA-A43C-7A61AF9AA889}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {60DB21D3-8BE7-4D80-8D1F-9B3CE3A9BCDB}

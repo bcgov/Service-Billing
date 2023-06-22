@@ -8,19 +8,32 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts.Commands.Create
     public class CreateClientAccountCommandHandler : IRequestHandler<CreateClientAccountCommand, Guid>
     {
         private readonly IAsyncRepository<ClientAccount> _clientAccountRepository;
+        private readonly IAsyncRepository<ClientTeam> _clientTeamRepository;
         private readonly IMapper _mapper;
 
+        public CreateClientAccountCommandHandler(
+            IAsyncRepository<ClientAccount> clientAccountRepository,
+            IAsyncRepository<ClientTeam> clientTeamRepository,
+            IMapper mapper)
+        {
+            _clientAccountRepository = clientAccountRepository;
+            _clientTeamRepository = clientTeamRepository;
+            _mapper = mapper;
+        }
 
         public async Task<Guid> Handle(CreateClientAccountCommand request, CancellationToken cancellationToken)
         {
-            var @clientAccount = _mapper.Map<ClientAccount>(request);
+
+            // var clientTeam = await _clientTeamRepository.GetByIdAsync(request.ClientTeamId);
+
+            var clientAccount = _mapper.Map<ClientAccount>(request);
 
             // create a validator object
             // await the result of a call to validateasync
 
-            @clientAccount = await _clientAccountRepository.AddAsync(@clientAccount);
+            clientAccount = await _clientAccountRepository.AddAsync(clientAccount);
 
-            return @clientAccount.ClientAccountId;
+            return clientAccount.ClientAccountId;
         }
     }
 }
