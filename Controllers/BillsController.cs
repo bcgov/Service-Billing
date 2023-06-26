@@ -71,9 +71,10 @@ namespace Service_Billing.Controllers
             if (bill == null)
                 return NotFound();
             bill.dateModified = DateTime.Now;
-            BillViewModel billModel = new BillViewModel(bill, categories);
-            billModel.Client = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
-            return View(billModel);
+
+            ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
+            ViewData["Categories"] = categories;
+            return View(bill);
         }
 
         // POST: ClientAccountController/Edit/5
@@ -92,7 +93,7 @@ namespace Service_Billing.Controllers
                 b => b.title,
                 b => b.idirOrUrl,
                 b => b.serviceCategoryId,
-                b => GetBillAmount(b.serviceCategoryId, b.quantity), // should be calculated based on service?
+                b => b.amount,
                 b => b.quantity,
                 b => b.ticketNumberAndRequester,
                 b => b.dateModified,
@@ -145,11 +146,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetClientsBySearchFilter(string query)
+        public ActionResult GetClients()
         {
             try
             {
-                IEnumerable<ClientAccount> accounts = _clientAccountRepository.SearchClientAccounts(query);
+                IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
                 List<ClientAccount> result = accounts.ToList();
                 return new JsonResult(accounts.ToList());
             }
