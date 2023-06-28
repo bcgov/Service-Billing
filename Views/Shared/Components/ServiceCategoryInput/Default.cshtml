@@ -1,0 +1,35 @@
+﻿@model IEnumerable<ServiceCategory>
+@{
+    bool mustChangeServiceCategory = true;
+    short id = (short)ViewData["id"];
+}
+<div class="form-group">
+    <label for="categorySelect">Service Category</label>
+    <select class="form-control" id="categorySelect">
+        @foreach (ServiceCategory category in Model)
+        {
+            if (category.serviceId == id)
+            {
+                if (!category.isActive)
+                {
+                    <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
+                    {
+                        mustChangeServiceCategory = false;
+                    }
+                }
+                else
+                {
+                    <option value="@category.serviceId" selected>@category.name</option>
+                }
+            }
+            else if (category.isActive)
+            {
+                <option value="@category.serviceId">@category.name</option>
+            }
+        }
+    </select>
+</div>
+<div class="change-category-message" id="categoryWarning" hidden="@mustChangeServiceCategory">
+    <p>This appears to be an older service category that is no longer active.</p>
+    <p>A newer, active service category should be selectable from the dropdown list.</p>
+</div>

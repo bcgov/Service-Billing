@@ -6,7 +6,7 @@
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
-    bool mustChangeServiceCategory = false;
+
 }
 
 <h1>Edit</h1>
@@ -18,15 +18,13 @@
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="@Model.id" />
-          
             <div class="form-group">
                 <label asp-for="@Model.clientName">Client: </label>
                 <input asp-for="@Model.clientName"id="clientInput" class="form-control" />
                 <span asp-validation-for="@Model.clientName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.clientAccountId">Client ID: </label>
-                <input asp-for="@Model.clientAccountId" id="clientIdInput" class="form-control" />
+                <input type="hidden" asp-for="@Model.clientAccountId" id="clientIdInput" class="form-control" />
                 <span asp-validation-for="@Model.clientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -39,34 +37,9 @@
                 <input asp-for="@Model.idirOrUrl" class="form-control" />
                 <span asp-validation-for="@Model.idirOrUrl" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="@Model.serviceCategoryId" class="control-label"></label>
-                <select asp-for="@Model.serviceCategoryId" class="form-control" id="categorySelect">
-                    @foreach(ServiceCategory category in categories)
-                    {
-                        if (category.serviceId == Model.serviceCategoryId)
-                        {
-                            if(!category.isActive)
-                            {
-                                <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
-                                {
-                                    mustChangeServiceCategory = true;
-                                }
-                            ;
-                            }
-                        }
-                        else if(category.isActive)
-                        {
-                            <option value="@category.serviceId">@category.name</option>
-                        }
-                    }
-                </select>
-                <span asp-validation-for="@Model.serviceCategoryId" class="text-danger"></span>
-            </div>
-                <div class="change-category-message" id="categoryWarning" visible="@mustChangeServiceCategory">
-                    <p>This appears to be an older service category that is no longer active.</p>
-                    <p>A newer, active service category should be selectable from the dropdown list.</p>    
-                </div>
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.serviceCategoryId })
+            <span asp-validation-for="@Model.serviceCategoryId" class="text-danger"></span>
+           
             <div class="form-group">
                 <label asp-for="@Model.amount" class="control-label"></label>
                 <input asp-for="@Model.amount" class="form-control" id="amount"/>
