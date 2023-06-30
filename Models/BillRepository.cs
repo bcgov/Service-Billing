@@ -15,9 +15,11 @@ namespace Service_Billing.Models
 
         public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.title);
 
-        public string DetermineCurrentQuarter()
+        public string DetermineCurrentQuarter(DateTime? date = null)
         {
             DateTime today = DateTime.Today;
+            if(date != null )
+                today = date.Value;
             string quarter = "";
             string year1 = today.Year.ToString();
             string year2 = (today.Year + 1).ToString();
@@ -48,6 +50,7 @@ namespace Service_Billing.Models
 
             return $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
         }
+
         public IEnumerable<Bill> GetCurrentQuarterBills()
         {
             string fiscalPeriod = DetermineCurrentQuarter();
@@ -86,6 +89,7 @@ namespace Service_Billing.Models
             {
                 //Todo: Add error logging.
             }
+
             return null;
         }
 
@@ -126,6 +130,11 @@ namespace Service_Billing.Models
         public async Task SaveChangesAsync()
         {
             await _billingContext.SaveChangesAsync();
+        }
+
+        public async Task CreateBill(Bill bill)
+        {
+            await _billingContext.AddAsync(bill);
         }
 
     }

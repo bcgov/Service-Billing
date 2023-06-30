@@ -1,33 +1,47 @@
 ﻿@model IEnumerable<ServiceCategory>
 @{
     bool mustChangeServiceCategory = true;
-    short id = (short)ViewData["id"];
+    short id = (short)ViewData["id"] != null ? (short)ViewData["id"] : (short)-1;
 }
 <div class="form-group">
     <label for="categorySelect">Service Category</label>
     <select class="form-control" id="categorySelect">
-        @foreach (ServiceCategory category in Model)
+        @if(id != null && id > 0)
         {
-            if (category.serviceId == id)
+            @foreach (ServiceCategory category in Model)
             {
-                if (!category.isActive)
+                if (category.serviceId == id)
                 {
-                    <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
+                    if (!category.isActive)
                     {
-                        mustChangeServiceCategory = false;
+                        <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
+                        {
+                            mustChangeServiceCategory = false;
+                        }
+                    }
+                    else
+                    {
+                        <option value="@category.serviceId" selected>@category.name</option>
                     }
                 }
-                else
+                else if (category.isActive)
                 {
-                    <option value="@category.serviceId" selected>@category.name</option>
+                    <option value="@category.serviceId">@category.name</option>
                 }
             }
-            else if (category.isActive)
+        }
+        else
+        {
+            <option value="" disabled selected hidden>Select a service category</option>
+            @foreach (ServiceCategory category in Model)
             {
-                <option value="@category.serviceId">@category.name</option>
+                if (category.isActive)
+                {
+                    <option value="@category.serviceId">@category.name</option>
+                }
             }
         }
-    </select>
+     </select>
 </div>
 <div class="change-category-message" id="categoryWarning" hidden="@mustChangeServiceCategory">
     <p>This appears to be an older service category that is no longer active.</p>

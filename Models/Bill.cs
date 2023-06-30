@@ -34,7 +34,14 @@ namespace Service_Billing.Models
 
         public DateTime? dateModified { get; set; }
         public DateTime? dateCreated { get; set; }
-        public DateTime? billingCycle { get; set; }
+        public String? billingCycle { get; set; }
         public string? createdBy { get; set; }
+
+        public Bill()
+        {
+            this.quantity = 1;
+            this.serviceCategoryId = -1;
+            this.dateCreated = DateTime.UtcNow;
+        }
     }
 }

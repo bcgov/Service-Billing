@@ -1,26 +1,24 @@
 ﻿@model Service_Billing.Models.Bill
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Create";
     Layout = "_Layout";
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
-
 }
 
-<h1>Edit</h1>
+<h1>Create</h1>
 
 <h4>Bill</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="@Model.id" />
             <div class="form-group">
                 <label asp-for="@Model.clientName">Client: </label>
-                <input asp-for="@Model.clientName"id="clientInput" class="form-control" />
+                <input asp-for="@Model.clientName" id="clientInput" class="form-control" />
                 <span asp-validation-for="@Model.clientName" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -28,55 +26,51 @@
                 <span asp-validation-for="@Model.clientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.title" class="control-label"></label>
-                <input asp-for="@Model.title" class="form-control" id="title"/>
-                <span asp-validation-for="@Model.title" class="text-danger"></span>
+                <label asp-for="title" class="control-label"></label>
+                <input asp-for="title" class="form-control" />
+                <span asp-validation-for="title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.idirOrUrl" class="control-label"></label>
-                <input asp-for="@Model.idirOrUrl" class="form-control" />
-                <span asp-validation-for="@Model.idirOrUrl" class="text-danger"></span>
+                <label asp-for="idirOrUrl" class="control-label"></label>
+                <input asp-for="idirOrUrl" class="form-control" />
+                <span asp-validation-for="idirOrUrl" class="text-danger"></span>
             </div>
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.serviceCategoryId })
-            <span asp-validation-for="@Model.serviceCategoryId" class="text-danger"></span>
-           
             <div class="form-group">
-                <label asp-for="@Model.amount" class="control-label"></label>
-                <input asp-for="@Model.amount" class="form-control" id="amount"/>
-                <span asp-validation-for="@Model.amount" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.serviceCategoryId" id="categoryIdInput" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model.fiscalPeriod" class="control-label"></label>
-                <input asp-for="@Model.fiscalPeriod" class="form-control" />
-                <span asp-validation-for="@Model.fiscalPeriod" class="text-danger"></span>
+                <label asp-for="amount" class="control-label"></label>
+                <input asp-for="amount" class="form-control" id="amount" />
+                <span asp-validation-for="amount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.quantity" class="control-label"></label>
-                <input asp-for="@Model.quantity" class="form-control" id="quantity"/>
-                <span asp-validation-for="@Model.quantity" class="text-danger"></span>
+                <label asp-for="fiscalPeriod" class="control-label"></label>
+                <input asp-for="fiscalPeriod" class="form-control" />
+                <span asp-validation-for="fiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.ticketNumberAndRequester" class="control-label"></label>
-                <input asp-for="@Model.ticketNumberAndRequester" class="form-control" />
-                <span asp-validation-for="@Model.ticketNumberAndRequester" class="text-danger"></span>
+                <label asp-for="quantity" class="control-label"></label>
+                <input asp-for="quantity" class="form-control" id="quantity" />
+                <span asp-validation-for="quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.dateModified" class="control-label"></label>
-                <input asp-for="@Model.dateModified" class="form-control" readonly="true" />
-                <span asp-validation-for="@Model.dateModified" class="text-danger"></span>
+                <label asp-for="ticketNumberAndRequester" class="control-label"></label>
+                <input asp-for="ticketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="ticketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.billingCycle" class="control-label"></label>
-                <input asp-for="@Model.billingCycle" class="form-control" />
-                <span asp-validation-for="@Model.billingCycle" class="text-danger"></span>
+                <label asp-for="billingCycle" class="control-label"></label>
+                <input asp-for="billingCycle" class="form-control" />
+                <span asp-validation-for="billingCycle" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.createdBy" class="control-label"></label>
-                <input asp-for="@Model.createdBy" class="form-control" />
-                <span asp-validation-for="@Model.createdBy" class="text-danger"></span>
+                <label asp-for="createdBy" class="control-label"></label>
+                <input asp-for="createdBy" class="form-control" />
+                <span asp-validation-for="createdBy" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Create" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -87,11 +81,16 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
         $(document).ready(function () {
             calculateAmount = () => {
+                if(!$("#quantity")){
+                    $("#quantity").val(1);
+                }
                 var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
@@ -102,11 +101,12 @@
                 xhr.open('get', url);
                 xhr.send();
             }
-            $("#categorySelect").on("change" , (e) => {
-               calculateAmount();
-               if($("#categorySelect").val() < 21){ //id's greater than 21 are older categories, with slightly different names and prices
-                   $("#categoryWarning").hide();
-               }
+            $("#categorySelect").on("change", (e) => {
+                calculateAmount();
+                if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
+                    $("#categoryWarning").hide();
+                    $("#categoryIdInput").val($("#categorySelect").val())
+                }
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();
@@ -136,7 +136,7 @@
                 $("#clientInput").autocomplete({
                     source: clientsMatchingSearch,
                     delay: 500,
-                    select: function(event, ui){
+                    select: function (event, ui) {
                         $("#clientIdInput").val(ui.item.clientId);
                         $("#clientInput").text(ui.item.label);
                     },
@@ -147,4 +147,3 @@
         });
     </script>
 }
-

@@ -70,10 +70,13 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();//.Where(c => c.isActive == true);
             if (bill == null)
                 return NotFound();
-            bill.dateModified = DateTime.Now;
 
+            bill.dateModified = DateTime.Now;
+            if (String.IsNullOrEmpty(bill.fiscalPeriod) || String.IsNullOrEmpty(bill.billingCycle))
+                DetermineCurrentQuarter(bill, bill.dateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
             ViewData["Categories"] = categories;
+
             return View(bill);
         }
 
@@ -118,6 +121,37 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
+        public ActionResult Create()
+        {
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ViewData["Categories"] = categories;
+            Bill bill = new Bill();
+            bill.dateCreated = DateTime.Now;
+            DetermineCurrentQuarter(bill, bill.dateCreated);
+            return View(bill);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
+       // public async Task<IActionResult> Create(IFormCollection collection)
+       public async Task<ActionResult> Create(Bill bill, IFormCollection collection)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    await _billRepository.CreateBill(bill); 
+                }
+            }
+            catch (DbUpdateException )
+            {
+
+            }
+            
+                return RedirectToAction(nameof(Index));
+        }
+     
+        [HttpGet]
         public ActionResult GetBillAmount(short? serviceId, decimal? quantity)
         {
             try
@@ -158,6 +192,46 @@ namespace Service_Billing.Controllers
             {
                 return new JsonResult(ex.Message);
             }
+        }
+
+        public void DetermineCurrentQuarter(Bill bill, DateTime? date = null)
+        {
+            DateTime today = DateTime.Today;
+            if (date != null)
+                today = date.Value;
+            string quarter = "";
+            string year1 = today.Year.ToString();
+            string year2 = (today.Year + 1).ToString();
+
+            switch (today.Month)
+            {
+                case 4:
+                case 5:
+                case 6:
+                    quarter = "Quarter 1";
+                    bill.billingCycle = new DateTime(today.Year, 4, 1).ToString("yyyy-MM-dd");
+                    break;
+                case 7:
+                case 8:
+                case 9:
+                    quarter = "Quarter 2";
+                    bill.billingCycle = new DateTime(today.Year, 7, 1).ToString("yyyy-MM-dd");
+                    break;
+                case 10:
+                case 11:
+                case 12:
+                    quarter = "Quarter 3";
+                    bill.billingCycle = new DateTime(today.Year, 10, 1).ToString("yyyy-MM-dd");
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                    quarter = "Quarter 4";
+                    bill.billingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
+                    break;
+            }
+
+            bill.fiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
         }
     }
 }

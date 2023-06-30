@@ -10,7 +10,10 @@
     @Html.ActionLink("Current Quarter", "Index", new { quarter = "current" }) | 
     @Html.ActionLink("Previous Quarter", "Index", new { quarter = "previous" }) | 
     @Html.ActionLink("All Quarters", "Index", new { quarter = "all" })
-
+    <div>
+        <a asp-controller="Bills"
+           asp-action="Create">enter a new bill</a>
+    </div>
     <h2>Fiscal Period: @ViewBag.Quarter</h2>
     <table class="table table-striped">
         <thead>

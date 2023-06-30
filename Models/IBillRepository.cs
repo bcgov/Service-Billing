@@ -14,6 +14,7 @@ namespace Service_Billing.Models
         IEnumerable<Bill> GetBillsByDateRange(DateTime start, DateTime end);
         IEnumerable<Bill> GetCurrentQuarterBills();
         IEnumerable<Bill> GetPreviousQuarterBills();
+        Task CreateBill(Bill bill);
         Task SaveChangesAsync();
     }
 }
