@@ -80,7 +80,7 @@ namespace Service_Billing.Models
                     {
                         throw new Exception("Could not parse Quarter from Fiscal Period string");
                     }
-                    currentFiscalPeriod.Remove(currentFiscalPeriod.Length - 1);
+                    currentFiscalPeriod = currentFiscalPeriod.Remove(currentFiscalPeriod.Length - 1);
                     currentFiscalPeriod += (quarter - 1);
                     return _billingContext.bills.Where(b => b.fiscalPeriod == currentFiscalPeriod);
                 }
@@ -95,7 +95,7 @@ namespace Service_Billing.Models
 
         public Bill? GetBill(int id)
         {
-            return _billingContext.bills.FirstOrDefault(b => b.id == id);
+            return _billingContext.bills.FirstOrDefault(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
@@ -135,6 +135,7 @@ namespace Service_Billing.Models
         public async Task CreateBill(Bill bill)
         {
             await _billingContext.AddAsync(bill);
+            await _billingContext.SaveChangesAsync();
         }
 
     }

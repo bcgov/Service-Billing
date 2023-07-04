@@ -1,8 +1,5 @@
 ﻿@using Service_Billing.ViewModels;
 @model AllBillsViewModel
-@{
-    List<ServiceCategory> serviceCategories = ViewBag.ServiceCategories;
-}
 
 <h1>Bill info</h1>
 
@@ -21,42 +18,86 @@
                 <th scope="col">Client</th>
                 <th scope="col">Title</th>
                 <th scope="col">Service Category</th>
-                <th scope="col">Amount</th>
                 @if(ViewBag.quarter == "all")
                 {
                    <th>Fiscal Period</th>
                 }
+                <th scope="col">Amount</th>
+                <th scope="col">Unit Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">UOM</th>
+                <th scope="col">Expense Authority</th>
+                <th scope="col">Created By</th>
                 <th>Details</th>
             </tr>
         </thead>
         <tbody>
             @foreach (var bill in Model.Bills)
             {
+                var category = Model.ServiceCategories.FirstOrDefault(s => s.serviceId == bill.serviceCategoryId);
+                var client = Model.ClientAccounts.FirstOrDefault(c => c.accountId == bill.clientAccountId);
                 <tr>
                     <td>@bill.clientName</td>
                     <td>@bill.title</td>
                     <td>@{
-                            var category = serviceCategories.FirstOrDefault(s => s.serviceId == bill.serviceCategoryId);
+                           
                             if(category != null)
                             {
                                 @category.name;
                             }
                         }
                         </td>
-                    <td>
-                        @if(bill.amount != null)
-                        {
-                            @String.Format("{0:.##}", bill.amount);
-                        }
-                    </td>
                     @if (ViewBag.quarter == "all")
                     {
                         <td>@bill.fiscalPeriod</td>
                     }
+                    
+                    <td>
+                        @if (bill.amount != null)
+                        {
+                            @String.Format("{0:.##}", bill.amount)
+                        }
+                    </td>
+                    @if(category != null)
+                    {
+                        <td>
+                            @category.costs
+                        </td>
+                        <td>
+                            @bill.quantity
+                        </td>
+                        <td>
+                            @if (!String.IsNullOrEmpty(category.UOM))
+                            {
+                                @category.UOM
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+
+                        </td>
+                        <td>
+                            @bill.quantity
+                        </td>
+                        <td>
+
+                        </td>
+                    }
+                    <td>
+                        @if (client != null && !String.IsNullOrEmpty(client.expense_Authority_Name))
+                        {
+                            @client.expense_Authority_Name
+                        } 
+                    </td>
+                    <td>
+                        @bill.createdBy
+                    </td>
                     <td>
                         <a asp-controller="Bills"
                            asp-action="Details"
-                           asp-route-id="@bill.id">See more</a>
+                           asp-route-id="@bill.Id">See more</a>
                     </td>
                 </tr>
             }

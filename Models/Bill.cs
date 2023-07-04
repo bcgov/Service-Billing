@@ -6,7 +6,8 @@ namespace Service_Billing.Models
     public class Bill
     {
         [Key]
-        public Int16 id { get; set; }
+        [Column("id")]
+        public int Id { get; set; }
         public Int16 clientAccountId { get; set; }
 
         [Display(Name = "Client Name")]

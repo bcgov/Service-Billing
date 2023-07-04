@@ -27,9 +27,9 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            ViewBag.ServiceCategories = categories.ToList();
             //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
 
-            ViewBag.ServiceCategories = categories.ToList();
             switch (quarter)
             {
                 case "current":
@@ -46,7 +46,7 @@ namespace Service_Billing.Controllers
                     bills = _billRepository.AllBills;
                     break;
             }
-
+            var x = bills.Count();
             return View(new AllBillsViewModel(bills, categories, clients));
         }
 
@@ -128,13 +128,14 @@ namespace Service_Billing.Controllers
             Bill bill = new Bill();
             bill.dateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.dateCreated);
+       
             return View(bill);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
        // public async Task<IActionResult> Create(IFormCollection collection)
-       public async Task<ActionResult> Create(Bill bill, IFormCollection collection)
+       public async Task<ActionResult> Create([Bind(include: "amount, billingCycle, clientName, title, idirOrUrl, serviceCategoryId, fiscalPeriod, quantity, ticketNumberAndRequester, dateModified, dateCreated, createdBy")] Bill bill)
         {
             try
             {
@@ -145,12 +146,12 @@ namespace Service_Billing.Controllers
             }
             catch (DbUpdateException )
             {
-
+                ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
             
-                return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Index));
         }
-     
+
         [HttpGet]
         public ActionResult GetBillAmount(short? serviceId, decimal? quantity)
         {
