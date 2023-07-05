@@ -13,7 +13,7 @@ namespace Service_Billing.Models
             _billingContext = billingContext;
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.bills.OrderBy(b => b.title);
+        public IEnumerable<Bill> AllBills => _billingContext.Bills.OrderBy(b => b.title);
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {
@@ -54,7 +54,7 @@ namespace Service_Billing.Models
         public IEnumerable<Bill> GetCurrentQuarterBills()
         {
             string fiscalPeriod = DetermineCurrentQuarter();
-            return _billingContext.bills.Where(b => b.fiscalPeriod == fiscalPeriod);
+            return _billingContext.Bills.Where(b => b.fiscalPeriod == fiscalPeriod);
         }
 
         public IEnumerable<Bill> GetPreviousQuarterBills()
@@ -71,7 +71,7 @@ namespace Service_Billing.Models
                     {
                         throw new Exception("Could not parse year from Fiscal Period string");
                     }
-                    return _billingContext.bills.Where(b => b.fiscalPeriod == $"Fiscal {year - 2}/{year -1} Quarter 4");
+                    return _billingContext.Bills.Where(b => b.fiscalPeriod == $"Fiscal {year - 2}/{year -1} Quarter 4");
                 }
                 else
                 {
@@ -82,7 +82,7 @@ namespace Service_Billing.Models
                     }
                     currentFiscalPeriod = currentFiscalPeriod.Remove(currentFiscalPeriod.Length - 1);
                     currentFiscalPeriod += (quarter - 1);
-                    return _billingContext.bills.Where(b => b.fiscalPeriod == currentFiscalPeriod);
+                    return _billingContext.Bills.Where(b => b.fiscalPeriod == currentFiscalPeriod);
                 }
             }
             catch(Exception e) 
@@ -95,12 +95,12 @@ namespace Service_Billing.Models
 
         public Bill? GetBill(int id)
         {
-            return _billingContext.bills.FirstOrDefault(b => b.Id == id);
+            return _billingContext.Bills.FirstOrDefault(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
         {
-            return _billingContext.bills.Where(b => !string.IsNullOrEmpty(b.title) && b.title.Contains(searchQuery));
+            return _billingContext.Bills.Where(b => !string.IsNullOrEmpty(b.title) && b.title.Contains(searchQuery));
         }
 
         IEnumerable<Bill> IBillRepositroy.GetBillsByAuthority(string expenseAuthority)

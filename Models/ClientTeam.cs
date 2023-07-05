@@ -6,25 +6,21 @@ namespace Service_Billing.Models
     public class ClientTeam
     {
         [Key]
-        [Column("Team_Id")]
-        public byte teamId { get; set; }
+        public int Id { get; set; }
 
-        [Column("Client_Team_Name")]
         [Display(Name ="Team Name")]
-        public string? teamName { get; set; }
+        public string? Name { get; set; }
 
-        [Column("Financial_Contacts")]
         [Display(Name ="Financial Contacts")]
-        public string? financialContacts { get; set; }
+        public string? FinancialContacts { get; set; }
 
-        [Column("Primary_Contact")]
         [Display(Name ="Primary Contact")]
-        public string? primaryContact { get; set; }
-        [Column("Approvers")]
-        public string? approvers { get; set; }
-        [Column("Created")]
+        public string? PrimaryContact { get; set; }
+
+        public string? Approvers { get; set; }
+
         [Display(Name ="Date Created")]
-        public DateTime? dateCreated { get; set; }
+        public DateTime? Created { get; set; }
 
     }
 }

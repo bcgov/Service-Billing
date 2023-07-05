@@ -16,10 +16,10 @@ namespace Service_Billing.Data
         }
 
         //public DbSet<Service_Billing.Models.BillEntries> billingData { get; set; } = default!;
-        public DbSet<Bill> bills { get; set; } = default!;
-        public DbSet<ClientAccount> clientAccounts { get; set; }
-        public DbSet<ClientTeam> clientTeams { get; set; }
-        public DbSet<ServiceCategory> serviceCategories { get; set; }
+        public DbSet<Bill> Bills { get; set; } = default!;
+        public DbSet<ClientAccount> ClientAccounts { get; set; }
+        public DbSet<ClientTeam> ClientTeams { get; set; }
+        public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<Service_Billing.ViewModels.ClientIntakeViewModel> ClientIntakeViewModel { get; set; } = default!;
     }
 }

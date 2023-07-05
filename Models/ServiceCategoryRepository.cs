@@ -22,17 +22,17 @@ namespace Service_Billing.Models
 
         public IEnumerable<ServiceCategory> GetAll()
         {
-            return _context.serviceCategories.OrderBy(s => s.Name);
+            return _context.ServiceCategories.OrderBy(s => s.Name);
         }
 
         public ServiceCategory? GetById(int? id)
         {
-            return _context.serviceCategories.FirstOrDefault(s => s.ServiceId == id);
+            return _context.ServiceCategories.FirstOrDefault(s => s.ServiceId == id);
         }
 
         public IEnumerable<ServiceCategory> Search(string queryString)
         {
-            return _context.serviceCategories.Where(s => s.Name == queryString);
+            return _context.ServiceCategories.Where(s => s.Name == queryString);
         }
 
         public void Update(ServiceCategory serviceCategory)

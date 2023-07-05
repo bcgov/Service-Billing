@@ -28,17 +28,17 @@ namespace Service_Billing.Models
 
         public IEnumerable<ClientAccount> GetAll()
         {
-            return _context.clientAccounts.OrderBy(c => c.clientName);
+            return _context.ClientAccounts.OrderBy(c => c.clientName);
         }
 
         public ClientAccount? GetClientAccount(int accountId)
         {
-            return _context.clientAccounts.FirstOrDefault(c => c.accountId == accountId);
+            return _context.ClientAccounts.FirstOrDefault(c => c.accountId == accountId);
         }
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
         {
-            var x =  _context.clientAccounts.Where(c => c.clientName.Contains(queryString)).OrderBy(c => c.clientName);
+            var x =  _context.ClientAccounts.Where(c => c.clientName.Contains(queryString)).OrderBy(c => c.clientName);
             var y = x.ToList();
             return x;
         }

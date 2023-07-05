@@ -9,17 +9,17 @@ namespace Service_Billing.Models
         {
             _billingContext = billingContext;
         }
-        public IEnumerable<ClientTeam> AllTeams => _billingContext.clientTeams.OrderBy(b => b.teamName);
+        public IEnumerable<ClientTeam> AllTeams => _billingContext.ClientTeams.OrderBy(b => b.Name);
 
         public ClientTeam? GetTeamById(Int16? id)
         {
             if (id == null) return null;
-            return _billingContext.clientTeams.FirstOrDefault(t => t.teamId == id);
+            return _billingContext.ClientTeams.FirstOrDefault(t => t.Id == id);
         }
 
         public ClientTeam? GetTeamByName(string name)
         {
-            return _billingContext.clientTeams.FirstOrDefault(t => t.teamName == name);
+            return _billingContext.ClientTeams.FirstOrDefault(t => t.Name == name);
         }
 
         public IEnumerable<ClientTeam> GetTeamsByFinancialContact(string contact)
