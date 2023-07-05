@@ -34,7 +34,7 @@
         <tbody>
             @foreach (var bill in Model.Bills)
             {
-                var category = Model.ServiceCategories.FirstOrDefault(s => s.serviceId == bill.serviceCategoryId);
+                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.serviceCategoryId);
                 var client = Model.ClientAccounts.FirstOrDefault(c => c.accountId == bill.clientAccountId);
                 <tr>
                     <td>@bill.clientName</td>
@@ -43,7 +43,7 @@
                            
                             if(category != null)
                             {
-                                @category.name;
+                                @category.Name;
                             }
                         }
                         </td>
@@ -61,7 +61,7 @@
                     @if(category != null)
                     {
                         <td>
-                            @category.costs
+                            @category.Costs
                         </td>
                         <td>
                             @bill.quantity

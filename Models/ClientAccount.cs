@@ -48,6 +48,8 @@ namespace Service_Billing.Models
 
         [Column("team_id")]
         public Int16? teamId { get; set; }
+  
+        public bool? isApprovedByEA { get; set; }
     }
 }
 /* some validation concerns:

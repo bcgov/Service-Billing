@@ -10,23 +10,23 @@
         {
             @foreach (ServiceCategory category in Model)
             {
-                if (category.serviceId == id)
+                if (category.ServiceId == id)
                 {
-                    if (!category.isActive)
+                    if (!category.IsActive)
                     {
-                        <option class="inactive-service-category" value="@category.serviceId" selected>@category.name</option>
+                        <option class="inactive-service-category" value="@category.ServiceId" selected>@category.Name</option>
                         {
                             mustChangeServiceCategory = false;
                         }
                     }
                     else
                     {
-                        <option value="@category.serviceId" selected>@category.name</option>
+                        <option value="@category.ServiceId" selected>@category.Name</option>
                     }
                 }
-                else if (category.isActive)
+                else if (category.IsActive)
                 {
-                    <option value="@category.serviceId">@category.name</option>
+                    <option value="@category.ServiceId">@category.Name</option>
                 }
             }
         }
@@ -35,9 +35,9 @@
             <option value="" disabled selected hidden>Select a service category</option>
             @foreach (ServiceCategory category in Model)
             {
-                if (category.isActive)
+                if (category.IsActive)
                 {
-                    <option value="@category.serviceId">@category.name</option>
+                    <option value="@category.ServiceId">@category.Name</option>
                 }
             }
         }

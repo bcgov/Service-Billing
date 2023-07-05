@@ -165,11 +165,11 @@ namespace Service_Billing.Controllers
                     throw new Exception($"Service category with id: {serviceId} not found!");
                 }
                 decimal newAmount;
-                if (!decimal.TryParse(category.costs, out newAmount))
+                if (!decimal.TryParse(category.Costs, out newAmount))
                 {
                     newAmount = 0;
                 }
-                if (category.serviceId == 5)
+                if (category.ServiceId == 5)
                     newAmount = 85;
                 return new JsonResult(newAmount * quantity);
             }

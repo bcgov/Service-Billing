@@ -6,27 +6,17 @@ namespace Service_Billing.Models
     public class ServiceCategory
     {
         [Key]
-        public Int16 serviceId { get; set; }
+        public Int16 ServiceId { get; set; }
 
-        [Column("GDX Bus Area")]
-        public string? businessArea { get; set; }
+        public string? GDXBusArea { get; set; }
 
-        [Column("Service Category")]
-        public string? name { get; set; }
+        public string? Name { get; set; }
 
-        [Column("Charge Type")]
-        public string? chargeType { get; set; }
+        public string? Costs { get; set; }
 
-        [Column("Quantity")]
-        public Int16? quantity { get; set; }
+        public string? Description { get; set; }
 
-        [Column("Costs")]
-        public string? costs { get; set; }
-
-        [Column("Description")]
-        public string? description { get; set; }
-
-        public bool isActive { get; set; }
+        public bool IsActive { get; set; }
 
         public string? UOM { get; set; }
     }

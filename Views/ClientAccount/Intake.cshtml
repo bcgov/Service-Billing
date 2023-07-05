@@ -5,9 +5,9 @@
     Layout = "_Layout";
 }
 
-<h1>Intake</h1>
+<h1>Client Intake</h1>
 
-<h4>ClientIntakeViewModel</h4>
+<h4>Please fill out the client intake form.</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -18,11 +18,15 @@
                     <option>You should be able to select an organization</option>
                 </select>
             </div>
-            <div class="form-group">
+           @* <div class="form-group">
                 <label asp-for="@Model.Account.clientName" class="control-label">Division or Branch Name</label>
                 <input asp-for="@Model.Account.clientName" id="clientInput" class="form-control" />
                 <span asp-validation-for="@Model.Account.clientName" class="text-danger"></span>
-            </div>
+
+            One item that I would like removed is:  Client Team Name*.  The client team name is auto generated based on the 
+            ‘Ministry Acronym’ and the ‘Division or Branch’ info.  This is GDX’s client account name format and we do not want 
+            clients creating their own client team names.  So please don’t include in the new form. --Carolyn Mellor
+            </div>*@
             <div class="form-group">
                 <label asp-for="@Model.Team.primaryContact" class="control-label">Primary Contact</label>
                 <input asp-for="@Model.Team.primaryContact" class="form-control" />
@@ -58,14 +62,14 @@
                 <span asp-validation-for="@Model.Account.responsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label">CAS Service Line</label>
-    @*            <input asp-for="@Model." class="form-group" />
-                <span asp-validation-for="@Model." class="text-danger"></span>*@
-            </div>
-            <div class="form-group">
-                <label asp-for="@Model.Account.serviceLine" class="control-label">CAS SToB Number</label>
+                <label asp-for="@Model.Account.serviceLine" class="control-label">CAS Service Line</label>
                 <input asp-for="@Model.Account.serviceLine" class="form-control" />
                 <span asp-validation-for="@Model.Account.serviceLine" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.STOB" class="control-label">CAS SToB Number</label>
+                <input asp-for="@Model.Account.STOB" class="form-control" />
+                <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.project" class="control-label">CAS Project Number</label>
@@ -74,15 +78,15 @@
             </div>
             <div class="form-group">
                 <label class="control-label">Client Account Number</label>
-                @*<input asp-for="@Model." class="form-group" />
-                <span asp-validation-for="@Model." class="text-danger"></span>*@
+                <input asp-for="@Model.Account.client" class="form-group" />
+                <span asp-validation-for="@Model.Account.client" class="text-danger"></span>
             </div>
-           @* <div class="form-group">
-                <label asp-for="@Model">Active</label>
-                <input asp-for="@Model." class="form-group" />
-                <span asp-validation-for="@Model." class="text-danger"></span>
+            <div class="form-group">
+                <label asp-for="@Model.Account.isApprovedByEA">Active</label>
+                <input type="checkbox" asp-for="@Model.Account.isApprovedByEA" class="form-group" />
+                <span asp-validation-for="@Model.Account.isApprovedByEA" class="text-danger"></span>
             </div>
-            <div class="form-group">Contact1_Type</label>
+           @* <div class="form-group">Contact1_Type</label>
                 <input asp-for="@Model." class="form-group" />
                 <span asp-validation-for="@Model." class="text-danger"></span>
             </div>

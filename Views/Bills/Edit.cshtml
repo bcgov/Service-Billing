@@ -39,7 +39,9 @@
             </div>
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.serviceCategoryId })
             <span asp-validation-for="@Model.serviceCategoryId" class="text-danger"></span>
-           
+            <div class="form-group">
+                <input type="hidden" asp-for="@Model.serviceCategoryId" id="categoryIdInput" class="form-control" />
+            </div>
             <div class="form-group">
                 <label asp-for="@Model.amount" class="control-label"></label>
                 <input asp-for="@Model.amount" class="form-control" id="amount"/>
@@ -106,6 +108,7 @@
                calculateAmount();
                if($("#categorySelect").val() < 21){ //id's greater than 21 are older categories, with slightly different names and prices
                    $("#categoryWarning").hide();
+                    $("#categoryIdInput").val($("#categorySelect").val());
                }
             });
             $("#quantity").on("change", (e) => {
