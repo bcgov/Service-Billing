@@ -122,5 +122,12 @@ namespace Service_Billing.Controllers
                 return View();
             }
         }
+
+        [HttpGet]
+        public ActionResult Intake()
+        {
+            return View(new ClientIntakeViewModel());
+        }
+
     }
 }

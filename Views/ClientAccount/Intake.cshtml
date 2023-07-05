@@ -1,0 +1,109 @@
+﻿@model Service_Billing.ViewModels.ClientIntakeViewModel
+
+@{
+    ViewData["Title"] = "Intake";
+    Layout = "_Layout";
+}
+
+<h1>Intake</h1>
+
+<h4>ClientIntakeViewModel</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Intake">
+            <div class="form-group">
+                <label for="orgSelect" class="control-label">Organization</label>
+                <select class="form-control" id="orgSelect">
+                    <option>You should be able to select an organization</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.clientName" class="control-label">Division or Branch Name</label>
+                <input asp-for="@Model.Account.clientName" id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.Account.clientName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Team.primaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.Team.primaryContact" class="form-control" />
+                <span asp-validation-for="@Model.Team.primaryContact" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Team.approvers" class="control-label">Approvers</label>
+                <input asp-for="@Model.Team.approvers" class="form-control" />
+                <span asp-validation-for="@Model.Team.approvers" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="@Model.Team.financialContacts" class="control-label">Financial Contacts</label>
+                <input asp-for="@Model.Team.financialContacts" class="form-control" />
+                <span asp-validation-for="@Model.Team.financialContacts" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.expense_Authority_Name" class="control-label">CAS Expense Authority</label>
+                <input asp-for="@Model.Account.expense_Authority_Name" class="form-control" />
+                <span asp-validation-for="@Model.Account.expense_Authority_Name" class="text-danger"></span>
+            </div>
+            <div class="form-group"> 
+                <label>figure out how to store other contacts</label>
+            </div>
+            <div class="form-group">
+                <label class="control-label">CAS Client Number</label>
+                <input asp-for="@Model.Account.project" class="form-control" />
+                <span asp-validation-for="@Model.Account.project" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.responsibilityCentre" class="control-label">CAS Responsibility Centre</label>
+                <input asp-for="@Model.Account.responsibilityCentre" class="form-control" />
+                <span asp-validation-for="@Model.Account.responsibilityCentre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">CAS Service Line</label>
+    @*            <input asp-for="@Model." class="form-group" />
+                <span asp-validation-for="@Model." class="text-danger"></span>*@
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.serviceLine" class="control-label">CAS SToB Number</label>
+                <input asp-for="@Model.Account.serviceLine" class="form-control" />
+                <span asp-validation-for="@Model.Account.serviceLine" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.project" class="control-label">CAS Project Number</label>
+                <input asp-for="@Model.Account.project" class="form-control" />
+                <span asp-validation-for="@Model.Account.project" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Client Account Number</label>
+                @*<input asp-for="@Model." class="form-group" />
+                <span asp-validation-for="@Model." class="text-danger"></span>*@
+            </div>
+           @* <div class="form-group">
+                <label asp-for="@Model">Active</label>
+                <input asp-for="@Model." class="form-group" />
+                <span asp-validation-for="@Model." class="text-danger"></span>
+            </div>
+            <div class="form-group">Contact1_Type</label>
+                <input asp-for="@Model." class="form-group" />
+                <span asp-validation-for="@Model." class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.">Contact1_Name</label>
+                <input asp-for="@Model." class="form-group" />
+                <span asp-validation-for="@Model." class="text-danger"></span>
+            </div>*@
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
+using Service_Billing.ViewModels;
 
 namespace Service_Billing.Data
 {
@@ -19,5 +20,6 @@ namespace Service_Billing.Data
         public DbSet<ClientAccount> clientAccounts { get; set; }
         public DbSet<ClientTeam> clientTeams { get; set; }
         public DbSet<ServiceCategory> serviceCategories { get; set; }
+        public DbSet<Service_Billing.ViewModels.ClientIntakeViewModel> ClientIntakeViewModel { get; set; } = default!;
     }
 }
