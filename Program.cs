@@ -28,6 +28,7 @@ builder.Services.AddScoped<IBillRepositroy, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
+builder.Services.AddScoped <IMinistryRepository, MinistryRepository>();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>

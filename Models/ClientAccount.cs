@@ -41,7 +41,7 @@ namespace Service_Billing.Models
 
         public Int16? TeamId { get; set; }
   
-        public bool? IsApprovedByEA { get; set; }
+        public bool IsApprovedByEA { get; set; }
     }
 }
 /* some validation concerns:

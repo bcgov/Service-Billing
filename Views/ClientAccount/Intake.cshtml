@@ -4,6 +4,9 @@
     ViewData["Title"] = "Intake";
     Layout = "_Layout";
 }
+@{
+    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+}
 
 <h1>Client Intake</h1>
 
@@ -15,7 +18,14 @@
             <div class="form-group">
                 <label for="orgSelect" class="control-label">Organization</label>
                 <select class="form-control" id="orgSelect">
-                    <option>You should be able to select an organization</option>
+                    <option value="" disabled selected hidden>Select a ministry</option>
+                    @if(ministries != null)
+                    {
+                        foreach(Ministry ministry in ministries)
+                        {
+                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
+                        }
+                    }
                 </select>
             </div>
            @* <div class="form-group">
@@ -83,7 +93,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.IsApprovedByEA">Active</label>
-                <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" class="form-group" />
+              
+                <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" checked="@Model.Account.IsApprovedByEA" />
                 <span asp-validation-for="@Model.Account.IsApprovedByEA" class="text-danger"></span>
             </div>
            @* <div class="form-group">Contact1_Type</label>

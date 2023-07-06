@@ -10,11 +10,13 @@ namespace Service_Billing.Controllers
     {
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IClientTeamRepository _clientTeamRepository;
+        private readonly IMinistryRepository _ministryRepository;
 
-        public ClientAccountController(IClientAccountRepository clientAccountRepository, IClientTeamRepository clientTeamRepository)
+        public ClientAccountController(IClientAccountRepository clientAccountRepository, IClientTeamRepository clientTeamRepository, IMinistryRepository ministryRepository)
         {
             _clientAccountRepository = clientAccountRepository;
             _clientTeamRepository = clientTeamRepository;
+            _ministryRepository = ministryRepository;
         }
         // GET: ClientAccountController
         public ActionResult Index()
@@ -126,6 +128,9 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult Intake()
         {
+            IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            ViewData["Ministries"] = ministries;
+
             return View(new ClientIntakeViewModel());
         }
 

@@ -21,5 +21,6 @@ namespace Service_Billing.Data
         public DbSet<ClientTeam> ClientTeams { get; set; }
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<Service_Billing.ViewModels.ClientIntakeViewModel> ClientIntakeViewModel { get; set; } = default!;
+        public DbSet<Ministry> Ministries { get; set; }
     }
 }
