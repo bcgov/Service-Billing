@@ -20,7 +20,7 @@
             {
                 <a asp-controller="ClientAccount"
                    asp-action="Details"
-                   asp-route-id="@clientAccount.accountId">@clientAccount.clientName</a>
+                   asp-route-id="@clientAccount.Id">@clientAccount.Name</a>
             }
         </dd>
         <dt class = "col-sm-2">
@@ -84,9 +84,9 @@
             Expense Authority
         </dt>
         <dd class = "col-sm-10">
-            @if(clientAccount != null && !String.IsNullOrEmpty(clientAccount.expense_Authority_Name))
+            @if(clientAccount != null && !String.IsNullOrEmpty(clientAccount.ExpenseAuthorityName))
             {
-                @clientAccount.expense_Authority_Name<br/>
+                @clientAccount.ExpenseAuthorityName<br/>
             }
             else
             {

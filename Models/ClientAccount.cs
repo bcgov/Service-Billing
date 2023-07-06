@@ -8,48 +8,40 @@ namespace Service_Billing.Models
     public class ClientAccount
     {
         [Key]
-        [Column("Client_Account_Number")]
-        public Int16 accountId { get; set; }
+        public int Id { get; set; }
 
-        [Column("Client_Account_Name")]
         [Display(Name = "Name")]
-        public string? clientName { get; set; }
+        public string? Name { get; set; }
 
-        [Display(Name = "Client Code")]
-        public Int16? client { get; set; } // three digit billing code
+        [Display(Name = "Client Number")]
+        public Int16? ClientNumber { get; set; } // three digit billing code
 
-        [Column("Responsibility_Centre")]
         [Display(Name = "Responsibility Center")]
-        public string? responsibilityCentre { get; set; }
+        public string? ResponsibilityCentre { get; set; }
 
-        [Column("Service_Line")]
         [Display(Name = "Service Line")]
-        public int? serviceLine { get; set; }
+        public int? ServiceLine { get; set; }
 
         public Int16? STOB { get; set; }
 
         [Display(Name = "Project")]
-        public string? project { get; set; }
+        public string? Project { get; set; }
 
-        [Column("Expense_Authority_Name")]
         [Display(Name = "Expense Authority")]
-        public string? expense_Authority_Name { get; set; }
+        public string? ExpenseAuthorityName { get; set; }
 
-        [Column("Services_Enabled")]
         [Display(Name = "Services Enabled")]
-        public string? servicesEnabled { get; set; } // string so we can have a list of id's, like "3, 6, 420"
+        public string? ServicesEnabled { get; set; } // string so we can have a list of id's, like "3, 6, 420"
 
-        [Column("Client_Team")]
         [Display(Name = "Client Team")]
-        public string? clientTeam { get; set; }
+        public string? ClientTeam { get; set; }
 
         [Column("Created")]
-        public DateTime dateCreated { get; set; }
+        public DateTime DateCreated { get; set; }
 
-        [Column("team_id")]
-        public Int16? teamId { get; set; }
+        public Int16? TeamId { get; set; }
   
-        public bool? isApprovedByEA { get; set; }
+        public bool? IsApprovedByEA { get; set; }
     }
 }
 /* some validation concerns:

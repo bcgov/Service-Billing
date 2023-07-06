@@ -19,15 +19,15 @@
             @foreach (ClientAccount account in Model.ClientAccounts)
             {
                 <tr>
-                    <td>@account.clientName</td>
-                    <td>@account.client</td>
-                    <td>@account.responsibilityCentre</td>
-                    <td>@account.expense_Authority_Name</td>
-                    <td>@account.clientTeam</td>
+                    <td>@account.Name</td>
+                    <td>@account.ClientNumber</td>
+                    <td>@account.ResponsibilityCentre</td>
+                    <td>@account.ExpenseAuthorityName</td>
+                    <td>@account.ClientTeam</td>
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
-                           asp-route-id="@account.accountId">See more</a>
+                           asp-route-id="@account.Id">See more</a>
                     </td>
                 </tr>
             }

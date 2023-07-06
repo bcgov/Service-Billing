@@ -35,7 +35,7 @@
             @foreach (var bill in Model.Bills)
             {
                 var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.serviceCategoryId);
-                var client = Model.ClientAccounts.FirstOrDefault(c => c.accountId == bill.clientAccountId);
+                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.clientAccountId);
                 <tr>
                     <td>@bill.clientName</td>
                     <td>@bill.title</td>
@@ -86,9 +86,9 @@
                         </td>
                     }
                     <td>
-                        @if (client != null && !String.IsNullOrEmpty(client.expense_Authority_Name))
+                        @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
                         {
-                            @client.expense_Authority_Name
+                            @client.ExpenseAuthorityName
                         } 
                     </td>
                     <td>

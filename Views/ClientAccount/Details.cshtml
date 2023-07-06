@@ -8,32 +8,32 @@
 <h1>Client Account Information</h1>
 
 <div>
-    <h4>@Model.accountId-@Model.clientName</h4>
+    <h4>@Model.Id-@Model.Name</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.clientName)
+            @Html.DisplayNameFor(model => model.Name)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.clientName)
+            @Html.DisplayFor(model => model.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.client)
+            @Html.DisplayNameFor(model => model.ClientNumber)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.client)
+            @Html.DisplayFor(model => model.ClientNumber)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.responsibilityCentre)
+            @Html.DisplayNameFor(model => model.ResponsibilityCentre)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.responsibilityCentre)
+            @Html.DisplayFor(model => model.ResponsibilityCentre)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.serviceLine)
+            @Html.DisplayNameFor(model => model.ServiceLine)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.serviceLine)
+            @Html.DisplayFor(model => model.ServiceLine)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.STOB)
@@ -42,28 +42,28 @@
             @Html.DisplayFor(model => model.STOB)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.project)
+            @Html.DisplayNameFor(model => model.Project)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.project)
+            @Html.DisplayFor(model => model.Project)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.expense_Authority_Name)
+            @Html.DisplayNameFor(model => model.ExpenseAuthorityName)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.expense_Authority_Name)
+            @Html.DisplayFor(model => model.ExpenseAuthorityName)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.servicesEnabled)
+            @Html.DisplayNameFor(model => model.ServicesEnabled)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.servicesEnabled)
+            @Html.DisplayFor(model => model.ServicesEnabled)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.dateCreated)
+            @Html.DisplayNameFor(model => model.DateCreated)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.dateCreated)
+            @Html.DisplayFor(model => model.DateCreated)
         </dd>
         <dd class="col-sm-10" name="clientTeam">
             <partial name="_ClientTeam" model="@clientTeam" />
@@ -71,6 +71,6 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.accountId">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

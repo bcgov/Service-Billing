@@ -30,7 +30,7 @@ namespace Service_Billing.Controllers
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
-            ClientTeam? team = _clientTeamRepository.GetTeamById(account.teamId);
+            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ViewData["clientTeam"] = team != null? team : "";
             return View(account);
         }
@@ -76,14 +76,14 @@ namespace Service_Billing.Controllers
                 return NotFound();
             }
             if(await TryUpdateModelAsync<ClientAccount>(accountToUpdate, "", 
-                a => a.clientName,
-                a => a.client,
-                a => a.responsibilityCentre,
-                a => a.serviceLine,
+                a => a.Name,
+                a => a.ClientNumber,
+                a => a.ResponsibilityCentre,
+                a => a.ServiceLine,
                 a => a.STOB,
-                a => a.project,
-                a => a.expense_Authority_Name,
-                a => a.servicesEnabled))
+                a => a.Project,
+                a => a.ExpenseAuthorityName,
+                a => a.ServicesEnabled))
             {
                 try
                 {
