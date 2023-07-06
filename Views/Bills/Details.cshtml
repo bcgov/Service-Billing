@@ -24,22 +24,22 @@
             }
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.title)
+            @Html.DisplayNameFor(model => model.Title)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.title)
+            @Html.DisplayFor(model => model.Title)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.idirOrUrl)
+            @Html.DisplayNameFor(model => model.IdirOrUrl)
         </dt>
         <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.idirOrUrl) && Model.idirOrUrl.ToLower().StartsWith("http"))
+            @if (!String.IsNullOrEmpty(Model.IdirOrUrl) && Model.IdirOrUrl.ToLower().StartsWith("http"))
             {
-                <a href="@Model.idirOrUrl" target="blank">@Html.DisplayFor(model => model.idirOrUrl)</a>
+                <a href="@Model.IdirOrUrl" target="blank">@Html.DisplayFor(model => model.IdirOrUrl)</a>
             }
-            else if (!String.IsNullOrEmpty(Model.idirOrUrl))
+            else if (!String.IsNullOrEmpty(Model.IdirOrUrl))
             {
-                @Model.idirOrUrl
+                @Model.IdirOrUrl
             }
             else
             {
@@ -56,16 +56,16 @@
             }
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.fiscalPeriod)
+            @Html.DisplayNameFor(model => model.FiscalPeriod)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.fiscalPeriod)
+            @Html.DisplayFor(model => model.FiscalPeriod)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.quantity)
+            @Html.DisplayNameFor(model => model.Quantity)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.quantity)
+            @Html.DisplayFor(model => model.Quantity)
         </dd>
         <dt class = "col-sm-2">
             UOM
@@ -95,12 +95,12 @@
         </dd>
         
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ticketNumberAndRequester)
+            @Html.DisplayNameFor(model => model.TicketNumberAndRequester)
         </dt>
         <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.ticketNumberAndRequester))
+            @if (!String.IsNullOrEmpty(Model.TicketNumberAndRequester))
             {
-                @Html.DisplayFor(model => model.ticketNumberAndRequester)
+                @Html.DisplayFor(model => model.TicketNumberAndRequester)
             }
             else
             {
@@ -108,12 +108,12 @@
             }
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.createdBy)
+            @Html.DisplayNameFor(model => model.CreatedBy)
         </dt>
         <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.createdBy))
+            @if (!String.IsNullOrEmpty(Model.CreatedBy))
             {
-                @Html.DisplayFor(model => model.createdBy)
+                @Html.DisplayFor(model => model.CreatedBy)
             }
             else
             {

@@ -19,63 +19,63 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="@Model.Id" />
             <div class="form-group">
-                <label asp-for="@Model.clientName">Client: </label>
-                <input asp-for="@Model.clientName"id="clientInput" class="form-control" />
-                <span asp-validation-for="@Model.clientName" class="text-danger"></span>
+                <label asp-for="@Model.ClientName">Client: </label>
+                <input asp-for="@Model.ClientName"id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.ClientName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.clientAccountId" id="clientIdInput" class="form-control" />
-                <span asp-validation-for="@Model.clientAccountId" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.ClientAccountId" id="clientIdInput" class="form-control" />
+                <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.title" class="control-label"></label>
-                <input asp-for="@Model.title" class="form-control" id="title"/>
-                <span asp-validation-for="@Model.title" class="text-danger"></span>
+                <label asp-for="@Model.Title" class="control-label"></label>
+                <input asp-for="@Model.Title" class="form-control" id="title"/>
+                <span asp-validation-for="@Model.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.idirOrUrl" class="control-label"></label>
-                <input asp-for="@Model.idirOrUrl" class="form-control" />
-                <span asp-validation-for="@Model.idirOrUrl" class="text-danger"></span>
+                <label asp-for="@Model.IdirOrUrl" class="control-label"></label>
+                <input asp-for="@Model.IdirOrUrl" class="form-control" />
+                <span asp-validation-for="@Model.IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.serviceCategoryId })
-            <span asp-validation-for="@Model.serviceCategoryId" class="text-danger"></span>
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
+            <span asp-validation-for="@Model.ServiceCategoryId" class="text-danger"></span>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.serviceCategoryId" id="categoryIdInput" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="@Model.amount" class="control-label"></label>
-                <input asp-for="@Model.amount" class="form-control" id="amount"/>
-                <span asp-validation-for="@Model.amount" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model.fiscalPeriod" class="control-label"></label>
-                <input asp-for="@Model.fiscalPeriod" class="form-control" />
-                <span asp-validation-for="@Model.fiscalPeriod" class="text-danger"></span>
+                <label asp-for="@Model.Amount" class="control-label"></label>
+                <input asp-for="@Model.Amount" class="form-control" id="amount"/>
+                <span asp-validation-for="@Model.Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.quantity" class="control-label"></label>
-                <input asp-for="@Model.quantity" class="form-control" id="quantity"/>
-                <span asp-validation-for="@Model.quantity" class="text-danger"></span>
+                <label asp-for="@Model.FiscalPeriod" class="control-label"></label>
+                <input asp-for="@Model.FiscalPeriod" class="form-control" />
+                <span asp-validation-for="@Model.FiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.ticketNumberAndRequester" class="control-label"></label>
-                <input asp-for="@Model.ticketNumberAndRequester" class="form-control" />
-                <span asp-validation-for="@Model.ticketNumberAndRequester" class="text-danger"></span>
+                <label asp-for="@Model.Quantity" class="control-label"></label>
+                <input asp-for="@Model.Quantity" class="form-control" id="quantity"/>
+                <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.dateModified" class="control-label"></label>
-                <input asp-for="@Model.dateModified" class="form-control" readonly="true" />
-                <span asp-validation-for="@Model.dateModified" class="text-danger"></span>
+                <label asp-for="@Model.TicketNumberAndRequester" class="control-label"></label>
+                <input asp-for="@Model.TicketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="@Model.TicketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.billingCycle" class="control-label"></label>
-                <input asp-for="@Model.billingCycle" class="form-control" />
-                <span asp-validation-for="@Model.billingCycle" class="text-danger"></span>
+                <label asp-for="@Model.DateModified" class="control-label"></label>
+                <input asp-for="@Model.DateModified" class="form-control" readonly="true" />
+                <span asp-validation-for="@Model.DateModified" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.createdBy" class="control-label"></label>
-                <input asp-for="@Model.createdBy" class="form-control" />
-                <span asp-validation-for="@Model.createdBy" class="text-danger"></span>
+                <label asp-for="@Model.BillingCycle" class="control-label"></label>
+                <input asp-for="@Model.BillingCycle" class="form-control" />
+                <span asp-validation-for="@Model.BillingCycle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.CreatedBy" class="control-label"></label>
+                <input asp-for="@Model.CreatedBy" class="form-control" />
+                <span asp-validation-for="@Model.CreatedBy" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

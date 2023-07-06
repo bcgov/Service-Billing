@@ -17,57 +17,57 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="@Model.clientName">Client: </label>
-                <input asp-for="@Model.clientName" id="clientInput" class="form-control" />
-                <span asp-validation-for="@Model.clientName" class="text-danger"></span>
+                <label asp-for="@Model.ClientName">Client: </label>
+                <input asp-for="@Model.ClientName" id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.ClientName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.clientAccountId" id="clientIdInput" class="form-control" />
-                <span asp-validation-for="@Model.clientAccountId" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.ClientAccountId" id="clientIdInput" class="form-control" />
+                <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="title" class="control-label"></label>
-                <input asp-for="title" class="form-control" />
-                <span asp-validation-for="title" class="text-danger"></span>
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="idirOrUrl" class="control-label"></label>
-                <input asp-for="idirOrUrl" class="form-control" />
-                <span asp-validation-for="idirOrUrl" class="text-danger"></span>
+                <label asp-for="IdirOrUrl" class="control-label"></label>
+                <input asp-for="IdirOrUrl" class="form-control" />
+                <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.serviceCategoryId })
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.serviceCategoryId" id="categoryIdInput" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="amount" class="control-label"></label>
-                <input asp-for="amount" class="form-control" id="amount" />
-                <span asp-validation-for="amount" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="fiscalPeriod" class="control-label"></label>
-                <input asp-for="fiscalPeriod" class="form-control" />
-                <span asp-validation-for="fiscalPeriod" class="text-danger"></span>
+                <label asp-for="Amount" class="control-label"></label>
+                <input asp-for="Amount" class="form-control" id="amount" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="quantity" class="control-label"></label>
-                <input asp-for="quantity" class="form-control" id="quantity" />
-                <span asp-validation-for="quantity" class="text-danger"></span>
+                <label asp-for="FiscalPeriod" class="control-label"></label>
+                <input asp-for="FiscalPeriod" class="form-control" />
+                <span asp-validation-for="FiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ticketNumberAndRequester" class="control-label"></label>
-                <input asp-for="ticketNumberAndRequester" class="form-control" />
-                <span asp-validation-for="ticketNumberAndRequester" class="text-danger"></span>
+                <label asp-for="Quantity" class="control-label"></label>
+                <input asp-for="Quantity" class="form-control" id="quantity" />
+                <span asp-validation-for="Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="billingCycle" class="control-label"></label>
-                <input asp-for="billingCycle" class="form-control" />
-                <span asp-validation-for="billingCycle" class="text-danger"></span>
+                <label asp-for="TicketNumberAndRequester" class="control-label"></label>
+                <input asp-for="TicketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="TicketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="createdBy" class="control-label"></label>
-                <input asp-for="createdBy" class="form-control" />
-                <span asp-validation-for="createdBy" class="text-danger"></span>
+                <label asp-for="BillingCycle" class="control-label"></label>
+                <input asp-for="BillingCycle" class="form-control" />
+                <span asp-validation-for="BillingCycle" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CreatedBy" class="control-label"></label>
+                <input asp-for="CreatedBy" class="form-control" />
+                <span asp-validation-for="CreatedBy" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />

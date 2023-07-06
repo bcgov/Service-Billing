@@ -6,43 +6,42 @@ namespace Service_Billing.Models
     public class Bill
     {
         [Key]
-        [Column("id")]
         public int Id { get; set; }
-        public Int16 clientAccountId { get; set; }
+        public Int16 ClientAccountId { get; set; }
 
         [Display(Name = "Client Name")]
-        public string? clientName { get; set; }
+        public string? ClientName { get; set; }
 
         [Display(Name = "Title")]
-        public string? title { get; set; }
+        public string? Title { get; set; }
 
         [Display(Name = "URL or IDIR")]
-        public string? idirOrUrl { get; set; }
+        public string? IdirOrUrl { get; set; }
 
-        public Int16? serviceCategoryId { get; set; }
+        public Int16? ServiceCategoryId { get; set; }
 
         [Display(Name = "Amount")]
-        public decimal? amount { get; set; }
+        public decimal? Amount { get; set; }
 
         [Display(Name = "Fiscal Period")]
-        public string? fiscalPeriod { get; set; }
+        public string? FiscalPeriod { get; set; }
       //  public decimal Unit_Price; //comes from service category lookup
-        public decimal? quantity { get; set; }
+        public decimal? Quantity { get; set; }
 
         [Column("ticketNumberAndRequesterName")]
         [Display(Name = "Ticket Number")]
-        public string? ticketNumberAndRequester { get; set; }
+        public string? TicketNumberAndRequester { get; set; }
 
-        public DateTime? dateModified { get; set; }
-        public DateTime? dateCreated { get; set; }
-        public String? billingCycle { get; set; }
-        public string? createdBy { get; set; }
+        public DateTime? DateModified { get; set; }
+        public DateTime? DateCreated { get; set; }
+        public String? BillingCycle { get; set; }
+        public string? CreatedBy { get; set; }
 
         public Bill()
         {
-            this.quantity = 1;
-            this.serviceCategoryId = -1;
-            this.dateCreated = DateTime.UtcNow;
+            this.Quantity = 1;
+            this.ServiceCategoryId = -1;
+            this.DateCreated = DateTime.UtcNow;
         }
     }
 }

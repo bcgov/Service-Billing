@@ -34,11 +34,11 @@
         <tbody>
             @foreach (var bill in Model.Bills)
             {
-                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.serviceCategoryId);
-                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.clientAccountId);
+                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
+                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
                 <tr>
-                    <td>@bill.clientName</td>
-                    <td>@bill.title</td>
+                    <td>@bill.ClientName</td>
+                    <td>@bill.Title</td>
                     <td>@{
                            
                             if(category != null)
@@ -49,13 +49,13 @@
                         </td>
                     @if (ViewBag.quarter == "all")
                     {
-                        <td>@bill.fiscalPeriod</td>
+                        <td>@bill.FiscalPeriod</td>
                     }
                     
                     <td>
-                        @if (bill.amount != null)
+                        @if (bill.Amount != null)
                         {
-                            @String.Format("{0:.##}", bill.amount)
+                            @String.Format("{0:.##}", bill.Amount)
                         }
                     </td>
                     @if(category != null)
@@ -64,7 +64,7 @@
                             @category.Costs
                         </td>
                         <td>
-                            @bill.quantity
+                            @bill.Quantity
                         </td>
                         <td>
                             @if (!String.IsNullOrEmpty(category.UOM))
@@ -79,7 +79,7 @@
 
                         </td>
                         <td>
-                            @bill.quantity
+                            @bill.Quantity
                         </td>
                         <td>
 
@@ -92,7 +92,7 @@
                         } 
                     </td>
                     <td>
-                        @bill.createdBy
+                        @bill.CreatedBy
                     </td>
                     <td>
                         <a asp-controller="Bills"

@@ -57,8 +57,8 @@ namespace Service_Billing.Controllers
             {
                 return NotFound();
             }
-            ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
-            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.serviceCategoryId);
+            ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
             ViewData["clientAccount"] = account != null ? account : "";
             ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
             return View(bill);
@@ -71,10 +71,10 @@ namespace Service_Billing.Controllers
             if (bill == null)
                 return NotFound();
 
-            bill.dateModified = DateTime.Now;
-            if (String.IsNullOrEmpty(bill.fiscalPeriod) || String.IsNullOrEmpty(bill.billingCycle))
-                DetermineCurrentQuarter(bill, bill.dateCreated);
-            ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.clientAccountId);
+            bill.DateModified = DateTime.Now;
+            if (String.IsNullOrEmpty(bill.FiscalPeriod) || String.IsNullOrEmpty(bill.BillingCycle))
+                DetermineCurrentQuarter(bill, bill.DateCreated);
+            ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
             ViewData["Categories"] = categories;
 
             return View(bill);
@@ -91,16 +91,16 @@ namespace Service_Billing.Controllers
                 return NotFound();
             }
             if (await TryUpdateModelAsync<Bill>(billToUpdate, "",
-                b => b.clientAccountId,
-                b => b.clientName,
-                b => b.title,
-                b => b.idirOrUrl,
-                b => b.serviceCategoryId,
-                b => b.amount,
-                b => b.quantity,
-                b => b.ticketNumberAndRequester,
-                b => b.dateModified,
-                b => b.createdBy
+                b => b.ClientAccountId,
+                b => b.ClientName,
+                b => b.Title,
+                b => b.IdirOrUrl,
+                b => b.ServiceCategoryId,
+                b => b.Amount,
+                b => b.Quantity,
+                b => b.TicketNumberAndRequester,
+                b => b.DateModified,
+                b => b.CreatedBy
                 ))
             {
                 try
@@ -126,8 +126,8 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ViewData["Categories"] = categories;
             Bill bill = new Bill();
-            bill.dateCreated = DateTime.Now;
-            DetermineCurrentQuarter(bill, bill.dateCreated);
+            bill.DateCreated = DateTime.Now;
+            DetermineCurrentQuarter(bill, bill.DateCreated);
        
             return View(bill);
         }
@@ -210,29 +210,29 @@ namespace Service_Billing.Controllers
                 case 5:
                 case 6:
                     quarter = "Quarter 1";
-                    bill.billingCycle = new DateTime(today.Year, 4, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTime(today.Year, 4, 1).ToString("yyyy-MM-dd");
                     break;
                 case 7:
                 case 8:
                 case 9:
                     quarter = "Quarter 2";
-                    bill.billingCycle = new DateTime(today.Year, 7, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTime(today.Year, 7, 1).ToString("yyyy-MM-dd");
                     break;
                 case 10:
                 case 11:
                 case 12:
                     quarter = "Quarter 3";
-                    bill.billingCycle = new DateTime(today.Year, 10, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTime(today.Year, 10, 1).ToString("yyyy-MM-dd");
                     break;
                 case 1:
                 case 2:
                 case 3:
                     quarter = "Quarter 4";
-                    bill.billingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
                     break;
             }
 
-            bill.fiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            bill.FiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
         }
     }
 }
