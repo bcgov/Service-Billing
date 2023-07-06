@@ -39,7 +39,7 @@ namespace Service_Billing.Models
         [Column("Created")]
         public DateTime DateCreated { get; set; }
 
-        public Int16? TeamId { get; set; }
+        public int TeamId { get; set; }
   
         public bool IsApprovedByEA { get; set; }
     }

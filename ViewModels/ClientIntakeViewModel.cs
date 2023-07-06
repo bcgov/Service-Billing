@@ -7,6 +7,8 @@ namespace Service_Billing.ViewModels
         public int Id { get; set; }
         public ClientTeam Team { get; set; }
         public ClientAccount Account { get; set; }
+        public string MinistryAcronym { get; set; }
+        public string DivisionOrBranch { get; set; }
 
         public ClientIntakeViewModel()
         {

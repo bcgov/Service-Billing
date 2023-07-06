@@ -127,10 +127,6 @@ namespace Service_Billing.Models
         {
             throw new NotImplementedException();
         }
-        public async Task SaveChangesAsync()
-        {
-            await _billingContext.SaveChangesAsync();
-        }
 
         public async Task CreateBill(Bill bill)
         {

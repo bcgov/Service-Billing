@@ -1,4 +1,5 @@
-﻿using Service_Billing.Data;
+﻿using Microsoft.CodeAnalysis.Elfie.Model.Strings;
+using Service_Billing.Data;
 
 namespace Service_Billing.Models
 {
@@ -30,6 +31,14 @@ namespace Service_Billing.Models
         public IEnumerable<ClientTeam> GetTeamsByPrimaryContact(string primaryContact)
         {
             throw new NotImplementedException();
+        }
+
+        public int Add(ClientTeam team)
+        {
+            _billingContext.AddAsync(team);
+            _billingContext.SaveChanges();
+            
+            return team.Id;
         }
     }
 }

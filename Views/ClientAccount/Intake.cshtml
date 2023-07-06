@@ -17,26 +17,27 @@
         <form asp-action="Intake">
             <div class="form-group">
                 <label for="orgSelect" class="control-label">Organization</label>
-                <select class="form-control" id="orgSelect">
+                <select asp-for="@Model.MinistryAcronym" class="form-control" id="orgSelect">
                     <option value="" disabled selected hidden>Select a ministry</option>
                     @if(ministries != null)
                     {
                         foreach(Ministry ministry in ministries)
                         {
-                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
+                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
                         }
                     }
                 </select>
             </div>
-           @* <div class="form-group">
-                <label asp-for="@Model.Account.clientName" class="control-label">Division or Branch Name</label>
-                <input asp-for="@Model.Account.clientName" id="clientInput" class="form-control" />
-                <span asp-validation-for="@Model.Account.clientName" class="text-danger"></span>
-
+            <div class="form-group">
+                <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
+                <input asp-for="@Model.DivisionOrBranch" id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
+            </div>
+           @* 
             One item that I would like removed is:  Client Team Name*.  The client team name is auto generated based on the 
             ‘Ministry Acronym’ and the ‘Division or Branch’ info.  This is GDX’s client account name format and we do not want 
             clients creating their own client team names.  So please don’t include in the new form. --Carolyn Mellor
-            </div>*@
+            *@
             <div class="form-group">
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
                 <input asp-for="@Model.Team.PrimaryContact" class="form-control" />

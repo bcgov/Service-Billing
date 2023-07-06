@@ -7,7 +7,6 @@
         void UpdateClientAccount(ClientAccount account);
         ClientAccount? GetClientAccount(int accountId);
         IEnumerable<ClientAccount> SearchClientAccounts(string queryString);
-        Task SaveChangesAsync();
-
+        int AddClientAccount(ClientAccount account);
     }
 }

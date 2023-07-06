@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Azure;
 using Service_Billing.Models;
 using Service_Billing.ViewModels;
 
@@ -132,6 +133,29 @@ namespace Service_Billing.Controllers
             ViewData["Ministries"] = ministries;
 
             return View(new ClientIntakeViewModel());
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Intake(ClientIntakeViewModel model, IFormCollection collection)
+        {
+            try
+            {
+                string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
+                model.Account.Name = accountName;
+                //if validation passes, etc...
+                ClientTeam team = model.Team;
+                int teamId = _clientTeamRepository.Add(team);
+
+                ClientAccount account = model.Account;
+                account.TeamId = teamId;
+            }
+            catch(DbUpdateException ) 
+            {
+                return View(new ClientIntakeViewModel());
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
     }

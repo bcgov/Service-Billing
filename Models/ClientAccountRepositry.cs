@@ -21,11 +21,6 @@ namespace Service_Billing.Models
             throw new NotImplementedException();
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _context.SaveChangesAsync();
-        }
-
         public IEnumerable<ClientAccount> GetAll()
         {
             return _context.ClientAccounts.OrderBy(c => c.Name);
@@ -41,6 +36,14 @@ namespace Service_Billing.Models
             var x =  _context.ClientAccounts.Where(c => c.Name.Contains(queryString)).OrderBy(c => c.Name);
             var y = x.ToList();
             return x;
+        }
+
+        public int AddClientAccount(ClientAccount account)
+        {
+            _context.AddAsync(account);
+            _context.SaveChanges();
+
+            return account.Id;
         }
     }
 }
