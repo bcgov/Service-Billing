@@ -5,7 +5,7 @@ namespace Service_Billing.Components
 {
     public class ServiceCategoryInput : ViewComponent
     {
-        public IViewComponentResult Invoke(IEnumerable<ServiceCategory> categories, short id)
+        public IViewComponentResult Invoke(IEnumerable<ServiceCategory> categories, int id)
         {
             ViewData["id"] = id;
             return View(categories);

@@ -7,7 +7,7 @@ namespace Service_Billing.Models
     {
         [Key]
         public int Id { get; set; }
-        public Int16 ClientAccountId { get; set; }
+        public int ClientAccountId { get; set; }
 
         [Display(Name = "Client Name")]
         public string? ClientName { get; set; }
@@ -18,7 +18,7 @@ namespace Service_Billing.Models
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
 
-        public Int16? ServiceCategoryId { get; set; }
+        public int? ServiceCategoryId { get; set; }
 
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }
@@ -34,7 +34,7 @@ namespace Service_Billing.Models
 
         public DateTime? DateModified { get; set; }
         public DateTime? DateCreated { get; set; }
-        public String? BillingCycle { get; set; }
+        public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
 
         public Bill()

@@ -37,9 +37,9 @@ namespace Service_Billing.Models
         public string? ClientTeam { get; set; }
 
         [Column("Created")]
-        public DateTime DateCreated { get; set; }
+        public DateTime? DateCreated { get; set; }
 
-        public int TeamId { get; set; }
+        public int? TeamId { get; set; }
   
         public bool IsApprovedByEA { get; set; }
     }

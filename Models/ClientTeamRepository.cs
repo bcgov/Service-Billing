@@ -12,7 +12,7 @@ namespace Service_Billing.Models
         }
         public IEnumerable<ClientTeam> AllTeams => _billingContext.ClientTeams.OrderBy(b => b.Name);
 
-        public ClientTeam? GetTeamById(Int16? id)
+        public ClientTeam? GetTeamById(int? id)
         {
             if (id == null) return null;
             return _billingContext.ClientTeams.FirstOrDefault(t => t.Id == id);

@@ -6,7 +6,7 @@ namespace Service_Billing.Models
     public class ServiceCategory
     {
         [Key]
-        public Int16 ServiceId { get; set; }
+        public int ServiceId { get; set; }
 
         public string? GDXBusArea { get; set; }
 

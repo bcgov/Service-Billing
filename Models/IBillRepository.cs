@@ -15,6 +15,5 @@ namespace Service_Billing.Models
         IEnumerable<Bill> GetCurrentQuarterBills();
         IEnumerable<Bill> GetPreviousQuarterBills();
         Task CreateBill(Bill bill);
-        Task SaveChangesAsync();
     }
 }

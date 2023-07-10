@@ -90,7 +90,7 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    await _clientAccountRepository.SaveChangesAsync();
+                    _clientAccountRepository.AddClientAccount(accountToUpdate);
                 }
                 catch (DbUpdateException /* ex */)
                 {
@@ -137,7 +137,7 @@ namespace Service_Billing.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Intake(ClientIntakeViewModel model, IFormCollection collection)
+        public async Task<IActionResult> Intake(ClientIntakeViewModel model)
         {
             try
             {

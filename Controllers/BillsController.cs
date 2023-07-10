@@ -46,7 +46,6 @@ namespace Service_Billing.Controllers
                     bills = _billRepository.AllBills;
                     break;
             }
-            var x = bills.Count();
             return View(new AllBillsViewModel(bills, categories, clients));
         }
 
@@ -105,7 +104,7 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    await _billRepository.SaveChangesAsync();
+                    await _billRepository.CreateBill(billToUpdate);
                 }
                 catch (DbUpdateException /* ex */)
                 {
