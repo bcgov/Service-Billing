@@ -5,21 +5,20 @@
 @inject IAuthorizationService AuthorizationService
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+   
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the FO role. Good work!'.</p>
+    }
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+    }
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireUserRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+    }
 </div>
-@if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-{
-    <p>This paragraph is displayed because you're in the FO role. Good work!'.</p>
-}
-@if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
-{
-    <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
-}
-@if ((await AuthorizationService.AuthorizeAsync(User, "RequireUserRole")).Succeeded)
-{
-    <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
-}
 <div>
     @Html.ActionLink("Bills Index", "Index", "Bills")
 </div>
