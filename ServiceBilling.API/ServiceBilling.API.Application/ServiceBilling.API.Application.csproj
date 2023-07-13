@@ -19,4 +19,11 @@
     <ProjectReference Include="..\ServiceBilling.API.Domain\ServiceBilling.API.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Bills\Queries\GetBillsList\" />
+    <Folder Include="Features\Bills\Queries\GetBillDetail\" />
+    <Folder Include="Features\ClientTeams\Queries\" />
+    <Folder Include="Features\ServiceCategories\Commands\" />
+  </ItemGroup>
+
 </Project>

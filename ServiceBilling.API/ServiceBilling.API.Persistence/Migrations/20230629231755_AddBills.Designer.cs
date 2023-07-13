@@ -12,8 +12,8 @@ using ServiceBilling.API.Persistence;
 namespace ServiceBilling.API.Persistence.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20230622002046_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20230629231755_AddBills")]
+    partial class AddBills
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,47 @@ namespace ServiceBilling.API.Persistence.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("ServiceBilling.API.Domain.Entities.Bill", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FiscalPeriod")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("IdirOrUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastModifiedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("LastModifiedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("Quantity")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("TicketNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Title")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Bills");
+                });
 
             modelBuilder.Entity("ServiceBilling.API.Domain.Entities.ClientAccount", b =>
                 {
@@ -56,8 +97,7 @@ namespace ServiceBilling.API.Persistence.Migrations
 
                     b.HasKey("ClientAccountId");
 
-                    b.HasIndex("ClientTeamId")
-                        .IsUnique();
+                    b.HasIndex("ClientTeamId");
 
                     b.ToTable("ClientAccounts");
                 });
@@ -67,6 +107,9 @@ namespace ServiceBilling.API.Persistence.Migrations
                     b.Property<Guid>("ClientTeamId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClientTeamName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -88,8 +131,8 @@ namespace ServiceBilling.API.Persistence.Migrations
             modelBuilder.Entity("ServiceBilling.API.Domain.Entities.ClientAccount", b =>
                 {
                     b.HasOne("ServiceBilling.API.Domain.Entities.ClientTeam", "ClientTeam")
-                        .WithOne("ClientAccount")
-                        .HasForeignKey("ServiceBilling.API.Domain.Entities.ClientAccount", "ClientTeamId")
+                        .WithMany("ClientAccounts")
+                        .HasForeignKey("ClientTeamId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -98,7 +141,7 @@ namespace ServiceBilling.API.Persistence.Migrations
 
             modelBuilder.Entity("ServiceBilling.API.Domain.Entities.ClientTeam", b =>
                 {
-                    b.Navigation("ClientAccount");
+                    b.Navigation("ClientAccounts");
                 });
 #pragma warning restore 612, 618
         }

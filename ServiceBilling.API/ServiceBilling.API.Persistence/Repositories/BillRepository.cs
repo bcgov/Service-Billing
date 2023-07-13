@@ -3,10 +3,10 @@ using ServiceBilling.API.Domain.Entities;
 
 namespace ServiceBilling.API.Persistence.Repositories
 {
-    public class ClientTeamRepository : BaseRepository<ClientTeam>, IClientTeamRepository
+    public class BillRepository : BaseRepository<Bill>, IBillRepository
     {
-        public ClientTeamRepository(DataContext dbContext) : base(dbContext)
-        {         
+        public BillRepository(DataContext dbContext) : base(dbContext)
+        {
         }
     }
 }

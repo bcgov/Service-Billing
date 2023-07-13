@@ -26,10 +26,14 @@ namespace ServiceBilling.API.Application.Features.ClientAccounts.Commands.Create
 
             // var clientTeam = await _clientTeamRepository.GetByIdAsync(request.ClientTeamId);
 
+            // var ct = await _clientAccountRepository.ListAllAsync();
+
             var clientAccount = _mapper.Map<ClientAccount>(request);
 
             // create a validator object
             // await the result of a call to validateasync
+
+            // clientAccount.ClientTeam = clientTeam;
 
             clientAccount = await _clientAccountRepository.AddAsync(clientAccount);
 
