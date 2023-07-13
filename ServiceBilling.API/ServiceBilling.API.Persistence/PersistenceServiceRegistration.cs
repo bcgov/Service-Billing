@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceBilling.API.Application.Contracts;
 using ServiceBilling.API.Application.Contracts.Persistence;
 using ServiceBilling.API.Persistence.Repositories;
 

@@ -1,8 +1,6 @@
-﻿using ServiceBilling.API.Domain.Common;
-
-namespace ServiceBilling.API.Domain.Entities
+﻿namespace ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList
 {
-    public class ServiceCategory : AuditableEntity
+    public class ServiceCategoryListVm
     {
         public Guid ServiceCategoryId { get; set; }
         public string Name { get; set; }

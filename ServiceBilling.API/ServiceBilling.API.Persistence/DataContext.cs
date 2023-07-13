@@ -1,10 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServiceBilling.API.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceBilling.API.Persistence
 {
@@ -16,6 +11,8 @@ namespace ServiceBilling.API.Persistence
 
         public DbSet<ClientAccount> ClientAccounts { get; set; }
         public DbSet<ClientTeam> ClientTeams { get; set; }
+        public DbSet<Bill> Bills { get; set; }
+        public DbSet<ServiceCategory> ServiceCategories { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

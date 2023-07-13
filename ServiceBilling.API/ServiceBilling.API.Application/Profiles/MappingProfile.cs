@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
+using ServiceBilling.API.Application.Features.Bills.Commands;
 using ServiceBilling.API.Application.Features.ClientAccounts.Commands.CreateClientAccount;
 using ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientAccountDetail;
 using ServiceBilling.API.Application.Features.ClientAccounts.Queries.GetClientsAccountList;
+using ServiceBilling.API.Application.Features.ClientTeams.Commands.CreateClientTeam;
+using ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList;
 using ServiceBilling.API.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ServiceBilling.API.Application.Profiles
 {
@@ -18,9 +16,16 @@ namespace ServiceBilling.API.Application.Profiles
             CreateMap<ClientAccount, ClientAccountsListVm>().ReverseMap();
             CreateMap<CreateClientAccountCommand, ClientAccount>().ReverseMap();
             CreateMap<ClientAccount, ClientAccountDetailVm>().ReverseMap();
+
+            CreateMap<ServiceCategory, ServiceCategoryListVm>().ReverseMap();
+
             CreateMap<ClientTeam, ClientTeamDto>();
 
             CreateMap<ClientAccount, CreateClientAccountCommand>();
+
+            CreateMap<CreateClientTeamCommand, ClientTeam>().ReverseMap();
+
+            CreateMap<CreateBillCommand, Bill>().ReverseMap();
         }
     }
 }
