@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using ServiceBilling.API.Application;
+using ServiceBilling.API.Infrastructure;
 using ServiceBilling.API.Persistence;
 
 namespace ServiceBilling.BillingManagement.Api
@@ -12,7 +13,7 @@ namespace ServiceBilling.BillingManagement.Api
             //    AddSwagger(builder.Services);
 
             builder.Services.AddApplicationServices();
-            // builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddInfrastructureServices(builder.Configuration);
             builder.Services.AddPersistenceServices(builder.Configuration);
 
             // builder.Services.AddHttpContextAccessor();

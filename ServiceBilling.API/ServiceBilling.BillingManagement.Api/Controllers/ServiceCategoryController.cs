@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using ServiceBilling.API.Application.Features.ServiceCategories.Commands.CreateServiceCategory;
 using ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList;
 
 namespace ServiceBilling.BillingManagement.Api.Controllers
@@ -21,6 +22,13 @@ namespace ServiceBilling.BillingManagement.Api.Controllers
         {
             var dtos = await _mediator.Send(new GetServiceCategoryListQuery());
             return Ok(dtos);
+        }
+
+        [HttpPost(Name = "AddServiceCategory")]
+        public async Task<ActionResult<CreateServiceCategoryCommandResponse>> Create([FromBody] CreateServiceCategoryCommand createServiceCategoryCommand)
+        {
+            var response = await _mediator.Send(createServiceCategoryCommand);
+            return Ok(response);
         }
     }
 }
