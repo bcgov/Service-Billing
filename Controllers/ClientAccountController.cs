@@ -195,7 +195,7 @@ namespace Service_Billing.Controllers
                 // User currentUser = await _graphServiceClient.Me.Request().GetAsync();
                 // "displayName:wa" OR "displayName:ad"&$orderbydisplayName&$count=true
                 var queriedUser = await _graphServiceClient.Users.Request()
-                    .Filter($"startswith(mail, '{query}')")
+                    .Filter($"startswith(displayName, '{query}')")
                     .Top(4)
                     .Select("displayName, id")
                     .GetAsync();

@@ -44,9 +44,10 @@
             <div class="form-group" id="intake-contacts">
                 <h3>Contacts</h3> 
                 <div id="intake-contacts-instructions">
-                    To enter contacts, begin typing in the IDIR user's email address, which is usually in the form "firstname.lastname@gov.bc.ca".
+                    To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
+                    For example: "Smith, Jane CITZ:EX".
                     </br>
-                    It is not necessary to enter the whole email address, just enough to match the user you're looking for.
+                    Contacts matching your input will display in a dropdown menu for you to pick. 
                 </div>
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" placeholder="Firstname.Lastname">Primary Contact</label>
                 <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact"/>
@@ -58,10 +59,10 @@
                 <input asp-for="@Model.Team.Approvers" class="form-control" id="approverContact" onchange="contactInputEvent"/>
                 <span asp-validation-for="@Model.Team.Approvers" class="text-danger"></span>
                 <label asp-for="@Model.Team.FinancialContacts" class="control-label">Financial Contacts</label>
-                <input asp-for="@Model.Team.FinancialContacts" class="form-control" />
+                <input asp-for="@Model.Team.FinancialContacts" class="form-control" id="financialContacts" />
                 <span asp-validation-for="@Model.Team.FinancialContacts" class="text-danger"></span>
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input asp-for="@Model.Account.ExpenseAuthorityName" class="form-control" />
+                <input asp-for="@Model.Account.ExpenseAuthorityName" class="form-control" id="authorityContact" />
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
 
@@ -140,12 +141,44 @@
                 select: function (event, ui) {
                     console.log(event);
                     console.log(ui)
-                    //$("#clientIdInput").val(ui.item.id);
-                    //$("#approverContact").text(ui.item.label);
+                    $("#primaryContact").val(ui.item.id);
+                    $("#primaryContact").text(ui.item.label);
                 },
                 minLength: 1
             });
- 
+
+            $("#approverContact").autocomplete({
+                source: contactsMatchingSearch,
+                delay: 500,
+                select: function (event, ui) {
+                    console.log(event);
+                    console.log(ui)
+                    $("#approverContact").val(ui.item.id);
+                    $("#approverContact").text(ui.item.label);
+                }
+            });
+            $("#financialContacts").autocomplete({
+                source: contactsMatchingSearch,
+                delay: 500,
+                select: function (event, ui) {
+                    console.log(event);
+                    console.log(ui)
+                    $("#financialContacts").val(ui.item.id);
+                    $("#financialContacts").text(ui.item.label);
+                }
+            });
+            $("#authorityContact").autocomplete({
+                source: contactsMatchingSearch,
+                delay: 500,
+                select: function (event, ui) {
+                    console.log(event);
+                    console.log(ui)
+                    $("#authorityContact").val(ui.item.id);
+                    $("#authorityContact").text(ui.item.label);
+                }
+            });
+
+
             const queryForUser = (query) => {
                 var url = "../../ClientAccount/SearchForContact?query=" + query;
                 var xhr = new XMLHttpRequest();
@@ -155,11 +188,21 @@
                         var data = JSON.parse(xhr.response);
                         for (const contact in data) {
                             console.log(data[contact]["displayName"]);
-                            contactsMatchingSearch.push({ label: data[contact].displayName });
+                            contactsMatchingSearch.push({ label: data[contact].displayName, id: data[contact].id });
                         }
                         $("#primaryContact").autocomplete({
                             source: contactsMatchingSearch
                         });
+                        $("#approverContact").autocomplete({
+                            source: contactsMatchingSearch
+                        });
+                        $("#financialContacts").autocomplete({
+                            source: contactsMatchingSearch
+                        });
+                        $("#authorityContact").autocomplete({
+                            source: contactsMatchingSearch
+                        });
+
                     }
                 };
                 xhr.open('get', url);
@@ -177,14 +220,58 @@
                 }
               //  set new timeout;
                 timer = setTimeout(function () {
-                    console.log("timer timed out..");
                   //  call wait-function and clear timeout
-                    queryForUser($("#primaryContact").val())
-                    
+                    queryForUser($("#primaryContact").val())   
                     clearTimeout(timer);
                     timer = null;
-                }, 500);
+                }, 80);
             });
+
+            $("#approverContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#approverContact").val())
+                    clearTimeout(timer);
+                    timer = null;
+                }, 80);
+            });
+            $("#approverContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#approverContact").val())
+                    clearTimeout(timer);
+                    timer = null;
+                }, 80);
+            });
+            $("#financialContacts").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#financialContacts").val())
+                    clearTimeout(timer);
+                    timer = null;
+                }, 80);
+            });
+            $("#authorityContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#authorityContact").val())
+                    clearTimeout(timer);
+                    timer = null;
+                }, 80);
+            });
+
     });
 </script>
 }
