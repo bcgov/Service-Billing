@@ -9,12 +9,19 @@ using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Service_Billing.Data;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Service_Billing.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+    .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
+    .AddInMemoryTokenCaches();
 
 builder.Services.AddControllersWithViews(options =>
 {
@@ -30,12 +37,18 @@ builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped <IMinistryRepository, MinistryRepository>();
 
+builder.Services.AddMvc();
+builder.Services.AddTransient<IContactLookupService, ContactLookupService>();
+
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
+
+builder.Services.AddServerSideBlazor()
+               .AddMicrosoftIdentityConsentHandler();
 
 builder.Services.AddAuthorization(options =>
 {

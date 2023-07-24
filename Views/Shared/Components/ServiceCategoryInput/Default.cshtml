@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<ServiceCategory>
 @{
     bool mustChangeServiceCategory = true;
-    short id = (short)ViewData["id"] != null ? (short)ViewData["id"] : (short)-1;
+    int id = (int)ViewData["id"] != null ? (int)ViewData["id"] : -1;
 }
 <div class="form-group">
     <label for="categorySelect">Service Category</label>

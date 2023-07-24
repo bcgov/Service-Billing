@@ -1,4 +1,6 @@
-﻿@model Service_Billing.ViewModels.ClientIntakeViewModel
+﻿@using Microsoft.Graph;
+
+@model Service_Billing.ViewModels.ClientIntakeViewModel
 
 @{
     ViewData["Title"] = "Intake";
@@ -38,27 +40,31 @@
             ‘Ministry Acronym’ and the ‘Division or Branch’ info.  This is GDX’s client account name format and we do not want 
             clients creating their own client team names.  So please don’t include in the new form. --Carolyn Mellor
             *@
-            <div class="form-group">
-                <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Team.PrimaryContact" class="form-control" />
-                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="@Model.Team.Approvers" class="control-label">Approvers</label>
-                <input asp-for="@Model.Team.Approvers" class="form-control" />
-                <span asp-validation-for="@Model.Team.Approvers" class="text-danger"></span>
-            </div>
 
-            <div class="form-group">
+            <div class="form-group" id="intake-contacts">
+                <h3>Contacts</h3> 
+                <div id="intake-contacts-instructions">
+                    To enter contacts, begin typing in the IDIR user's email address, which is usually in the form "firstname.lastname@gov.bc.ca".
+                    </br>
+                    It is not necessary to enter the whole email address, just enough to match the user you're looking for.
+                </div>
+                <label asp-for="@Model.Team.PrimaryContact" class="control-label" placeholder="Firstname.Lastname">Primary Contact</label>
+                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact"/>
+             @*   <div id="primaryContactDisplay">
+                    @await Component.InvokeAsync("ContactLookup", new {contactName = ViewData["PrimaryContact"]})
+                </div>*@
+                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+                <label asp-for="@Model.Team.Approvers" class="control-label">Approvers</label>
+                <input asp-for="@Model.Team.Approvers" class="form-control" id="approverContact" onchange="contactInputEvent"/>
+                <span asp-validation-for="@Model.Team.Approvers" class="text-danger"></span>
                 <label asp-for="@Model.Team.FinancialContacts" class="control-label">Financial Contacts</label>
                 <input asp-for="@Model.Team.FinancialContacts" class="form-control" />
                 <span asp-validation-for="@Model.Team.FinancialContacts" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
                 <input asp-for="@Model.Account.ExpenseAuthorityName" class="form-control" />
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
+
             <div class="form-group"> 
                 <label>figure out how to store other contacts</label>
             </div>
@@ -122,4 +128,63 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+<script>
+    $(document).ready(function () {
+            var contactsMatchingSearch = [];
+            $("#primaryContact").autocomplete({
+                source: contactsMatchingSearch,
+                delay: 500,
+                select: function (event, ui) {
+                    console.log(event);
+                    console.log(ui)
+                    //$("#clientIdInput").val(ui.item.id);
+                    //$("#approverContact").text(ui.item.label);
+                },
+                minLength: 1
+            });
+ 
+            const queryForUser = (query) => {
+                var url = "../../ClientAccount/SearchForContact?query=" + query;
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200){
+                        contactsMatchingSearch = [];
+                        var data = JSON.parse(xhr.response);
+                        for (const contact in data) {
+                            console.log(data[contact]["displayName"]);
+                            contactsMatchingSearch.push({ label: data[contact].displayName });
+                        }
+                        $("#primaryContact").autocomplete({
+                            source: contactsMatchingSearch
+                        });
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+            };
+            
+            var timer = null;
+
+            //on button-click
+            $("#primaryContact").on("keypress", (e) => {
+               // clear timeout if already applied
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+              //  set new timeout;
+                timer = setTimeout(function () {
+                    console.log("timer timed out..");
+                  //  call wait-function and clear timeout
+                    queryForUser($("#primaryContact").val())
+                    
+                    clearTimeout(timer);
+                    timer = null;
+                }, 500);
+            });
+    });
+</script>
 }

@@ -4,6 +4,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Azure;
 using Service_Billing.Models;
 using Service_Billing.ViewModels;
+using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
+using Azure;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Microsoft.Identity.Client;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Service_Billing.Controllers
 {
@@ -12,13 +27,25 @@ namespace Service_Billing.Controllers
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
+        private readonly GraphServiceClient _graphServiceClient;
+        private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
+        private string[] _graphScopes = { "User.ReadBasic.All" };
 
-        public ClientAccountController(IClientAccountRepository clientAccountRepository, IClientTeamRepository clientTeamRepository, IMinistryRepository ministryRepository)
+        public ClientAccountController(IClientAccountRepository clientAccountRepository,
+            IClientTeamRepository clientTeamRepository,
+            IMinistryRepository ministryRepository,
+            IConfiguration configuration,
+                            GraphServiceClient graphServiceClient,
+                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
         {
+            _graphServiceClient = graphServiceClient;
+            _consentHandler = consentHandler;
+
             _clientAccountRepository = clientAccountRepository;
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
         }
+
         // GET: ClientAccountController
         public ActionResult Index()
         {
@@ -131,7 +158,8 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-
+            ViewData["PrimaryContact"] = "Some_Goofy_Name";
+            //_graphServiceClient.Users.Request().
             return View(new ClientIntakeViewModel());
         }
 
@@ -156,6 +184,29 @@ namespace Service_Billing.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpGet]
+        [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
+        public async Task<IActionResult> SearchForContact(string query)
+        {
+            try
+            {
+                // User currentUser = await _graphServiceClient.Me.Request().GetAsync();
+                // "displayName:wa" OR "displayName:ad"&$orderbydisplayName&$count=true
+                var queriedUser = await _graphServiceClient.Users.Request()
+                    .Filter($"startswith(mail, '{query}')")
+                    .Top(4)
+                    .Select("displayName, id")
+                    .GetAsync();
+
+                return new JsonResult(queriedUser);
+               
+            }
+            catch (Exception ex)
+            {
+                return new JsonResult(ex);
+            }
         }
 
     }
