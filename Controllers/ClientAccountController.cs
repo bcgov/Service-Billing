@@ -19,6 +19,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using static System.Formats.Asn1.AsnWriter;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Service_Billing.Controllers
 {
@@ -158,7 +159,7 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-            ViewData["PrimaryContact"] = "Some_Goofy_Name";
+            ViewData["PrimaryContact"] = "";
             //_graphServiceClient.Users.Request().
             return View(new ClientIntakeViewModel());
         }
@@ -188,20 +189,32 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
-        public async Task<IActionResult> SearchForContact(string query)
+        public async Task<IActionResult> SearchForContact(string query, string elementId, ClientIntakeViewModel model)
         {
             try
             {
-                // User currentUser = await _graphServiceClient.Me.Request().GetAsync();
-                // "displayName:wa" OR "displayName:ad"&$orderbydisplayName&$count=true
-                var queriedUser = await _graphServiceClient.Users.Request()
+                var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{query}')")
-                    .Top(4)
+                    .Top(5)
                     .Select("displayName, id")
                     .GetAsync();
+                
+                List<SelectListItem> contactItems = new List<SelectListItem>();
+                foreach (var user in queriedUsers)
+                {
+                    contactItems.Add(new SelectListItem(user.DisplayName, user.Id));
+                }
+                string contactType = "undefined";
+                switch (elementId)
+                {
+                    case "primaryContact":
+                        contactType = "primary";
+                        break;
+                    default:
+                        break;
+                }
 
-                return new JsonResult(queriedUser);
-               
+                return ViewComponent("ContactLookup", new { elementId = nameof(model.Team.PrimaryContact), contactList = contactItems, contactType });
             }
             catch (Exception ex)
             {

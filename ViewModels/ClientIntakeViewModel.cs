@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Service_Billing.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Service_Billing.ViewModels
 {
@@ -12,7 +13,8 @@ namespace Service_Billing.ViewModels
         public string? MinistryAcronym { get; set; }
         public string? DivisionOrBranch { get; set; }
         public string? ApproverName { get; set; }
-
+        [NotMapped]
+        public SelectList contactsList { get; set; }
      //   public SelectList contactsList { get; set; }
 
         public void onContactInput()

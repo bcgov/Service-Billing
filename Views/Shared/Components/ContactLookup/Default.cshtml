@@ -1,9 +1,10 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-}
+﻿@model Service_Billing.ViewModels.ContactSelectViewModel
 
-<div class="form-group">
-    <div>Contact name: @ViewData["name"]</div>
+<div class="contactDisplay" >
+    @if(Model != null && Model.Contacts != null)
+    {
+        <select asp-for="@Model.elementId" asp-items="@Model.Contacts">
+            <option value="Pick a contact from the dropdown"></option>
+        </select>
+    }
 </div>

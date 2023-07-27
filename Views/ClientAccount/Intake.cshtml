@@ -14,6 +14,15 @@
 
 <h4>Please fill out the client intake form.</h4>
 <hr />
+@if(@Model.contactsList != null && @Model.contactsList.Any())
+{
+    foreach(string contact in @Model.contactsList.Items)
+    {
+        <div>
+            @contact
+        </div>
+    }
+}
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Intake">
@@ -46,24 +55,30 @@
                 <div id="intake-contacts-instructions">
                     To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
                     For example: "Smith, Jane CITZ:EX".
-                    </br>
+                    <br/>
                     Contacts matching your input will display in a dropdown menu for you to pick. 
                 </div>
+       @*         <label>Search for approver contact</label>
+                <input id="primaryContact" class="form-control" />*@
+
+
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" placeholder="Firstname.Lastname">Primary Contact</label>
-                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact"/>
-             @*   <div id="primaryContactDisplay">
-                    @await Component.InvokeAsync("ContactLookup", new {contactName = ViewData["PrimaryContact"]})
-                </div>*@
-                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+                <input  class="form-control" id="primaryContact" name="primaryContactInput" />
+                <div id="primaryContactDisplay">
+                    @await Component.InvokeAsync("ContactLookup")
+                </div>
+
+
+               @* <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
                 <label asp-for="@Model.Team.Approvers" class="control-label">Approvers</label>
-                <input asp-for="@Model.Team.Approvers" class="form-control" id="approverContact" onchange="contactInputEvent"/>
+                <input asp-for="@Model.Team.Approvers" class="form-control" id="approverContact" />
                 <span asp-validation-for="@Model.Team.Approvers" class="text-danger"></span>
                 <label asp-for="@Model.Team.FinancialContacts" class="control-label">Financial Contacts</label>
                 <input asp-for="@Model.Team.FinancialContacts" class="form-control" id="financialContacts" />
                 <span asp-validation-for="@Model.Team.FinancialContacts" class="text-danger"></span>
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
                 <input asp-for="@Model.Account.ExpenseAuthorityName" class="form-control" id="authorityContact" />
-                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
+                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>*@
             </div>
 
             <div class="form-group"> 
@@ -134,75 +149,15 @@
 
 <script>
     $(document).ready(function () {
-            var contactsMatchingSearch = [];
-            $("#primaryContact").autocomplete({
-                source: contactsMatchingSearch,
-                delay: 500,
-                select: function (event, ui) {
-                    console.log(event);
-                    console.log(ui)
-                    $("#primaryContact").val(ui.item.id);
-                    $("#primaryContact").text(ui.item.label);
-                },
-                minLength: 1
-            });
-
-            $("#approverContact").autocomplete({
-                source: contactsMatchingSearch,
-                delay: 500,
-                select: function (event, ui) {
-                    console.log(event);
-                    console.log(ui)
-                    $("#approverContact").val(ui.item.id);
-                    $("#approverContact").text(ui.item.label);
-                }
-            });
-            $("#financialContacts").autocomplete({
-                source: contactsMatchingSearch,
-                delay: 500,
-                select: function (event, ui) {
-                    console.log(event);
-                    console.log(ui)
-                    $("#financialContacts").val(ui.item.id);
-                    $("#financialContacts").text(ui.item.label);
-                }
-            });
-            $("#authorityContact").autocomplete({
-                source: contactsMatchingSearch,
-                delay: 500,
-                select: function (event, ui) {
-                    console.log(event);
-                    console.log(ui)
-                    $("#authorityContact").val(ui.item.id);
-                    $("#authorityContact").text(ui.item.label);
-                }
-            });
-
-
-            const queryForUser = (query) => {
+            const queryForUser = (query, contactType) => {
+                console.log(contactType);
                 var url = "../../ClientAccount/SearchForContact?query=" + query;
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200){
                         contactsMatchingSearch = [];
-                        var data = JSON.parse(xhr.response);
-                        for (const contact in data) {
-                            console.log(data[contact]["displayName"]);
-                            contactsMatchingSearch.push({ label: data[contact].displayName, id: data[contact].id });
-                        }
-                        $("#primaryContact").autocomplete({
-                            source: contactsMatchingSearch
-                        });
-                        $("#approverContact").autocomplete({
-                            source: contactsMatchingSearch
-                        });
-                        $("#financialContacts").autocomplete({
-                            source: contactsMatchingSearch
-                        });
-                        $("#authorityContact").autocomplete({
-                            source: contactsMatchingSearch
-                        });
-
+                        console.log(xhr.response);
+                        $(".contactDisplay").html(xhr.response);
                     }
                 };
                 xhr.open('get', url);
@@ -214,6 +169,7 @@
             //on button-click
             $("#primaryContact").on("keypress", (e) => {
                // clear timeout if already applied
+               //console.log(e);
                 if (timer) {
                     clearTimeout(timer);
                     timer = null;
@@ -221,10 +177,10 @@
               //  set new timeout;
                 timer = setTimeout(function () {
                   //  call wait-function and clear timeout
-                    queryForUser($("#primaryContact").val())   
+                    queryForUser($("#primaryContact").val(), @Model.Team.PrimaryContact);
                     clearTimeout(timer);
                     timer = null;
-                }, 80);
+                }, 250);
             });
 
             $("#approverContact").on("keypress", (e) => {
