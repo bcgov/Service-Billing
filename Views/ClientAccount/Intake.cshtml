@@ -14,15 +14,7 @@
 
 <h4>Please fill out the client intake form.</h4>
 <hr />
-@if(@Model.contactsList != null && @Model.contactsList.Any())
-{
-    foreach(string contact in @Model.contactsList.Items)
-    {
-        <div>
-            @contact
-        </div>
-    }
-}
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Intake">
@@ -62,8 +54,8 @@
                 <input id="primaryContact" class="form-control" />*@
 
 
-                <label asp-for="@Model.Team.PrimaryContact" class="control-label" placeholder="Firstname.Lastname">Primary Contact</label>
-                <input  class="form-control" id="primaryContact" name="primaryContactInput" />
+                <label asp-for="@Model.Team.PrimaryContact" class="control-label" >Primary Contact</label>
+                <input class="form-control" id="primaryContact" name="primaryContactInput" placeholder="start entering surname to search" />
                 <div id="primaryContactDisplay">
                     @await Component.InvokeAsync("ContactLookup")
                 </div>
@@ -150,13 +142,11 @@
 <script>
     $(document).ready(function () {
             const queryForUser = (query, contactType) => {
-                console.log(contactType);
-                var url = "../../ClientAccount/SearchForContact?query=" + query;
+                var url = "../../ClientAccount/SearchForContact?query=" + query + "&contactType=" + contactType;
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200){
                         contactsMatchingSearch = [];
-                        console.log(xhr.response);
                         $(".contactDisplay").html(xhr.response);
                     }
                 };
@@ -169,7 +159,6 @@
             //on button-click
             $("#primaryContact").on("keypress", (e) => {
                // clear timeout if already applied
-               //console.log(e);
                 if (timer) {
                     clearTimeout(timer);
                     timer = null;
@@ -177,11 +166,23 @@
               //  set new timeout;
                 timer = setTimeout(function () {
                   //  call wait-function and clear timeout
-                    queryForUser($("#primaryContact").val(), @Model.Team.PrimaryContact);
+                    queryForUser($("#primaryContact").val(), "primary");
                     clearTimeout(timer);
                     timer = null;
                 }, 250);
             });
+
+            $(".contactDisplay").on("change", (e) => {
+                console.log(e);
+                switch (e.target.id)
+                {
+                    case "primaryContactSelect":
+                        $("#primaryContact").val($("#primaryContactSelect").val());
+                        break;
+                
+                }
+            });
+
 
             $("#approverContact").on("keypress", (e) => {
                 if (timer) {

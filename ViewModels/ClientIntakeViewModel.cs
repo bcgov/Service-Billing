@@ -14,13 +14,7 @@ namespace Service_Billing.ViewModels
         public string? DivisionOrBranch { get; set; }
         public string? ApproverName { get; set; }
         [NotMapped]
-        public SelectList contactsList { get; set; }
-     //   public SelectList contactsList { get; set; }
-
-        public void onContactInput()
-        {
-            string x = "got here";
-        }
+        public IEnumerable<SelectListItem> Contacts { get; set; }
 
         public ClientIntakeViewModel()
         {

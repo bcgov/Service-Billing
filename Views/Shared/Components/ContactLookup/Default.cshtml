@@ -1,10 +1,10 @@
 ﻿@model Service_Billing.ViewModels.ContactSelectViewModel
 
-<div class="contactDisplay" >
+<div class="contactDisplay">
     @if(Model != null && Model.Contacts != null)
     {
-        <select asp-for="@Model.elementId" asp-items="@Model.Contacts">
-            <option value="Pick a contact from the dropdown"></option>
+        <select asp-for="@Model.elementId" asp-items="@Model.Contacts" id="@Model.elementId" class="contactSelect">
+            <option value="Pick a contact from the dropdown">Pick a contact from the dropdown...</option>
         </select>
     }
 </div>

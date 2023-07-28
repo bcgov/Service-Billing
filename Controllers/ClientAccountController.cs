@@ -189,10 +189,10 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
-        public async Task<IActionResult> SearchForContact(string query, string elementId, ClientIntakeViewModel model)
+        public async Task<IActionResult> SearchForContact(string query, string contactType, ClientIntakeViewModel model)
         {
             try
-            {
+           {
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{query}')")
                     .Top(5)
@@ -202,19 +202,24 @@ namespace Service_Billing.Controllers
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 foreach (var user in queriedUsers)
                 {
-                    contactItems.Add(new SelectListItem(user.DisplayName, user.Id));
+                    contactItems.Add(new SelectListItem(user.DisplayName, user.DisplayName));
                 }
-                string contactType = "undefined";
-                switch (elementId)
+                string selectId = "undefinedIdType";
+                switch (contactType) 
                 {
-                    case "primaryContact":
-                        contactType = "primary";
-                        break;
                     default:
                         break;
+                    case "primary":
+                        selectId = "primaryContactSelect";
+                        break;
                 }
+                model.Contacts = contactItems;
+                //if(contactItems.Any())
+                //{
+                //    contactItems.First().Selected = true;
+                //}
 
-                return ViewComponent("ContactLookup", new { elementId = nameof(model.Team.PrimaryContact), contactList = contactItems, contactType });
+                return ViewComponent("ContactLookup", new { elementId = selectId, contactList = contactItems, contactType, model = model });
             }
             catch (Exception ex)
             {

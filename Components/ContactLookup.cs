@@ -18,7 +18,7 @@ namespace Service_Billing.Components
             _contactLookupService = contactLookupService;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string? elementId, List<SelectListItem>? contactList, string? contact)
+        public async Task<IViewComponentResult> InvokeAsync(string? elementId, List<SelectListItem> contactList, string? contact )
         {
             ContactSelectViewModel contactSelectViewModel = new ContactSelectViewModel(elementId, contactList, contact);
             return View(contactSelectViewModel);
