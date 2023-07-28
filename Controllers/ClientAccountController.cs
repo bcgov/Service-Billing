@@ -205,21 +205,31 @@ namespace Service_Billing.Controllers
                     contactItems.Add(new SelectListItem(user.DisplayName, user.DisplayName));
                 }
                 string selectId = "undefinedIdType";
-                switch (contactType) 
-                {
-                    default:
-                        break;
-                    case "primary":
-                        selectId = "primaryContactSelect";
-                        break;
-                }
+                //switch (contactType) 
+                //{
+                //    default:
+                //        break;
+                //    case "primary":
+                //        selectId = "primaryContactSelect";
+                //        break;
+                //    case "approver":
+                //        selectId = "approverContactSelect";
+                //        break;
+                //    case "financial":
+                //        selectId = "financialContactSelect";
+                //        break;
+                //    case "authority":
+                //        selectId = "authorityContactSelect";
+                //        break;
+                //}
+                
                 model.Contacts = contactItems;
                 //if(contactItems.Any())
                 //{
                 //    contactItems.First().Selected = true;
                 //}
 
-                return ViewComponent("ContactLookup", new { elementId = selectId, contactList = contactItems, contactType, model = model });
+                return ViewComponent("ContactLookup", new { elementId = contactType.Replace("Select", "Value"), contactList = contactItems, model = model });
             }
             catch (Exception ex)
             {

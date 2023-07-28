@@ -55,22 +55,28 @@
 
 
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" >Primary Contact</label>
-                <input class="form-control" id="primaryContact" name="primaryContactInput" placeholder="start entering surname to search" />
-                <div id="primaryContactDisplay">
-                    @await Component.InvokeAsync("ContactLookup")
+                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+                <div id="primaryContactSelect">
                 </div>
+                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
 
+                <label asp-for="@Model.ApproverName" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.ApproverName" id="approverContact" placeholder="start entering surname to search" />
+                <div id="approverContactSelect">
+                </div>
+                <span asp-validation-for="@Model.ApproverName" class="text-danger"></span>
 
-               @* <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
-                <label asp-for="@Model.Team.Approvers" class="control-label">Approvers</label>
-                <input asp-for="@Model.Team.Approvers" class="form-control" id="approverContact" />
-                <span asp-validation-for="@Model.Team.Approvers" class="text-danger"></span>
                 <label asp-for="@Model.Team.FinancialContacts" class="control-label">Financial Contacts</label>
-                <input asp-for="@Model.Team.FinancialContacts" class="form-control" id="financialContacts" />
+                <input class="form-control" asp-for="@Model.Team.FinancialContacts" id="financialContact" placeholder="start entering surname to search" />
+                <div id="financilaContactSelect"> 
+                </div>
                 <span asp-validation-for="@Model.Team.FinancialContacts" class="text-danger"></span>
+
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input asp-for="@Model.Account.ExpenseAuthorityName" class="form-control" id="authorityContact" />
-                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>*@
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" placeholder="start entering surname to search" />
+                <div id="authortyContactSelect"> 
+                </div>
+                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
 
             <div class="form-group"> 
@@ -146,8 +152,10 @@
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200){
-                        contactsMatchingSearch = [];
-                        $(".contactDisplay").html(xhr.response);
+                        console.log(xhr.response);
+                        var id = `#${contactType}`;
+                        console.log(id);
+                        $(id).html(xhr.response);
                     }
                 };
                 xhr.open('get', url);
@@ -166,42 +174,49 @@
               //  set new timeout;
                 timer = setTimeout(function () {
                   //  call wait-function and clear timeout
-                    queryForUser($("#primaryContact").val(), "primary");
+                    queryForUser($("#primaryContact").val(), "primaryContactSelect");
                     clearTimeout(timer);
                     timer = null;
                 }, 250);
             });
 
-            $(".contactDisplay").on("change", (e) => {
-                console.log(e);
-                switch (e.target.id)
-                {
-                    case "primaryContactSelect":
-                        $("#primaryContact").val($("#primaryContactSelect").val());
-                        break;
-                
-                }
+            //$(".contactDisplay").on("change", (e) => {
+            //    console.log(e);
+            //    switch (e.target.id)
+            //    {
+            //        case "primaryContactSelect":
+            //            $("#primaryContact").val($("#primaryContactSelect").val());
+            //            break;
+            //        case "approverContactSelect":
+            //            $("#approverContact").val($("#approverContactSelect").val());
+            //            break;
+            //        case "authorityContactSelect":
+            //            $("#autorityContact").val($("#authorityContactSelect").val());
+            //            break;
+            //        case "financialContactSelect":
+            //            $("#financialContact").val($("#expenseContactSelect").val());
+            //            break;
+            //    }
+            //});
+            $("#primaryContactSelect").on("change", (e) => {
+                $("#primaryContact").val($("#primaryContactValue").val());
             });
-
-
+            $("#approverContactSelect").on("change", (e) => {
+                $("#approverContact").val($("#approverContactValue").val());
+            });
+            $("#financialContactSelect").on("change", (e) => {
+                $("#financialContact").val($("#financialContactValue").val());
+            });
+            $("#authorityContactSelect").on("change", (e) => {
+                $("#authorityContact").val($("#authorityContactValue").val());
+            });
             $("#approverContact").on("keypress", (e) => {
                 if (timer) {
                     clearTimeout(timer);
                     timer = null;
                 }
                 timer = setTimeout(function () {
-                    queryForUser($("#approverContact").val())
-                    clearTimeout(timer);
-                    timer = null;
-                }, 80);
-            });
-            $("#approverContact").on("keypress", (e) => {
-                if (timer) {
-                    clearTimeout(timer);
-                    timer = null;
-                }
-                timer = setTimeout(function () {
-                    queryForUser($("#approverContact").val())
+                    queryForUser($("#approverContact").val(), "approverContactSelect");
                     clearTimeout(timer);
                     timer = null;
                 }, 80);
@@ -212,7 +227,7 @@
                     timer = null;
                 }
                 timer = setTimeout(function () {
-                    queryForUser($("#financialContacts").val())
+                    queryForUser($("#financialContacts").val(), "financialContactSelect");
                     clearTimeout(timer);
                     timer = null;
                 }, 80);
@@ -223,7 +238,7 @@
                     timer = null;
                 }
                 timer = setTimeout(function () {
-                    queryForUser($("#authorityContact").val())
+                    queryForUser($("#authorityContact").val(), "authorityContactSelect");
                     clearTimeout(timer);
                     timer = null;
                 }, 80);
