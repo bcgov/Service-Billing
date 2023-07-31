@@ -36,8 +36,8 @@ namespace Service_Billing.Models
         [Display(Name = "Client Team")]
         public string? ClientTeam { get; set; }
 
-        [Column("Created")]
-        public DateTime? DateCreated { get; set; }
+        //[Column("Created")]
+        //public DateTime? DateCreated { get; set; }
 
         public int? TeamId { get; set; }
   

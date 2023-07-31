@@ -50,9 +50,6 @@
                     <br/>
                     Contacts matching your input will display in a dropdown menu for you to pick. 
                 </div>
-       @*         <label>Search for approver contact</label>
-                <input id="primaryContact" class="form-control" />*@
-
 
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" >Primary Contact</label>
                 <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
@@ -60,17 +57,17 @@
                 </div>
                 <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.ApproverName" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.ApproverName" id="approverContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" placeholder="start entering surname to search" />
                 <div id="approverContactSelect">
                 </div>
-                <span asp-validation-for="@Model.ApproverName" class="text-danger"></span>
+                <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
 
-                <label asp-for="@Model.Team.FinancialContacts" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Team.FinancialContacts" id="financialContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
                 <div id="financialContactSelect"> 
                 </div>
-                <span asp-validation-for="@Model.Team.FinancialContacts" class="text-danger"></span>
+                <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
                 <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" placeholder="start entering surname to search" />
@@ -152,9 +149,7 @@
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200){
-                        console.log(xhr.response);
                         var id = `#${contactType}`;
-                        console.log(id);
                         $(id).html(xhr.response);
                     }
                 };
@@ -163,8 +158,6 @@
             };
             
             var timer = null;
-
-   
 
             $("#primaryContactSelect").on("change", (e) => {
                 $("#primaryContact").val($("#primaryContactValue").val());

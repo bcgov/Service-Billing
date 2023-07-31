@@ -12,7 +12,7 @@ namespace Service_Billing.ViewModels
         public ClientAccount Account { get; set; }
         public string? MinistryAcronym { get; set; }
         public string? DivisionOrBranch { get; set; }
-        public string? ApproverName { get; set; }
+      //  public string? ApproverName { get; set; }
         [NotMapped]
         public IEnumerable<SelectListItem> Contacts { get; set; }
 

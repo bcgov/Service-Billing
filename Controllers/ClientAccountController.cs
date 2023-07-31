@@ -66,27 +66,6 @@ namespace Service_Billing.Controllers
             return View(account);
         }
 
-        // GET: ClientAccountController/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: ClientAccountController/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
         // GET: ClientAccountController/Edit/5
         public ActionResult Edit(int id)
         {
@@ -159,8 +138,7 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-            ViewData["PrimaryContact"] = "";
-            //_graphServiceClient.Users.Request().
+
             return View(new ClientIntakeViewModel());
         }
 
@@ -172,12 +150,14 @@ namespace Service_Billing.Controllers
             {
                 string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
-                //if validation passes, etc...
                 ClientTeam team = model.Team;
+                team.Name = model.Account.Name;
+             
                 int teamId = _clientTeamRepository.Add(team);
 
                 ClientAccount account = model.Account;
                 account.TeamId = teamId;
+                int accountId = _clientAccountRepository.AddClientAccount(account);
             }
             catch(DbUpdateException ) 
             {
