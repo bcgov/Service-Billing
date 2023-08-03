@@ -4,21 +4,31 @@
 <h1>Bill info</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    @Html.ActionLink("Current Quarter", "Index", new { quarter = "current" }) | 
-    @Html.ActionLink("Previous Quarter", "Index", new { quarter = "previous" }) | 
-    @Html.ActionLink("All Quarters", "Index", new { quarter = "all" })
+    @Html.ActionLink("Current Quarter", "Index", new { quarterFilter = "current" }) | 
+    @Html.ActionLink("Previous Quarter", "Index", new { quarterFilter = "previous" }) | 
+    @Html.ActionLink("All Quarters", "Index", new { quarterFilter = "all" })
     <div>
         <a asp-controller="Bills"
            asp-action="Create">enter a new bill</a>
     </div>
-    <h2>Fiscal Period: @ViewBag.Quarter</h2>
+    <h2>Fiscal Period: @ViewData["Quarter"]</h2>
+
+    <div class="table-filter-section">
+        <h3>Filter by...</h3>
+        <form asp-action="Index" method="get">
+            Find by name: <input type="text" name="searchString" value="@ViewData["ClientFilter"]" />
+            <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
+            <input type="submit" value="Filter" class="btn btn-default" /> |
+            <a asp-action="Index">Back to Full List</a>
+        </form>
+    </div>
     <table class="table table-striped">
         <thead>
             <tr>
                 <th scope="col">Client</th>
                 <th scope="col">Title</th>
                 <th scope="col">Service Category</th>
-                @if(ViewBag.quarter == "all")
+                @if (ViewData["Quarter"] == "all")
                 {
                    <th>Fiscal Period</th>
                 }
@@ -47,7 +57,7 @@
                             }
                         }
                         </td>
-                    @if (ViewBag.quarter == "all")
+                    @if (ViewData["Quarter"] == "all")
                     {
                         <td>@bill.FiscalPeriod</td>
                     }

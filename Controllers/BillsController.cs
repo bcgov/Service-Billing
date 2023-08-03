@@ -22,30 +22,34 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
         }
 
-        public IActionResult Index(string quarter)
+        public IActionResult Index(string quarterFilter, string searchString)
         {
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             ViewBag.ServiceCategories = categories.ToList();
-            //   ViewBag.Quarter = String.IsNullOrEmpty(quarter) ? "name_desc" : "";
+            ViewData["QuarterFilter"] = quarterFilter;
+            ViewData["ClientFilter"] = searchString;
 
-            switch (quarter)
+            switch (quarterFilter)
             {
                 case "current":
                 default:
-                    ViewBag.Quarter = "Current Quarter";
+                    ViewData["Quarter"] = "Current Quarter";
                     bills = _billRepository.GetCurrentQuarterBills();
                     break;
                 case "previous":
-                    ViewBag.Quarter = "Previous Quarter";
+                    ViewData["Quarter"] = "Previous Quarter";
                     bills = _billRepository.GetPreviousQuarterBills();
                     break;
                 case "all":
-                    ViewBag.Quarter = "All Quarters";
+                    ViewData["Quarter"] = "All Quarters";
                     bills = _billRepository.AllBills;
                     break;
             }
+            if (!string.IsNullOrEmpty(searchString))
+                bills = bills.Where(x => x.ClientName.ToLower().Contains(searchString.ToLower()));
+
             return View(new AllBillsViewModel(bills, categories, clients));
         }
 
