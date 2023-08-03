@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
+using Microsoft.Identity.Web;
 using Service_Billing.Models;
 using Service_Billing.ViewModels;
 
@@ -12,24 +14,35 @@ namespace Service_Billing.Controllers
         private readonly IBillRepositroy _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IClientAccountRepository _clientAccountRepository;
+        private readonly GraphServiceClient _graphServiceClient;
+        private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
 
         public BillsController(IBillRepositroy billRepository,
             IServiceCategoryRepository categoryRepository,
-            IClientAccountRepository clientAccountRepository)
+            IClientAccountRepository clientAccountRepository,
+            IConfiguration configuration,
+                            GraphServiceClient graphServiceClient,
+                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
         {
+            _graphServiceClient = graphServiceClient;
+            _consentHandler = consentHandler;
             _billRepository = billRepository;
             _categoryRepository = categoryRepository;
             _clientAccountRepository = clientAccountRepository;
         }
 
-        public IActionResult Index(string quarterFilter, string searchString)
+        public IActionResult Index(string quarterFilter, string clientFilter, string titleFilter, int categoryFilter, string authorityFilter, bool meFilter)
         {
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             ViewBag.ServiceCategories = categories.ToList();
             ViewData["QuarterFilter"] = quarterFilter;
-            ViewData["ClientFilter"] = searchString;
+            ViewData["ClientFilter"] = clientFilter;
+            ViewData["TitleFilter"] = titleFilter;
+            ViewData["CategoryFilter"] = categoryFilter;
+            ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["MeFitler"] = meFilter;
 
             switch (quarterFilter)
             {
@@ -47,8 +60,33 @@ namespace Service_Billing.Controllers
                     bills = _billRepository.AllBills;
                     break;
             }
-            if (!string.IsNullOrEmpty(searchString))
-                bills = bills.Where(x => x.ClientName.ToLower().Contains(searchString.ToLower()));
+            // now filter the results
+            if (!string.IsNullOrEmpty(clientFilter))
+                bills = bills.Where(x => x.ClientName.ToLower().Contains(clientFilter.ToLower()));
+            if (!string.IsNullOrEmpty(titleFilter))
+                bills = bills.Where(x => x.Title.ToLower().Contains(titleFilter.ToLower()));
+            if (categoryFilter > 0)
+                bills = bills.Where(x => x.ServiceCategoryId == categoryFilter);
+            if (!string.IsNullOrEmpty(authorityFilter))
+            {
+                List<Bill> filteredBills = new List<Bill>();
+                foreach(Bill bill in bills)
+                {
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    if(account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(authorityFilter))
+                    {
+                        filteredBills.Append(bill);
+                    }
+                }
+
+                bills = filteredBills;
+            }
+            if(meFilter)
+            {
+                string currentUser = GetMyName().Result;
+                bills = bills.Where(x => x.CreatedBy == currentUser);
+
+            }
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }
@@ -236,6 +274,23 @@ namespace Service_Billing.Controllers
             }
 
             bill.FiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+        }
+
+        [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
+        public async Task<String> GetMyName()
+        {
+            try
+            {
+                var myName = await _graphServiceClient.Me.Request()
+                    .Select("displayName")
+                    .GetAsync();
+
+                return myName.DisplayName;
+            }
+            catch (Exception ex)
+            {
+                return "Could not get user's Graph name";
+            }
         }
     }
 }

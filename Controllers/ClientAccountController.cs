@@ -30,7 +30,7 @@ namespace Service_Billing.Controllers
         private readonly IMinistryRepository _ministryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
-        private string[] _graphScopes = { "User.ReadBasic.All" };
+     //   private string[] _graphScopes = { "User.ReadBasic.All" };
 
         public ClientAccountController(IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,

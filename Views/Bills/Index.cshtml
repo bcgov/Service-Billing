@@ -16,7 +16,24 @@
     <div class="table-filter-section">
         <h3>Filter by...</h3>
         <form asp-action="Index" method="get">
-            Find by name: <input type="text" name="searchString" value="@ViewData["ClientFilter"]" />
+            Client: <input type="text" name="clientFilter" value="@ViewData["ClientFilter"]" />
+            Title: <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
+            Service Category: <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
+                <option value="-1"></option>
+                @foreach(ServiceCategory category in ViewBag.ServiceCategories)
+                {
+                    if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
+                    {
+                        <option value="@category.ServiceId" selected>@category.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@category.ServiceId">@category.Name</option>
+                    }
+                }
+            </select>
+            EA: <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+            Created by me: <input type="checkbox" runat="server" name="meFilter" value="@ViewData["MeFilter"]" alt="must match your IDIR displayname, i.e. 'lastname, firstname Ministry'"/>
             <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
             <input type="submit" value="Filter" class="btn btn-default" /> |
             <a asp-action="Index">Back to Full List</a>
