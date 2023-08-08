@@ -48,9 +48,27 @@ namespace Service_Billing.Controllers
         }
 
         // GET: ClientAccountController
-        public ActionResult Index()
+        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            ViewData["Ministries"] = ministries;
+            ViewData["MinistryFilter"] = ministryFilter;
+            ViewData["NumberFilter"] = numberFilter;
+            ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["ResponsibilityFilter"] = responsibilityFilter;
+            ViewData["TeamFilter"] = teamFilter;
+
+            if(!String.IsNullOrEmpty(ministryFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter)).ToList();
+            if (numberFilter > 0)
+                clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
+            if (!String.IsNullOrEmpty(responsibilityFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.Contains(responsibilityFilter)).ToList();
+            if (!String.IsNullOrEmpty(authorityFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.Contains(authorityFilter)).ToList();
+            if (!String.IsNullOrEmpty(teamFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.Contains(teamFilter)).ToList();
 
             return View(new ClientAccountViewModel(clients));
         }

@@ -34,7 +34,7 @@ namespace Service_Billing.Controllers
             _ministryRepository = ministryRepository;
         }
 
-        public IActionResult Index(string quarterFilter, string clientFilter, string titleFilter, int categoryFilter, string authorityFilter, bool meFilter)
+        public IActionResult Index(string quarterFilter, string ministryFilter, string titleFilter, int categoryFilter, string authorityFilter, bool meFilter)
         {
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
@@ -43,7 +43,7 @@ namespace Service_Billing.Controllers
             ViewData["Ministries"] = ministries;
             ViewBag.ServiceCategories = categories.ToList();
             ViewData["QuarterFilter"] = quarterFilter;
-            ViewData["ClientFilter"] = clientFilter;
+            ViewData["MinistryFilter"] = ministryFilter;
             ViewData["TitleFilter"] = titleFilter;
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
@@ -66,8 +66,8 @@ namespace Service_Billing.Controllers
                     break;
             }
             // now filter the results
-            if (!string.IsNullOrEmpty(clientFilter))
-                bills = bills.Where(x => x.ClientName.ToLower().Contains(clientFilter.ToLower()));
+            if (!string.IsNullOrEmpty(ministryFilter))
+                bills = bills.Where(x => x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
             if (!string.IsNullOrEmpty(titleFilter))
                 bills = bills.Where(x => x.Title.ToLower().Contains(titleFilter.ToLower()));
             if (categoryFilter > 0)

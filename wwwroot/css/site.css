@@ -207,6 +207,10 @@ a {
     color: mediumorchid;
 }
 
-.table-filter-section form select{
+.table-filter-section{
+    border-bottom-style: solid;
+    border-bottom-color: grey;
+}
+.table-filter-section form select {
     max-width: 20%;
 }

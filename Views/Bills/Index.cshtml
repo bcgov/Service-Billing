@@ -19,9 +19,9 @@
     <div class="table-filter-section">
         <h3>Filter by...</h3>
         <form asp-action="Index" method="get">
-            <label for="clientFilter">Ministry</label>
-            <select name="clientFilter">
-                <option value="" disabled selected hidden>Select a ministry</option>
+            <label for="ministryFilter">Ministry</label>
+            <select name="ministryFilter">
+                <option value="" disabled selected hidden></option>
                 @if (ministries != null)
                 {
                     foreach (Ministry ministry in ministries)
