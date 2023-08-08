@@ -14,12 +14,14 @@ namespace Service_Billing.Controllers
         private readonly IBillRepositroy _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IClientAccountRepository _clientAccountRepository;
+        private readonly IMinistryRepository _ministryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
 
         public BillsController(IBillRepositroy billRepository,
             IServiceCategoryRepository categoryRepository,
             IClientAccountRepository clientAccountRepository,
+            IMinistryRepository ministryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -29,6 +31,7 @@ namespace Service_Billing.Controllers
             _billRepository = billRepository;
             _categoryRepository = categoryRepository;
             _clientAccountRepository = clientAccountRepository;
+            _ministryRepository = ministryRepository;
         }
 
         public IActionResult Index(string quarterFilter, string clientFilter, string titleFilter, int categoryFilter, string authorityFilter, bool meFilter)
@@ -36,13 +39,15 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            ViewData["Ministries"] = ministries;
             ViewBag.ServiceCategories = categories.ToList();
             ViewData["QuarterFilter"] = quarterFilter;
             ViewData["ClientFilter"] = clientFilter;
             ViewData["TitleFilter"] = titleFilter;
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
-            ViewData["MeFitler"] = meFilter;
+            //ViewData["MeFitler"] = meFilter;
 
             switch (quarterFilter)
             {
@@ -81,12 +86,16 @@ namespace Service_Billing.Controllers
 
                 bills = filteredBills;
             }
-            if(meFilter)
-            {
-                string currentUser = GetMyName().Result;
-                bills = bills.Where(x => x.CreatedBy == currentUser);
 
-            }
+            //if(meFilter != null)
+            //{
+            //    bool filterByMe = bool.Parse(meFilter);
+            //    if(filterByMe)
+            //    {
+            //        string currentUser = GetMyName().Result;
+            //        bills = bills.Where(x => x.CreatedBy == currentUser);
+            //    }
+            //}
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }

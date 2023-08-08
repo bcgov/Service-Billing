@@ -206,3 +206,7 @@ a {
 .change-category-message{
     color: mediumorchid;
 }
+
+.table-filter-section form select{
+    max-width: 20%;
+}
