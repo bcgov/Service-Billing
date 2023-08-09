@@ -10,9 +10,11 @@ namespace Service_Billing.Models
             _context = context;
         }
 
-        public void Add(ServiceCategory serviceCategory)
+        public int Add(ServiceCategory serviceCategory)
         {
-            throw new NotImplementedException();
+            _context.Add(serviceCategory);
+            _context.SaveChanges();
+            return serviceCategory.ServiceId;
         }
 
         public void Delete(ServiceCategory serviceCategory)
@@ -37,7 +39,7 @@ namespace Service_Billing.Models
 
         public void Update(ServiceCategory serviceCategory)
         {
-            throw new NotImplementedException();
+            _context.Update(serviceCategory);
         }
     }
 }
