@@ -3,6 +3,10 @@
 @{
     ViewData["Title"] = "Details";
     ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
+    var parms = new Dictionary<string, string>
+            {
+                { "clientNumber", Model.ClientNumber.ToString() }
+            };
 }
 
 <h1>Client Account Information</h1>
@@ -21,7 +25,11 @@
             @Html.DisplayNameFor(model => model.ClientNumber)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ClientNumber)
+            <a asp-controller="Bills"
+               asp-action="Index"
+               asp-all-route-data="parms"
+            title="See charges associated with this account">@Model.ClientNumber</a>
+           @*  @Html.DisplayFor(model => model.ClientNumber) *@
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ResponsibilityCentre)

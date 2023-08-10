@@ -34,7 +34,13 @@ namespace Service_Billing.Controllers
             _ministryRepository = ministryRepository;
         }
 
-        public IActionResult Index(string quarterFilter, string ministryFilter, string titleFilter, int categoryFilter, string authorityFilter, bool meFilter)
+        public IActionResult Index(string quarterFilter, 
+            string ministryFilter,
+            string titleFilter, 
+            int categoryFilter,
+            string authorityFilter,
+            bool meFilter,
+            int clientNumber)
         {
             IEnumerable<Bill> bills;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
@@ -47,6 +53,7 @@ namespace Service_Billing.Controllers
             ViewData["TitleFilter"] = titleFilter;
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["ClientNumber"] = clientNumber;
             //ViewData["MeFitler"] = meFilter;
 
             switch (quarterFilter)
@@ -86,16 +93,11 @@ namespace Service_Billing.Controllers
 
                 bills = filteredBills;
             }
-
-            //if(meFilter != null)
-            //{
-            //    bool filterByMe = bool.Parse(meFilter);
-            //    if(filterByMe)
-            //    {
-            //        string currentUser = GetMyName().Result;
-            //        bills = bills.Where(x => x.CreatedBy == currentUser);
-            //    }
-            //}
+            if(clientNumber > 0)
+            {
+                int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
+                bills = bills.Where(x => x.ClientAccountId == clientId);
+            }
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }

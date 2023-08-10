@@ -45,5 +45,14 @@ namespace Service_Billing.Models
 
             return account.Id;
         }
+
+        public int GetClientIdFromClientNumber(int clientNumber)
+        {
+            ClientAccount account = _context.ClientAccounts.FirstOrDefault(x => x.ClientNumber == clientNumber);
+            if (account != null)
+                return account.Id;
+            else return 0;
+        }
+       
     }
 }
