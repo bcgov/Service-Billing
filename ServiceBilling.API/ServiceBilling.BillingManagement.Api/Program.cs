@@ -1,5 +1,9 @@
 using ServiceBilling.BillingManagement.Api;
 
+using Serilog;
+
+// TODO(al): configure logging
+
 var builder = WebApplication.CreateBuilder(args);
 
 var app = builder

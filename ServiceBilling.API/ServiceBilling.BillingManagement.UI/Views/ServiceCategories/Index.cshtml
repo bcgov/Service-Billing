@@ -1,0 +1,25 @@
+﻿@model List<ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList.ServiceCategoryListVm>
+
+<h2>Service Category List</h2>
+
+<table class="table">
+    <tr>
+        <th>Service Category ID</th>
+        <th>Name</th>
+        <th>Business Area</th>
+        <th>Costs</th>
+        <th>Description</th>
+        <th>Unit of Measure</th>
+    </tr>
+    @foreach (var category in Model)
+    {
+        <tr>
+            <td>@category.ServiceCategoryId</td>
+            <td>@category.Name</td>
+            <td>@category.GdxBusinessArea</td>
+            <td>@category.Costs</td>
+            <td>@category.Description</td>
+            <td>@category.UOM</td>
+        </tr>
+    }
+</table>

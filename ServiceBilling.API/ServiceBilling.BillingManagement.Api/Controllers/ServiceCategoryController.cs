@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ServiceBilling.API.Application.Features.ServiceCategories.Commands.CreateServiceCategory;
+using ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoriesExport;
 using ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList;
 
 namespace ServiceBilling.BillingManagement.Api.Controllers
@@ -29,6 +30,14 @@ namespace ServiceBilling.BillingManagement.Api.Controllers
         {
             var response = await _mediator.Send(createServiceCategoryCommand);
             return Ok(response);
+        }
+
+        [HttpGet("export", Name = "Export Service Categories")]
+        public async Task<FileResult> ExportServiceCategories()
+        {
+            var fileDto = await _mediator.Send(new GetServiceCategoriesExportQuery());
+
+            return File(fileDto.Data, fileDto.ContentType, fileDto.ServiceCategoriesExportFileName);
         }
     }
 }

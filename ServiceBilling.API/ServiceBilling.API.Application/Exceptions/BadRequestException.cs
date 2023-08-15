@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace ServiceBilling.API.Application.Exceptions
 {
-    internal class BadRequestException
+    public class BadRequestException : Exception
     {
+        public BadRequestException(string message) : base(message)
+        {
+        }
     }
 }
