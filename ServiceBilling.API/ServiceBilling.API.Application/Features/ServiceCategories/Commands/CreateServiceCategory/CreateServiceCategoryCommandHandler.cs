@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using MediatR;
+using ServiceBilling.API.Application.Contracts.Infrastructure;
 using ServiceBilling.API.Application.Contracts.Persistence;
+using ServiceBilling.API.Application.Models.Mail;
 using ServiceBilling.API.Domain.Entities;
 
 namespace ServiceBilling.API.Application.Features.ServiceCategories.Commands.CreateServiceCategory
@@ -9,11 +11,16 @@ namespace ServiceBilling.API.Application.Features.ServiceCategories.Commands.Cre
     {
         private readonly IAsyncRepository<ServiceCategory> _serviceCategoryRepository;
         private readonly IMapper _mapper;
+        private readonly IEmailService _emailService;
 
-        public CreateServiceCategoryCommandHandler(IMapper mapper, IAsyncRepository<ServiceCategory> serviceCategoryRepository)
+        public CreateServiceCategoryCommandHandler(
+            IMapper mapper,
+            IAsyncRepository<ServiceCategory> serviceCategoryRepository,
+            IEmailService emailService)
         {
             _mapper = mapper;
             _serviceCategoryRepository = serviceCategoryRepository;
+            _emailService = emailService;
         }
 
         public async Task<Guid> Handle(CreateServiceCategoryCommand request, CancellationToken cancellationToken)
@@ -49,6 +56,14 @@ namespace ServiceBilling.API.Application.Features.ServiceCategories.Commands.Cre
                 LastModifiedBy = "Test",
                 LastModifiedDate = DateTime.Now
             };
+
+            try
+            {
+                await _emailService.SendEmail(new Email { To = "andre.lashley@gmail.com", Body = "A new service category was created!", Subject = "A new service category was created" });
+            }
+            catch (Exception ex)
+            {
+            }
 
             serviceCategory = await _serviceCategoryRepository.AddAsync(serviceCategory);
 

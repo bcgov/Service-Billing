@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using ServiceBilling.API.Application;
 using ServiceBilling.API.Infrastructure;
 using ServiceBilling.API.Persistence;
@@ -10,7 +11,7 @@ namespace ServiceBilling.BillingManagement.Api
         public static WebApplication ConfigureServices(
         this WebApplicationBuilder builder)
         {
-            //    AddSwagger(builder.Services);
+            AddSwagger(builder.Services);
 
             builder.Services.AddApplicationServices();
             builder.Services.AddInfrastructureServices(builder.Configuration);
@@ -53,14 +54,14 @@ namespace ServiceBilling.BillingManagement.Api
 
         public static WebApplication ConfigurePipeline(this WebApplication app)
         {
-            //    if (app.Environment.IsDevelopment())
-            //    {
-            //        app.UseSwagger();
-            //        app.UseSwaggerUI(c =>
-            //        {
-            //            c.SwaggerEndpoint("/swagger/v1/swagger.json", "GloboTicket Ticket Management API");
-            //        });
-            //    }
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Service Billing API");
+                });
+            }
 
             app.UseHttpsRedirection();
 
@@ -108,22 +109,23 @@ namespace ServiceBilling.BillingManagement.Api
         //    return app;
 
         //}
-        //private static void AddSwagger(IServiceCollection services)
-        //{
-        //    services.AddSwaggerGen(c =>
-        //    {
+
+        private static void AddSwagger(IServiceCollection services)
+        {
+            services.AddSwaggerGen(c =>
+            {
 
 
-        //        c.SwaggerDoc("v1", new OpenApiInfo
-        //        {
-        //            Version = "v1",
-        //            Title = "GloboTicket Ticket Management API",
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "Service Billing API",
 
-        //        });
+                });
 
-        //        c.OperationFilter<FileResultContentTypeOperationFilter>();
-        //    });
-        //}
+                // c.OperationFilter<FileResultContentTypeOperationFilter>();
+            });
+        }
 
         public static async Task ResetDatabaseAsync(this WebApplication app)
         {

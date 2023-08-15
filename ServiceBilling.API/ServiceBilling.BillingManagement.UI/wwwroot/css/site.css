@@ -1,0 +1,69 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.flex-container {
+    display: flex;
+    flex: 1;
+    margin-top: 120px;
+    padding: 10px;
+}
+
+.content-header {
+    background: #336699;
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    width: 40%;
+    margin-top: 10px;
+}
+
+    .content-header h3 {
+        margin: 0.2rem 0;
+        font-size: 1.2rem;
+    }
+
+.content {
+    text-align: left;
+    background: #f9f9f9;
+    padding: 1em;
+    border: 1px solid #ececec;
+    margin-bottom: 1em;
+    width: 40%;
+    height: 350px;
+    padding-top: 2em;
+}
+
+.BC-Gov-PrimaryButton {
+    background-color: #003366;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 12px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 18px;
+    font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
