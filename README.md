@@ -10,5 +10,18 @@ as well as the view itself. I've tested it, and it works. It can serve as a exam
 
 We will probably switch to using Keycloak authentication, and it looks like there's some scripts to help with this. https://gcpe.visualstudio.com/Hub/_wiki/wikis/Hub.wiki/41/News-Dashboard-Hub-API-Authentication
 
-## Integration with Jira
-I don't know. We'll figure it out. I'll skeleton out some controller code. 
+## License
+Copyright 2019 Province of British Columbia
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0 
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
