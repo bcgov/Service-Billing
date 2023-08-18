@@ -18,3 +18,14 @@
         </p>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        window.onload = function () {
+            var button = document.querySelector('.BC-Gov-PrimaryButton');
+            button.addEventListener('click', function () {
+                window.location.href = '@Url.Action("Index", "ServiceCategory")';
+            });
+        };
+    </script>
+}

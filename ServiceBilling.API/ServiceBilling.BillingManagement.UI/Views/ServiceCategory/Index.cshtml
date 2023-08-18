@@ -1,20 +1,23 @@
-﻿@*@model List<ServiceBilling.API.Application.Features.ServiceCategories.Queries.GetServiceCategoryList.ServiceCategoryListVm>
+﻿@model ServiceCategoryListViewModel
 
 <h2>Service Category List</h2>
+<a asp-controller="ServiceCategory" asp-action="Add" class="btn btn-primary">Add New</a>
+@if(!Model.ServiceCategories.Any())
+{
+    <p>No results</p>
+}
 
 <table class="table">
     <tr>
-        <th>Service Category ID</th>
         <th>Name</th>
         <th>Business Area</th>
         <th>Costs</th>
         <th>Description</th>
         <th>Unit of Measure</th>
     </tr>
-    @foreach (var category in Model)
+    @foreach (var category in Model.ServiceCategories)
     {
         <tr>
-            <td>@category.ServiceCategoryId</td>
             <td>@category.Name</td>
             <td>@category.GdxBusinessArea</td>
             <td>@category.Costs</td>
@@ -22,4 +25,4 @@
             <td>@category.UOM</td>
         </tr>
     }
-</table>*@
+</table>

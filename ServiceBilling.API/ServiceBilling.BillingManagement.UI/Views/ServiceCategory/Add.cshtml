@@ -1,0 +1,42 @@
+﻿@model ServiceCategory
+
+<h2>Create New Service Category</h2>
+<hr />
+
+<form method="post" asp-controller="ServiceCategory" asp-action="Add">
+    <div asp-validation-summary="All" class="text-danger"></div>
+    <div class="mb-3">
+        <label asp-for="Name" class="form-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="GdxBusinessArea" class="form-label"></label>
+        <input asp-for="GdxBusinessArea" class="form-control" />
+        <span asp-validation-for="GdxBusinessArea" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Costs" class="form-label"></label>
+        <input asp-for="Costs" class="form-control" />
+        <span asp-validation-for="Costs" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="UOM" class="form-label"></label>
+        <input asp-for="UOM" class="form-control" />
+        <span asp-validation-for="UOM" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="5" cols="50" style="resize: none;"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <input type="submit" value="Add category" class="btn btn-primary" />
+</form>
+<div>
+    <a asp-controller="ServiceCategory" asp-action="Index">Back to overview</a>
+</div>

@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "ServiceBilling.API.Identity": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:55244;http://localhost:55249"
+    }
+  }
+}
