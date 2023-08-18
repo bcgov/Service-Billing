@@ -1,13 +1,18 @@
+using Microsoft.EntityFrameworkCore;
+using ServiceBilling.BillingManagement.UI.Models;
+using ServiceBilling.BillingManagement.UI.Models.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//builder.Services.AddHttpClient(client =>
-//{
-//    client.BaseAddress = new Uri("your-api-base-url");
-//    // Other configuration if needed
-//});
+builder.Services.AddDbContext<DataContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+
+builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 var app = builder.Build();
 
@@ -17,6 +22,14 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<DataContext>();
+    await context.Database.MigrateAsync();
+    DbInitializer.Seed(context);
 }
 
 app.UseHttpsRedirection();
