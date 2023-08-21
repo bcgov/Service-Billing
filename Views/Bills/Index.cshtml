@@ -2,6 +2,9 @@
 @model AllBillsViewModel
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+    bool current = ViewData["quarterFilter"] == "current";
+    bool previous = ViewData["quarterFilter"] == "previous";
+    bool all = ViewData["quarterFilter"] == "all";
 }
 
 <h1>Bill info</h1>
@@ -19,9 +22,9 @@
     }
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    @Html.ActionLink("Current Quarter", "Index", new { quarterFilter = "current" }) | 
+@*     @Html.ActionLink("Current Quarter", "Index", new { quarterFilter = "current" }) | 
     @Html.ActionLink("Previous Quarter", "Index", new { quarterFilter = "previous" }) | 
-    @Html.ActionLink("All Quarters", "Index", new { quarterFilter = "all" })
+    @Html.ActionLink("All Quarters", "Index", new { quarterFilter = "all" }) *@
     <div>
         <a asp-controller="Bills"
            asp-action="Create">enter a new bill</a>
@@ -31,6 +34,14 @@
     <div class="table-filter-section">
         <h3>Filter by...</h3>
         <form asp-action="Index" method="get">
+            <div id="quarter-select">
+                <label for="quarterFilter">Select Quarter</label>
+                <select name="quarterFilter">
+                    <option value="current" selected=@current>Current</option>
+                    <option value="previous" selected=@previous>Previous</option>
+                    <option value="all" selected=@all>All</option>
+                </select>
+            </div>
             <label for="ministryFilter">Ministry</label>
             <select name="ministryFilter">
                 <option value="" disabled selected hidden></option>
