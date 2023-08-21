@@ -20,7 +20,7 @@
             <input type="hidden" asp-for="@Model.Id" />
             <div class="form-group">
                 <label asp-for="@Model.ClientName">Client: </label>
-                <input asp-for="@Model.ClientName"id="clientInput" class="form-control" />
+                <input asp-for="@Model.ClientName"id="clientInput" class="form-control" title="Begin entering a client name, and a list of matching clients will appear." />
                 <span asp-validation-for="@Model.ClientName" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -125,7 +125,7 @@
                         var data = JSON.parse(xhr.response);
 
                         for (const client in data) {
-                            clientsMatchingSearch.push({ label: data[client].clientName, "clientId": data[client].accountId });
+                            clientsMatchingSearch.push({ label: data[client].name, "clientId": data[client].id });
                         }
 
                         $("#clientInput").autocomplete({
