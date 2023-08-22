@@ -10,20 +10,40 @@ namespace Service_Billing.Models
         [Key]
         public int Id { get; set; }
 
+        /*	<sector/group> - <ministry acronym> - <sub group> - <full org/branch name> - <service>; e.g.: ECON – JTT – DataBC – WordPress; CITZ – OCIO – ISB. 
+o	Note: not all naming convention components are required. The naming convention is used to easily group and sort Client Accounts along organizational lines.
+*/
         [Display(Name = "Name")]
         public string? Name { get; set; }
 
+        [Required(ErrorMessage = "Please include a 3 digit billing code")]
+        [StringLength(3)]
+        [MinLength(3)]
+        //"must be unique, except for secondary accounts only used for alternative financial coding."
         [Display(Name = "Client Number")]
         public Int16? ClientNumber { get; set; } // three digit billing code
 
+        //5-digits or combination of digits and letters
+        [Required(ErrorMessage = "Please include a 5 character responsibility centre code")]
+        [StringLength(5)]
+        [MinLength(5)]
         [Display(Name = "Responsibility Center")]
         public string? ResponsibilityCentre { get; set; }
 
+        [Required(ErrorMessage = "Please include a 5 digit service line number")]
+        [StringLength(5)]
+        [MinLength(5)]
         [Display(Name = "Service Line")]
         public int? ServiceLine { get; set; }
 
+        [Required(ErrorMessage = "Please include a 4 digit STOB number")]
+        [StringLength(4)]
+        [MinLength(4)]
         public Int16? STOB { get; set; }
 
+        [Required(ErrorMessage = "Please include a 7 character project code")]
+        [StringLength(5)]
+        [MinLength(5)]
         [Display(Name = "Project")]
         public string? Project { get; set; }
 
