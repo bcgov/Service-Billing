@@ -167,16 +167,19 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
-                model.Account.Name = accountName;
-                ClientTeam team = model.Team;
-                team.Name = model.Account.Name;
-             
-                int teamId = _clientTeamRepository.Add(team);
+                if (ModelState.IsValid)
+                {
+                    string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
+                    model.Account.Name = accountName;
+                    ClientTeam team = model.Team;
+                    team.Name = model.Account.Name;
 
-                ClientAccount account = model.Account;
-                account.TeamId = teamId;
-                int accountId = _clientAccountRepository.AddClientAccount(account);
+                    int teamId = _clientTeamRepository.Add(team);
+
+                    ClientAccount account = model.Account;
+                    account.TeamId = teamId;
+                    int accountId = _clientAccountRepository.AddClientAccount(account);
+                }
             }
             catch(DbUpdateException ) 
             {

@@ -18,6 +18,7 @@
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Intake">
+            <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label for="orgSelect" class="control-label">Organization</label>
                 <select asp-for="@Model.MinistryAcronym" class="form-control" id="orgSelect">
