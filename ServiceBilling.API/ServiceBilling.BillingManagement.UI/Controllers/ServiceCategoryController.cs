@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using ServiceBilling.BillingManagement.UI.Models;
 using ServiceBilling.BillingManagement.UI.Models.Repositories;
 using ServiceBilling.BillingManagement.UI.ViewModels;
@@ -18,7 +19,7 @@ namespace ServiceBilling.BillingManagement.UI.Controllers
         {
             ServiceCategoryListViewModel model = new ServiceCategoryListViewModel
             {
-                ServiceCategories = (await _serviceCategoryRepository.GetAllServiceCategoriesAsync()).ToList()    
+                ServiceCategories = (await _serviceCategoryRepository.GetAllServiceCategoriesAsync()).ToList()
             };
 
             return View(model);
@@ -36,8 +37,22 @@ namespace ServiceBilling.BillingManagement.UI.Controllers
         [HttpPost]
         public async Task<IActionResult> Add([Bind("Name,GdxBusinessArea,Costs,Description,UOM")] ServiceCategory serviceCategory)
         {
-            await _serviceCategoryRepository.AddServiceCategoryAsync(serviceCategory);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                if (ModelState.IsValid)
+                {
+
+                    await _serviceCategoryRepository.AddServiceCategoryAsync(serviceCategory);
+                    return RedirectToAction(nameof(Index));
+                }
+
+            }
+            catch (Exception ex) 
+            {
+                ModelState.AddModelError("", $"Adding the service category, please try again! Error: {ex.Message}");    
+            }
+
+            return View();
         }
     }
 }
