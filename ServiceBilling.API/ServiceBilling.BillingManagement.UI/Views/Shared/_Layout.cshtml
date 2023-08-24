@@ -8,41 +8,88 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/ServiceBilling.BillingManagement.UI.styles.css" asp-append-version="true" />
 </head>
-<body>
+<body style="margin-top: 130px;">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">ServiceBilling.BillingManagement.UI</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+        <div class="banner">
+            <a href="https://gov.bc.ca">
+                <img src="~/img/BCID_H_rgb_rev.svg" alt="Go to the Government of British Columbia website" />
+            </a>
+            <h1>Service Billing</h1>
+        </div>
+        <div class="other">
+            <a class="nav-btn">
+                <i class="fas fa-bars" id="menu"></i>
+            </a>
+            <!--
+              This place is for anything that needs to be right aligned
+              beside the logo.
+            -->
+        </div>
     </header>
+    <nav class="navigation-main" id="navbar">
+        <div class="nav-container">
+            <ul>
+                @*<li><a href="" class="active">Home</a></li>*@
+                <li><a href=".">Create New Account</a></li>
+                <li><a href=".">Manage Account</a></li>
+                <li><a href=".">View Reports</a></li>
+                <li><a href=".">View Service Categories</a></li>
+                <li><a href=".">Configuration</a></li>
+                <li><a href=".">Help</a></li>
+            </ul>
+        </div>
+    </nav>
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2023 - ServiceBilling.BillingManagement.UI - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="footer">
+        <div class="footer-container">
+            <ul>
+                <li><a href=".">Home</a></li>
+                <li><a href=".">Disclaimer</a></li>
+                <li><a href=".">Privacy</a></li>
+                <li><a href=".">Accessibility</a></li>
+                <li><a href=".">Copyright</a></li>
+                <li><a href=".">Contact Us</a></li>
+            </ul>
         </div>
     </footer>
+    <script>
+        function setupSampleMenuControl() {
+            const useCapture = false;
+            const show = elem => elem.style.display = 'block';
+            const hide = elem => elem.style.display = 'none';
+            const toggle = (elem) => {
+                if (window.getComputedStyle(elem).display === 'block') {
+                    hide(elem);
+                    return;
+                }
+                show(elem);
+            };
+            // Listen for click events
+            const menuButton = document.getElementById('menu');
+            menuButton.addEventListener('click', (event) => {
+                // Filter events
+                if (event.target.id !== 'menu') return;
+                // Prevent default link behavior
+                event.preventDefault();
+                // Check for a valid target
+                const nav = document.getElementById('navbar')
+                if (!nav) return;
+                // Toggle
+                toggle(nav);
+            }, useCapture);
+        }
+        setupSampleMenuControl();
+    </script>
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
