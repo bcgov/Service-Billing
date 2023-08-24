@@ -99,33 +99,36 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, IFormCollection collection)
         {
-            ClientAccount? accountToUpdate =  _clientAccountRepository.GetClientAccount(id);
-            if(accountToUpdate == null)
+            if (ModelState.IsValid)
             {
-                return NotFound();
-            }
-            if(await TryUpdateModelAsync<ClientAccount>(accountToUpdate, "", 
-                a => a.Name,
-                a => a.ClientNumber,
-                a => a.ResponsibilityCentre,
-                a => a.ServiceLine,
-                a => a.STOB,
-                a => a.Project,
-                a => a.ExpenseAuthorityName,
-                a => a.ServicesEnabled))
-            {
-                try
+                ClientAccount? accountToUpdate =  _clientAccountRepository.GetClientAccount(id);
+                if(accountToUpdate == null)
                 {
-                    _clientAccountRepository.AddClientAccount(accountToUpdate);
+                    return NotFound();
                 }
-                catch (DbUpdateException /* ex */)
+                if (await TryUpdateModelAsync<ClientAccount>(accountToUpdate, "",
+                    a => a.Name,
+                    a => a.ClientNumber,
+                    a => a.ResponsibilityCentre,
+                    a => a.ServiceLine,
+                    a => a.STOB,
+                    a => a.Project,
+                    a => a.ExpenseAuthorityName,
+                    a => a.ServicesEnabled))
                 {
-                    ModelState.AddModelError("", "Unable to save changes. " +
-                        "Try again, and if the problem persists, " +
-                        "see your system administrator.");
-                }
+                    try
+                    {
+                        _clientAccountRepository.AddClientAccount(accountToUpdate);
+                    }
+                    catch (DbUpdateException /* ex */)
+                    {
+                        ModelState.AddModelError("", "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator.");
+                    }
 
-                return RedirectToAction(nameof(Index));
+                    return RedirectToAction(nameof(Index));
+                }
             }
 
             return Details(id);
@@ -173,9 +176,7 @@ namespace Service_Billing.Controllers
                     model.Account.Name = accountName;
                     ClientTeam team = model.Team;
                     team.Name = model.Account.Name;
-
                     int teamId = _clientTeamRepository.Add(team);
-
                     ClientAccount account = model.Account;
                     account.TeamId = teamId;
                     int accountId = _clientAccountRepository.AddClientAccount(account);

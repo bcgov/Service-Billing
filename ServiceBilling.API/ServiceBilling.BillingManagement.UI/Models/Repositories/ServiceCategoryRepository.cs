@@ -32,5 +32,15 @@ namespace ServiceBilling.BillingManagement.UI.Models.Repositories
         {
             return await _dataContext.ServiceCategories.OrderBy(c => c.Name).ToListAsync();
         }
+
+        public ServiceCategory? GetById(Guid ServiceCategoryId)
+        {
+            return _dataContext.ServiceCategories.FirstOrDefault(c => c.ServiceCategoryId == ServiceCategoryId);
+        }
+
+        public void Update(ServiceCategory serviceCategory)
+        {
+            _dataContext.ServiceCategories.Update(serviceCategory);
+        }
     }
 }
