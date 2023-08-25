@@ -1,11 +1,30 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.UI;
 using Microsoft.EntityFrameworkCore;
 using ServiceBilling.BillingManagement.UI.Models;
 using ServiceBilling.BillingManagement.UI.Models.Repositories;
+using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
+string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
+    .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
+    .AddInMemoryTokenCaches();
+builder.Services.AddControllersWithViews(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+});
 
 builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -13,6 +32,26 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+//role based access
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireFinancialOfficerRole",
+         policy => policy.RequireRole("GDXBillingService.FinancialOfficer"));
+    options.AddPolicy("RequireOwnerRole",
+        policy => policy.RequireRole("GDXBillingService.Owner"));
+    options.AddPolicy("RequireUserRole",
+        policy => policy.RequireRole("GDXBillingService.User"));
+});
+
+//track session data
+builder.Services.AddDistributedMemoryCache();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(20);
+    options.Cookie.HttpOnly = true;
+});
 
 var app = builder.Build();
 
