@@ -1,6 +1,8 @@
+using CsvHelper.Configuration;
 using Microsoft.EntityFrameworkCore;
 using ServiceBilling.BillingManagement.UI.Models;
 using ServiceBilling.BillingManagement.UI.Models.Repositories;
+using ServiceBilling.BillingManagement.UI.Services.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,6 +13,8 @@ builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

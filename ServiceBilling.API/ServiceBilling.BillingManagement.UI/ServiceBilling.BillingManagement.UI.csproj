@@ -10,7 +10,6 @@
 	<ItemGroup>
 		<Folder Include="Models\Mail\" />
 		<Folder Include="Services\FileExport\" />
-		<Folder Include="Services\Mail\" />
 	</ItemGroup>
 
 	<ItemGroup>
