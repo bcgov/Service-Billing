@@ -11,6 +11,7 @@
     <Folder Include="Models\Mail\" />
     <Folder Include="Services\FileExport\" />
     <Folder Include="Services\Mail\" />
+    <Folder Include="Views\ClientAccount\" />
   </ItemGroup>
 
   <ItemGroup>

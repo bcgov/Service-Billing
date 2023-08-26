@@ -1,31 +1,33 @@
 ﻿@{
     ViewData["Title"] = "Home Page";
 }
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
-<div class="flex-container">
-    <div style="display: flex; flex: 1; flex-direction: column;">
-        <h1>Welcome to Service Billing</h1>
-        <div class="content-header">
-            <h3>Login with IDIR</h3>
-        </div>
-        <div class="content">
-            <button class="BC-Gov-PrimaryButton">IDIR</button>
-        </div>
-    </div>
-    <div style="padding-top: 60px;">
-        <p>Need Help?<br />
-            Contact:  <a href="mailto: dms@gov.bc.ca">dms@gov.bc.ca</a>
-        </p>
-    </div>
+<div class="text-center">
+
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the FO role. Good work!'.</p>
+    }
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+    }
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireUserRole")).Succeeded)
+    {
+        <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        window.onload = function () {
-            var button = document.querySelector('.BC-Gov-PrimaryButton');
-            button.addEventListener('click', function () {
-                window.location.href = '@Url.Action("Index", "ServiceCategory")';
-            });
-        };
-    </script>
-}
+<div>
+    @Html.ActionLink("Charges and Reporting", "Index", "Charges")
+</div>
+<div>
+    @Html.ActionLink("Client Account Index", "Index", "ClientAccount")
+</div>
+<div>
+    @Html.ActionLink("Client Intake Form", "Intake", "ClientAccount")
+</div>
+<div>
+    @Html.ActionLink("Service Categories", "Index", "ServiceCategory")
+</div>

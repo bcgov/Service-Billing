@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using ServiceBilling.BillingManagement.UI.Models;
 using ServiceBilling.BillingManagement.UI.Models.Repositories;
 using Microsoft.Extensions.DependencyInjection;
+using ServiceChargeing.ChargeingManagement.UI.Models.Repositories;
+using ServiceChargeing.BillingManagement.UI.Models.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -18,6 +20,7 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
     .AddInMemoryTokenCaches();
+
 builder.Services.AddControllersWithViews(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
@@ -29,7 +32,15 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddDbContext<DataContext>(options =>
             options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddRazorPages()
+    .AddMicrosoftIdentityUI();
+
+
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+builder.Services.AddScoped<IChargesRepository, ChargesRepository>();
+builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
+builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
+builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 

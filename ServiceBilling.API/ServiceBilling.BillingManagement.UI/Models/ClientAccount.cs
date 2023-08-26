@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using NuGet.Configuration;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Service_Billing.Models
+namespace ServiceBilling.BillingManagement.UI.Models
 {
     // see https://apps.itsm.gov.bc.ca/confluence/display/GDXSB/Account+Setup for client documentation
     public class ClientAccount
@@ -59,18 +57,8 @@ o	Note: not all naming convention components are required. The naming convention
         [Display(Name = "Client Team")]
         public string? ClientTeam { get; set; }
 
-        //[Column("Created")]
-        //public DateTime? DateCreated { get; set; }
-
         public int? TeamId { get; set; }
-  
+
         public bool? IsApprovedByEA { get; set; }
     }
 }
-/* some validation concerns:
- * Client= 3 digits
-Responsibility Centre= 5 digits
-Service Line= 5 digits
-STOB= 4 digits
-Project= 7 digits
-*/
