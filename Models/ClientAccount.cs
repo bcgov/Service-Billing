@@ -63,8 +63,8 @@ o	Note: not all naming convention components are required. The naming convention
         //public DateTime? DateCreated { get; set; }
 
         public int? TeamId { get; set; }
-  
-        public bool? IsApprovedByEA { get; set; }
+
+        public bool IsApprovedByEA { get; set; } = false;
     }
 }
 /* some validation concerns:

@@ -56,9 +56,9 @@
                 @Html.DisplayFor(modelItem => item.UOM)
             </td>
             <td>
-                <a asp-action="Details" asp-route-id="@item.ServiceId">Details</a> |
-                <a asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a> |
-                <a asp-action="Delete" asp-route-id="@item.ServiceId">Delete</a>
+                @* <a asp-action="Details" asp-route-id="@item.ServiceId">Details</a> | *@
+                <a asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a> 
+                @* <a asp-action="Delete" asp-route-id="@item.ServiceId">Delete</a> *@
             </td>
         </tr>
 }

@@ -6,22 +6,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 
-//using Microsoft.AspNetCore.Http;
-//using System.Diagnostics;
-//using Microsoft.AspNetCore.Authorization;
-//using Azure;
-//using Microsoft.Extensions.Azure;
-//using Azure.Identity;
-//using Azure.Security.KeyVault.Secrets;
-//using Microsoft.Extensions.Configuration;
-//using Microsoft.Extensions.Logging;
-//using Microsoft.Identity.Client;
-//using System;
-//using System.IO;
-//using System.Threading.Tasks;
-//using Microsoft.CodeAnalysis.Elfie.Diagnostics;
-//using static System.Formats.Asn1.AsnWriter;
-
 namespace Service_Billing.Controllers
 {
     public class ClientAccountController : Controller

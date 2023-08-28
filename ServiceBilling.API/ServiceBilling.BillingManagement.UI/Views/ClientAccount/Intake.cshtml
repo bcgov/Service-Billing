@@ -1,0 +1,229 @@
+﻿@using Microsoft.Graph;
+
+@model ServiceBilling.BillingManagement.UI.ViewModels.ClientIntakeViewModel;
+
+@{
+    ViewData["Title"] = "Intake";
+    Layout = "_Layout";
+}
+
+@{
+    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+}
+
+<h1>Client Intake</h1>
+
+<h4>Please fill out the client intake form.</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Intake">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label for="orgSelect" class="control-label">Organization</label>
+                <select asp-for="@Model.MinistryAcronym" class="form-control" id="orgSelect">
+                    <option value="" disabled selected hidden>Select a ministry</option>
+                    @if (ministries != null)
+                    {
+                        foreach (Ministry ministry in ministries)
+                        {
+                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
+                <input asp-for="@Model.DivisionOrBranch" id="clientInput" class="form-control" />
+                <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
+            </div>
+            @*
+            One item that I would like removed is:  Client Team Name*.  The client team name is auto generated based on the
+            ‘Ministry Acronym’ and the ‘Division or Branch’ info.  This is GDX’s client account name format and we do not want
+            clients creating their own client team names.  So please don’t include in the new form. --Carolyn Mellor
+            *@
+
+            <div class="form-group" id="intake-contacts">
+                <h3>Contacts</h3>
+                <div id="intake-contacts-instructions">
+                    To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
+                    For example: "Smith, Jane CITZ:EX".
+                    <br />
+                    Contacts matching your input will display in a dropdown menu for you to pick.
+                </div>
+
+                <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+                <div id="primaryContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+
+                <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" placeholder="start entering surname to search" />
+                <div id="approverContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
+
+                <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+                <div id="financialContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
+
+                <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" placeholder="start entering surname to search" />
+                <div id="authorityContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>figure out how to store other contacts</label>
+            </div>
+            <div class="form-group">
+                <label class="control-label">CAS Client Number</label>
+                <input asp-for="@Model.Account.Project" class="form-control" />
+                <span asp-validation-for="@Model.Account.Project" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
+                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" />
+                <span asp-validation-for="@Model.Account.ResponsibilityCentre" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" />
+                <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.STOB" class="control-label">CAS SToB Number</label>
+                <input asp-for="@Model.Account.STOB" class="form-control" />
+                <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.Project" class="control-label">CAS Project Number</label>
+                <input asp-for="@Model.Account.Project" class="form-control" />
+                <span asp-validation-for="@Model.Account.Project" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Client Account Number</label>
+                <input asp-for="@Model.Account.ClientNumber" class="form-group" />
+                <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Account.IsApprovedByEA">Active</label>
+
+                <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" checked="@Model.Account.IsApprovedByEA" />
+                <span asp-validation-for="@Model.Account.IsApprovedByEA" class="text-danger"></span>
+            </div>
+            @* <div class="form-group">Contact1_Type</label>
+            <input asp-for="@Model." class="form-group" />
+            <span asp-validation-for="@Model." class="text-danger"></span>
+            </div>
+            <div class="form-group">
+            <label asp-for="@Model.">Contact1_Name</label>
+            <input asp-for="@Model." class="form-group" />
+            <span asp-validation-for="@Model." class="text-danger"></span>
+            </div>*@
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            const queryForUser = (query, contactType) => {
+                var url = "../../ClientAccount/SearchForContact?query=" + query + "&contactType=" + contactType;
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var id = `#${contactType}`;
+                        $(id).html(xhr.response);
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+            };
+
+            var timer = null;
+
+            $("#primaryContactSelect").on("change", (e) => {
+                $("#primaryContact").val($("#primaryContactValue").val());
+            });
+            $("#approverContactSelect").on("change", (e) => {
+                $("#approverContact").val($("#approverContactValue").val());
+            });
+            $("#financialContactSelect").on("change", (e) => {
+                $("#financialContact").val($("#financialContactValue").val());
+            });
+            $("#authorityContactSelect").on("change", (e) => {
+                $("#authorityContact").val($("#authorityContactValue").val());
+            });
+
+            $("#primaryContact").on("keypress", (e) => {
+                // clear timeout if already applied
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                //  set new timeout;
+                timer = setTimeout(function () {
+                    //  call wait-function and clear timeout
+                    queryForUser($("#primaryContact").val(), "primaryContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+
+            $("#approverContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#approverContact").val(), "approverContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+            $("#financialContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#financialContact").val(), "financialContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+            $("#authorityContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#authorityContact").val(), "authorityContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+        });
+    </script>
+}

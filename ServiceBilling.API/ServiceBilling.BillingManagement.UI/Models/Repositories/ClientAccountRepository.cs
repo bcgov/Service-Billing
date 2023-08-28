@@ -1,40 +1,49 @@
-﻿namespace ServiceBilling.BillingManagement.UI.Models.Repositories
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace ServiceBilling.BillingManagement.UI.Models.Repositories
 {
     public class ClientAccountRepository : IClientAccountRepository
     {
-        public int AddClientAccount(ClientAccount account)
-        {
-            throw new NotImplementedException();
-        }
+        private readonly DataContext _dataContext;
 
-        public void CreateClientAccount(ClientAccount account)
+        public ClientAccountRepository(DataContext dataContext)
         {
-            throw new NotImplementedException();
+            _dataContext = dataContext;
         }
 
         public IEnumerable<ClientAccount> GetAll()
         {
-            throw new NotImplementedException();
+            return _dataContext.ClientAccounts.OrderBy(c => c.Name);
         }
 
         public ClientAccount? GetClientAccount(int accountId)
         {
-            throw new NotImplementedException();
-        }
-
-        public int GetClientIdFromClientNumber(int clientNumber)
-        {
-            throw new NotImplementedException();
+            return _dataContext.ClientAccounts.FirstOrDefault(c => c.Id == accountId);
         }
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
         {
-            throw new NotImplementedException();
+            var x = _dataContext.ClientAccounts.Where(c => c.Name.Contains(queryString)).OrderBy(c => c.Name);
+            var y = x.ToList();
+            return x;
         }
 
-        public void UpdateClientAccount(ClientAccount account)
+        public int AddClientAccount(ClientAccount account)
         {
-            throw new NotImplementedException();
+           _dataContext.AddAsync(account);
+           _dataContext.SaveChanges();
+
+            return account.Id;
         }
+
+        public int GetClientIdFromClientNumber(int clientNumber)
+        {
+            ClientAccount account = _dataContext.ClientAccounts.FirstOrDefault(x => x.ClientNumber == clientNumber);
+            if (account != null)
+                return account.Id;
+            else return 0;
+        }
+
     }
 }
+

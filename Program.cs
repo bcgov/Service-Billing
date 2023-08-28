@@ -37,7 +37,6 @@ builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped <IMinistryRepository, MinistryRepository>();
 
 builder.Services.AddMvc();
-builder.Services.AddTransient<IContactLookupService, ContactLookupService>();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>

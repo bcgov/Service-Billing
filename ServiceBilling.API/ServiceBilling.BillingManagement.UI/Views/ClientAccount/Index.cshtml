@@ -1,0 +1,88 @@
+﻿@using ServiceBilling.BillingManagement.UI.Models;
+
+@model ClientAccountViewModel
+@{
+    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+}
+<h1>Client Account info</h1>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+
+    <div class="table-filter-section">
+        <h3>Filter by...</h3>
+        <form asp-action="Index" method="get">
+            <label for="ministryFilter">Ministry</label>
+            <select name="ministryFilter">
+                <option value="" disabled selected hidden></option>
+                @if (ministries != null)
+                {
+                    foreach (Ministry ministry in ministries)
+                    {
+                        string selectedMinistry = "";
+                        if (ViewData["MinistryFilter"] != null)
+                            selectedMinistry = ViewData["MinistryFilter"].ToString();
+
+                        if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                        {
+                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                        }
+                        else
+                        {
+                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                        }
+                    }
+                }
+            </select>
+            <label for="numberFilter">Client #</label>
+            <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" />
+            <label for="authorityFilter">Responsibility Centre</label>
+            <input type="text" name="responsibilityFilter" value="@ViewData["ResponsibilityFilter"]" />
+            <label for="authorityFilter">Expense Authority</label>
+            <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+            <label for="authorityFilter">Team Name</label>
+            <input type="text" name="teamFilter" value="@ViewData["TeamFilter"]" />
+
+            <input type="submit" value="Filter" class="btn btn-default" />
+            <a asp-action="Index">Back to Full List</a>
+        </form>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Name</th>
+                <th scope="col">Client #</th>
+                <th scope="col">Responsibility Centre</th>
+                <th scope="col">Expense Authority</th>
+                <th scope="col">Client Team</th>
+                <th scope="col">Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (ClientAccount account in Model.ClientAccounts)
+            {
+                var parms = new Dictionary<string, string>
+            {
+            { "clientNumber", account.ClientNumber.ToString() }
+            };
+                <tr>
+                    <td>@account.Name</td>
+                    <td>
+                        <a asp-controller="Bills"
+                           asp-action="Index"
+                           asp-all-route-data="parms"
+                           title="See charges associated with this account">@account.ClientNumber</a>
+                    </td>
+
+                    <td>@account.ResponsibilityCentre</td>
+                    <td>@account.ExpenseAuthorityName</td>
+                    <td>@account.ClientTeam</td>
+                    <td>
+                        <a asp-controller="ClientAccount"
+                           asp-action="Details"
+                           asp-route-id="@account.Id">See more</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+</div>

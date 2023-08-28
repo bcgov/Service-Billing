@@ -75,9 +75,9 @@
                 <option value="-1"></option>
                 @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                 {
-                    Guid categoryFilter = new Guid();
+                    Guid categoryFilterGuid = new Guid();
 
-                    if (Guid.TryParse(ViewData["CategoryFilter"].ToString(), out categoryFilter) && category.ServiceCategoryId == categoryFilter)
+                    if (ViewData["CategoryFilter"] != null && Guid.TryParse(ViewData["CategoryFilter"].ToString(), out categoryFilterGuid) && category.ServiceCategoryId == categoryFilterGuid)
                     {
                         <option value="@category.ServiceCategoryId" selected>@category.Name</option>
                     }

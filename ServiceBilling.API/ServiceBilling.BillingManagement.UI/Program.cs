@@ -35,6 +35,8 @@ builder.Services.AddDbContext<DataContext>(options =>
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
 
+builder.Services.AddServerSideBlazor()
+               .AddMicrosoftIdentityConsentHandler();
 
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IChargesRepository, ChargesRepository>();

@@ -11,16 +11,6 @@ namespace Service_Billing.Models
             _context = context;
         }
 
-        public void CreateClientAccount(ClientAccount account)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void UpdateClientAccount(ClientAccount account) 
-        {
-            throw new NotImplementedException();
-        }
-
         public IEnumerable<ClientAccount> GetAll()
         {
             return _context.ClientAccounts.OrderBy(c => c.Name);
