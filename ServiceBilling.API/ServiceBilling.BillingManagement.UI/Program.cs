@@ -1,3 +1,4 @@
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -6,10 +7,12 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.EntityFrameworkCore;
 using ServiceBilling.BillingManagement.UI.Models;
-using ServiceBilling.BillingManagement.UI.Models.Repositories;
 using Microsoft.Extensions.DependencyInjection;
-using ServiceChargeing.ChargeingManagement.UI.Models.Repositories;
-using ServiceChargeing.BillingManagement.UI.Models.Repositories;
+using CsvHelper.Configuration;
+using Microsoft.EntityFrameworkCore;
+using ServiceBilling.BillingManagement.UI.Models;
+using ServiceBilling.BillingManagement.UI.Models.Repositories;
+using ServiceBilling.BillingManagement.UI.Services.Mail;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -43,6 +46,8 @@ builder.Services.AddScoped<IChargesRepository, ChargesRepository>();
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
