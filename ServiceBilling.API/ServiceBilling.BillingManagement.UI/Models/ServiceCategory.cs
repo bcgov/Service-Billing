@@ -20,5 +20,7 @@ namespace ServiceBilling.BillingManagement.UI.Models
         public string Description { get; set; } = string.Empty;
         
         public string UOM { get; set; } = string.Empty;
+
+        public bool IsActive { get; set; } = false;
     }
 }

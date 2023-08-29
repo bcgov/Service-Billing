@@ -7,29 +7,46 @@
     <p>No results</p>
 }
 
-<table class="table table-striped mt-3 table-outer-bordered">
-    <thead>
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Business Area</th>
+        <th>Costs</th>
+        <th>Description</th>
+        <th>Unit of Measure</th>
+        <th>Is Active?</th>
+    </tr>
+    @foreach (var category in Model.ServiceCategories)
+    {
         <tr>
-            <th>Name</th>
-            <th>Business Area</th>
-            <th>Costs</th>
-            <th>Description</th>
-            <th>Unit of Measure</th>
+            <td>
+                @Html.DisplayFor(modelItem => category.GdxBusinessArea)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => category.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => category.Costs)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => category.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => category.UOM)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => category.IsActive)
+            </td>
+            
+            <td>
+                <a asp-action="Edit" asp-route-id="@category.ServiceCategoryId">Edit</a> |
+                <a asp-action="Delete" asp-route-id="@category.ServiceCategoryId">Delete</a>
+            </td>
         </tr>
-    </thead>
-    <tbody>
-        @foreach (var category in Model.ServiceCategories)
-        {
-            <tr>
-                <td>@category.Name</td>
-                <td>@category.GdxBusinessArea</td>
-                <td>@category.Costs</td>
-                <td>@category.Description</td>
-                <td>@category.UOM</td>
-            </tr>
-        }
-    </tbody>
+    }
 </table>
+
 <div>
     <a asp-controller="ServiceCategory" asp-action="Export" class="btn btn-primary">Export Service Categories</a>
 </div>
+

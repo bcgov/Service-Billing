@@ -1,216 +1,322 @@
-header {
-    padding: 0 65px 0 65px;
-    background-color: #036;
-    border-bottom: 2px solid #fcba19;
-    color: #fff;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    height: 65px;
-    width: 100%;
-    margin-bottom: 20px;
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+    html {
+        font-size: 16px;
+    }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-    font-family: "BCSans", "Noto Sans", Verdana, Arial, sans-serif;
-    background-color: #fff;
-    color: #494949;
-    font-size: 13px;
-    overflow-y: scroll;
+    margin-bottom: 60px;
 }
 
-a {
-    color: #1a5a96;
-    text-decoration: none;
+.flex-container {
+    display: flex;
+    flex: 1;
+    margin-top: 120px;
+    padding: 10px;
 }
 
-.clear {
-    clear: both;
+.content-header {
+    background: #336699;
+    color: #fff;
+    text-align: left;
+    padding: 10px;
+    width: 40%;
+    margin-top: 10px;
 }
 
-#header {
-    background-color: #036;
-}
-
-    #header .content {
-        padding: 0 30px;
-    }
-
-    #header h1 {
-        color: #fff;
-        margin: 10px 0;
-        padding: 0;
-    }
-
-        #header h1 a,
-        #header h1 a:hover {
-            color: #fff;
-            text-decoration: none;
-        }
-
-    #header .search {
-        padding-top: 13px;
-        width: 350px;
-        float: right;
-    }
-
-.row div:first-child {
-    padding-left: 0;
-}
-
-.row div:last-child {
-    padding-right: 0;
-}
-
-#header .search input {
-    border: 0 none;
-    color: #494949;
-    height: 25px;
-    outline: 0 none;
-    padding: 3px 10px 3px;
-    width: 100%;
-    font-size: 14px;
-    font-style: italic;
-}
-
-#header .search .search-trigger {
-    margin-top: -25px;
-    cursor: pointer;
-    height: 25px;
-    position: relative;
-    float: right;
-    width: 25px;
-    line-height: 25px;
-    /*
-    background-image: url(Images/search-ico.png);
-    background-position: 98% center;
-    background-repeat: no-repeat;
-        right: 6px;
-    */
-}
-
-    #header .search .search-trigger i {
-        color: grey;
-    }
-
-#header-top {
-    height: 65px;
-    border-bottom: 2px solid #fcba19;
-}
-
-#header-bottom {
-    height: 50px;
-    -webkit-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.2);
-    -ms-box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.2);
-    box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.2);
-}
-
-    #header-bottom h1 {
-        font-size: 24px;
-        font-weight: normal;
-        color: #fff;
-        padding-top: 13px;
-        margin: 0;
+    .content-header h3 {
+        margin: 0.2rem 0;
+        font-size: 1.2rem;
     }
 
 .content {
-    min-width: 680px;
-    max-width: 960px;
-    margin: 0 auto;
+    text-align: left;
+    background: #f9f9f9;
+    padding: 1em;
+    border: 1px solid #ececec;
+    margin-bottom: 1em;
+    width: 40%;
+    height: 350px;
+    padding-top: 2em;
 }
 
-#nav-container {
-    position: relative;
-    z-index: 10;
-    background-color: #38598a;
-    -webkit-box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.2);
-    -ms-box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.2);
-    box-shadow: 0 3px 5px 0 rgba(0, 0, 0, 0.2);
+.BC-Gov-PrimaryButton {
+    background-color: #003366;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 12px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    font-size: 18px;
+    font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+    font-weight: 700;
+    letter-spacing: 1px;
 }
 
-    #nav-container .content {
-        padding: 0 30px;
+header {
+    background-color: #036;
+    border-bottom: 2px solid #fcba19;
+    padding: 0 65px 0 65px;
+    color: #fff;
+    display: flex;
+    height: 65px;
+    top: 0px;
+    position: fixed;
+    width: 100%;
+}
+
+    header h1 {
+        font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+        font-weight: normal; /* 400 */
+        margin: 5px 5px 0 18px;
+        visibility: hidden;
     }
 
-    #nav-container .shadow-box {
-        -webkit-box-shadow: inset 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
-        -ms-box-shadow: inset 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
-        box-shadow: inset 0px 3px 5px 0 rgba(0, 0, 0, 0.2);
+    header .banner {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        margin: 0 10px 0 0;
+        /* border-style: dotted;
+  border-width: 1px;
+  border-color: lightgrey; */
     }
 
-    #nav-container .nav {
-        font-size: 13px;
-        position: relative;
-    }
-
-        #nav-container .nav li {
-            padding: 0;
-            margin: 0;
+        header .banner img {
+            height: 50px;
         }
 
-            #nav-container .nav li.active {
-                background-color: white;
-                border-right: 1px solid #ffffff;
+    header .other {
+        display: flex;
+        flex-grow: 1;
+        /* border-style: dotted;
+  border-width: 1px;
+  border-color: lightgrey; */
+    }
+
+/*
+  These are sample media queries only. Media queries are quite subjective
+  but, in general, should be made for the three different classes of screen
+  size: phone, tablet, full.
+*/
+
+@media screen and (min-width: 600px) and (max-width: 899px) {
+    header h1 {
+        font-size: calc(7px + 2.2vw);
+        visibility: visible;
+    }
+}
+
+@media screen and (min-width: 900px) {
+    header h1 {
+        font-size: 2.0em;
+        visibility: visible;
+    }
+}
+
+footer {
+    background-color: #036;
+    border-top: 2px solid #fcba19;
+    color: #fff;
+    font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+}
+
+    footer .footer-container {
+        display: flex;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        height: 46px;
+    }
+
+    footer ul {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin: 0;
+        color: #fff;
+        list-style: none;
+        align-items: center;
+        height: 100%;
+    }
+
+        footer ul li a {
+            font-size: 0.813em;
+            font-weight: normal; /* 400 */
+            color: #fff;
+            border-right: 1px solid #4b5e7e;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+    footer a:hover {
+        color: #fff;
+        text-decoration: underline;
+    }
+
+    footer a:focus {
+        outline: 4px solid #3B99FC;
+        outline-offset: 1px;
+    }
+
+header a [class^="fas fa-"] {
+    color: white;
+    font-size: 1.4em;
+    font-style: bold;
+    line-height: 1;
+    /* border-style: solid;
+    border-width: 1px;
+    border-color: #fcba19; */
+    padding: 5px;
+    -webkit-font-smoothing: antialiased;
+}
+
+header .nav-btn {
+    display: block;
+    width: auto;
+    margin: 0 0 0 auto;
+    cursor: pointer;
+}
+
+.navigation-main {
+    display: none;
+    position: fixed;
+    top: 65px;
+    color: #fcba19;
+    background-color: #38598a;
+    width: 100%;
+    -webkit-box-shadow: 0 6px 8px -4px #b3b1b3;
+    -moz-box-shadow: 0 6px 8px -4px #b3b1b3;
+    box-shadow: 0 6px 8px -4px #b3b1b3;
+}
+
+    .navigation-main .nav-container {
+        padding: 10px 0 10px 0;
+    }
+
+        .navigation-main .nav-container ul {
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            color: #fff;
+            list-style: none;
+            margin-left: -25px;
+            /* border-style: dotted;
+    border-width: 1px;
+    border-color: red; */
+        }
+
+            .navigation-main .nav-container ul li {
+                margin: 5px 0;
             }
 
-                #nav-container .nav li.active a {
-                    color: #494949;
+                .navigation-main .nav-container ul li a {
+                    display: flex;
+                    font-size: 0.813em;
+                    font-weight: normal; /* 400 */
+                    color: #fff;
+                    padding: 0 15px 0 15px;
+                    text-decoration: none;
+                    /* border-style: dotted;
+    border-width: 1px;
+    border-color: green; */
                 }
 
-                #nav-container .nav li.active + li a {
-                    border-left: none;
+                    .navigation-main .nav-container ul li a:hover {
+                        text-decoration: underline;
+                    }
+
+            .navigation-main .nav-container ul .active {
+                text-decoration: underline;
+                font-weight: bold;
+            }
+
+:focus {
+    outline: 4px solid #3B99FC;
+    outline-offset: 1px;
+}
+
+/*
+    These are sample media queries only. Media queries are quite subjective
+    but, in general, should be made for the three different classes of screen
+    size: phone, tablet, full. 
+  */
+
+@media screen and (min-width: 768px) {
+    .navigation-main {
+        display: block;
+    }
+
+        .navigation-main .nav-container ul {
+            flex-direction: row;
+        }
+
+            .navigation-main .nav-container ul li {
+                margin: 0;
+            }
+
+                .navigation-main .nav-container ul li a {
+                    border-right: 1px solid #9b9b9b;
                 }
 
-            #nav-container .nav li:first-child a {
-                padding-left: 0;
-            }
+    header .nav-btn {
+        display: none;
+        width: auto;
+        margin: 0 0 0 auto;
+        cursor: pointer;
+    }
+}
 
-            #nav-container .nav li a {
-                padding: 11px 13px 7px;
-                margin: 9px 0;
-                display: block;
-                border-left: 1px solid #fff;
-                border-left: 1px solid rgba(255, 255, 255, 0.3);
-                text-decoration: none;
-                font-size: 14px;
-            }
+@media screen and (min-width: 768px) and (max-width: 899px) {
+    header h1 {
+        font-size: calc(7px + 2.2vw);
+        visibility: visible;
+    }
+}
 
-            #nav-container .nav li:first-child a {
-                border-left: none;
-            }
+@media screen and (min-width: 900px) {
+    header h1 {
+        font-size: 2.0em;
+        visibility: visible;
+    }
+}
 
-            #nav-container .nav li a.has-menu::after {
-                content: url(Images/icon-down-arrow.png);
-                margin-left: 5px;
-                top: -1px;
-                position: relative;
-            }
-
-            #nav-container .nav li.active a.has-menu::after {
-                content: url(Images/icon-down-arrow-invert.png);
-                margin-left: 5px;
-                top: 1px;
-                position: relative;
-                display: inline-block;
-                -webkit-transform: rotate(180deg);
-                -moz-transform: rotate(180deg);
-                -o-transform: rotate(180deg);
-                -ms-transform: rotate(180deg);
-                transform: rotate(180deg);
-            }
-
-
-.inactive-service-category{
+main {
+   padding-top: 150px;
+}
+/**/
+.inactive-service-category {
     color: red;
 }
-.change-category-message{
+.change-category-message {
     color: mediumorchid;
 }
-
-.table-filter-section{
+.table-filter-section {
     border-bottom-style: solid;
     border-bottom-color: grey;
 }
 .table-filter-section form select {
     max-width: 20%;
+}
+.text-center{
+    padding-top: 100px;
 }

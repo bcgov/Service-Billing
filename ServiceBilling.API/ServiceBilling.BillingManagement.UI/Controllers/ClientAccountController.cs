@@ -1,37 +1,43 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Service_Billing.Models;
-using Service_Billing.ViewModels;
+using ServiceBilling.BillingManagement.UI.Models;
+using ServiceBilling.BillingManagement.UI.ViewModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using ServiceBilling.BillingManagement.UI.Models;
+using ServiceBilling.BillingManagement.UI.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
+using ServiceBilling.BillingManagement.UI.Models.Repositories;
 
-namespace Service_Billing.Controllers
+namespace ServiceBilling.BillingManagement.UI.Controllers
 {
-    public class ClientAccountController : Controller
+    public class ClientAccountController: Controller
     {
+        private readonly GraphServiceClient _graphServiceClient;
+        private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
-        private readonly GraphServiceClient _graphServiceClient;
-        private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
+        private readonly IServiceCategoryRepository _categoryRepository;
 
-        public ClientAccountController(IClientAccountRepository clientAccountRepository,
+        public ClientAccountController(IConfiguration configuration,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
-            IConfiguration configuration,
+            IServiceCategoryRepository categoryRepository,
+            IClientAccountRepository clientAccountRepository,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
         {
             _graphServiceClient = graphServiceClient;
             _consentHandler = consentHandler;
-
+            _categoryRepository = categoryRepository;
             _clientAccountRepository = clientAccountRepository;
-            _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
         }
 
-        // GET: ClientAccountController
         public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
@@ -43,7 +49,7 @@ namespace Service_Billing.Controllers
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
 
-            if(!String.IsNullOrEmpty(ministryFilter))
+            if (!String.IsNullOrEmpty(ministryFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter)).ToList();
             if (numberFilter > 0)
                 clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
@@ -56,15 +62,13 @@ namespace Service_Billing.Controllers
 
             return View(new ClientAccountViewModel(clients));
         }
-
-        // GET: ClientAccountController/Details/5
         public ActionResult Details(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ViewData["clientTeam"] = team != null? team : "";
+            ViewData["clientTeam"] = team != null ? team : "";
             return View(account);
         }
 
@@ -84,8 +88,8 @@ namespace Service_Billing.Controllers
         {
             if (ModelState.IsValid)
             {
-                ClientAccount? accountToUpdate =  _clientAccountRepository.GetClientAccount(id);
-                if(accountToUpdate == null)
+                ClientAccount? accountToUpdate = _clientAccountRepository.GetClientAccount(id);
+                if (accountToUpdate == null)
                 {
                     return NotFound();
                 }
@@ -117,27 +121,6 @@ namespace Service_Billing.Controllers
             return Details(id);
         }
 
-        // GET: ClientAccountController/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: ClientAccountController/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
         [HttpGet]
         public ActionResult Intake()
         {
@@ -165,7 +148,7 @@ namespace Service_Billing.Controllers
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                 }
             }
-            catch(DbUpdateException ) 
+            catch (DbUpdateException)
             {
                 return View(new ClientIntakeViewModel());
             }
@@ -178,19 +161,19 @@ namespace Service_Billing.Controllers
         public async Task<IActionResult> SearchForContact(string query, string contactType, ClientIntakeViewModel model)
         {
             try
-           {
+            {
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{query}')")
                     .Top(5)
                     .Select("displayName, id")
                     .GetAsync();
-                
+
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 foreach (var user in queriedUsers)
                 {
                     contactItems.Add(new SelectListItem(user.DisplayName, user.DisplayName));
                 }
-             
+
                 model.Contacts = contactItems;
 
                 return ViewComponent("ContactLookup", new { elementId = contactType.Replace("Select", "Value"), contactList = contactItems, model = model });
@@ -200,6 +183,5 @@ namespace Service_Billing.Controllers
                 return new JsonResult(ex);
             }
         }
-
     }
 }

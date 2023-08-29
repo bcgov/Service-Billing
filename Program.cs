@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
-//using Service_Billing.DBContext;
 using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,7 +37,6 @@ builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped <IMinistryRepository, MinistryRepository>();
 
 builder.Services.AddMvc();
-builder.Services.AddTransient<IContactLookupService, ContactLookupService>();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>

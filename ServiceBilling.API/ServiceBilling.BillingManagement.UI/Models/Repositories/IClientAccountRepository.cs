@@ -1,4 +1,6 @@
-﻿namespace Service_Billing.Models
+﻿using ServiceBilling.BillingManagement.UI.Models;
+
+namespace ServiceBilling.BillingManagement.UI.Models.Repositories
 {
     public interface IClientAccountRepository
     {

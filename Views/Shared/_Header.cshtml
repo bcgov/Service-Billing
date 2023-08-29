@@ -3,69 +3,46 @@
 *@
 @{
 }
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 <header>
-    <div class="container-fluid">
-        <div class="row" id="header-top">
-            <div class="content" style="padding-right:20px !important;">
-                <div id="logo" role="banner">
-                    <a id="headerBCGov" href="http://gov.bc.ca">
-                        <img id="BCGov-logo" src="/assets/gov3_bc_logo.png" alt="Government of B.C." title="Government of B.C." class="granville-bridge-on">
-                        <img id="BCGov-logo-granville" src="/assets/BCID_White_Small.png" alt="Government of B.C." class="granville-bridge-off">
-                    </a>
-                </div>
-                <div style="display:inline-block" role="banner">
-                    <h1><a id="headerNewsHome" href="/">Service Billing</a></h1>
-                </div>
-                <nav class="navbar-dafault">
-                    <div type="button" class="btn btn-link mini-menu-container-trigger navbar-toggle" data-toggle="collapse" data-target="#mini-menu-container">
-                        <i id="hamburger-button" class="fa fa-bars fa-customized" aria-hidden="true"></i>
-                        <i id="close-hamburger-button" class="fa fa-times fa-customized hidden" aria-hidden="true"></i>
-                    </div>
-                </nav>
-                <div class="navbar-default" role="search">
-                    <div type="button" class="btn btn-link mini-search-container-trigger navbar-toggle" data-toggle="collapse" data-target="#mini-search-container">
-                        <i id="search-button" class="fa fa-search fa-customized" aria-hidden="true"></i>
-                        <i id="close-search-button" class="fa fa-times fa-customized hidden" aria-hidden="true"></i>
-                    </div>
-                </div>
-
-               
-            </div>
-        </div>
-        
-        @*If we were going to have nav links in the header, this is where they'd go. See the header at https://dev.news.gov.bc.ca/*@
-        @*            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-        <ul class="navbar-nav flex-grow-1">
-        <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-        </li>
-        <li class="nav-item">
-        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </li>
-        </ul>
-        <partial name="_LoginPartial" />
-        </div>*@
+    <div class="banner">
+        <a href="https://gov.bc.ca">
+            <img src="~/assets/BCID_H_rgb_rev.svg" alt="Go to the Government of British Columbia website" />
+        </a>
+        <h1>Service Billing</h1>
     </div>
-    <div class="row" id="header-bottom">
-        <div class="content">
-            <ul class="navbar-nav">
-                @if (User.Identity.IsAuthenticated)
-                {
-                    <li class="nav-item">
-                        <span class="navbar-text text-dark">Hello @User.Identity.Name!</span>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignOut">Sign out</a>
-                    </li>
-                }
-                else
-                {
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="MicrosoftIdentity" asp-controller="Account" asp-action="SignIn">Sign in</a>
-                    </li>
-                }
-            </ul>
-
-        </div>
+    <div class="other">
+        <a class="nav-btn">
+            <i class="fas fa-bars" id="menu"></i>
+        </a>
+        <!--
+          This place is for anything that needs to be right aligned
+          beside the logo.
+        -->
     </div>
 </header>
+<nav class="navigation-main" id="navbar">
+    <div class="nav-container">
+        <ul>
+            @*<li><a href="" class="active">Home</a></li>*@
+            <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
+            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+            {
+                <li>@Html.ActionLink("Account Admin", "Index", "ClientAccount")</li>
+            }
+            else
+            {
+            <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
+            }
+            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+            {
+                <li>@Html.ActionLink("Charges By Quarter", "Index", "Bills")</li>
+            }
+            <li><a href=".">View Reports</a></li>
+            <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
+            <li><a href=".">Configuration</a></li>
+            <li><a href=".">Help</a></li>
+        </ul>
+    </div>
+</nav>

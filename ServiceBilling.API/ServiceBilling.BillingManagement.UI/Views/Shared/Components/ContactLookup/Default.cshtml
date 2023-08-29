@@ -1,0 +1,9 @@
+﻿@model ServiceBilling.BillingManagement.UI.ViewModels.ContactSelectViewModel
+
+<div class="contactDisplay">
+    @if (Model != null && Model.Contacts != null)
+    {
+        <select asp-for="@Model.elementId" asp-items="@Model.Contacts" id="@Model.elementId" class="contactSelect" size="@Model.Contacts.Count()">
+        </select>
+    }
+</div>

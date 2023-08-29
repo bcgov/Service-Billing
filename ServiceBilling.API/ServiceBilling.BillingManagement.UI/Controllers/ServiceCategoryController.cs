@@ -1,3 +1,5 @@
+
+using Microsoft.EntityFrameworkCore;
 ﻿using CsvHelper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -57,6 +59,35 @@ namespace ServiceBilling.BillingManagement.UI.Controllers
         }
 
         [HttpGet]
+        public IActionResult Edit(Guid id)
+        {
+            ServiceCategory? serviceCategory = _serviceCategoryRepository.GetById(id);
+            if (serviceCategory == null)
+            {
+                return NotFound();
+            }
+
+            return View(serviceCategory);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Edit(ServiceCategory serviceCategory)
+        {
+            try
+            {
+                _serviceCategoryRepository.Update(serviceCategory);
+            }
+            catch (DbUpdateException ex)
+            {
+
+            }
+            ServiceCategoryListViewModel model = new ServiceCategoryListViewModel
+            {
+                ServiceCategories = (await _serviceCategoryRepository.GetAllServiceCategoriesAsync()).ToList()
+            };
+            return View("index", model);
+        }
+
         public async Task<FileResult> Export()
         {
             var serviceCategories = (await _serviceCategoryRepository.GetAllServiceCategoriesAsync()).ToList();

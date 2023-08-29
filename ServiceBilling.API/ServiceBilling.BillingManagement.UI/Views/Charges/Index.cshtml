@@ -1,29 +1,32 @@
-﻿@using Service_Billing.ViewModels;
-@model AllBillsViewModel
+﻿@using ServiceBilling.BillingManagement.UI.ViewModels;
+@model AllChargesViewModel;
+
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
-    bool current = ViewData["Quarter"] == "Current Quarter";
-    bool previous = ViewData["Quarter"] == "Previous Quarter";
-    bool all = ViewData["Quarter"] == "All Quarters";
+    bool current = ViewData["quarterFilter"] == "current";
+    bool previous = ViewData["quarterFilter"] == "previous";
+    bool all = ViewData["quarterFilter"] == "all";
 }
 
 <h1>Bill info</h1>
 
-@if (!Model.Bills.Any())
+@if (!Model.Charges.Any())
 {
-    if (!String.IsNullOrEmpty(ViewData["ClientNumber"].ToString()) && int.Parse(ViewData["ClientNumber"].ToString()) > 0)
+    if (!String.IsNullOrEmpty(ViewData["ClientNumber"].ToString()))
     {
         <h3>No charges for client number @ViewData["ClientNumber"] have been found for the selected fiscal period. You can try searching previous or all quarters, or clearing other search filters.</h3>
     }
     else
     {
-        <h3>No charges matching your search parameters have been found. Try searching in another quarter, 
-            or change your filter parameters.</h3>
+        <h3>
+            No charges matching your search parameters have been found. Try searching in another quarter,
+            or change your filter parameters.
+        </h3>
     }
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
-@*     @Html.ActionLink("Current Quarter", "Index", new { quarterFilter = "current" }) | 
-    @Html.ActionLink("Previous Quarter", "Index", new { quarterFilter = "previous" }) | 
+    @*     @Html.ActionLink("Current Quarter", "Index", new { quarterFilter = "current" }) |
+    @Html.ActionLink("Previous Quarter", "Index", new { quarterFilter = "previous" }) |
     @Html.ActionLink("All Quarters", "Index", new { quarterFilter = "all" }) *@
     <div>
         <a asp-controller="Bills"
@@ -37,9 +40,9 @@
             <div id="quarter-select">
                 <label for="quarterFilter">Select Quarter</label>
                 <select name="quarterFilter">
-                    <option value="current" selected="@current">Current</option>
-                    <option value="previous" selected="@previous">Previous</option>
-                    <option value="all" selected="@all">All</option>
+                    <option value="current" selected=@current>Current</option>
+                    <option value="previous" selected=@previous>Previous</option>
+                    <option value="all" selected=@all>All</option>
                 </select>
             </div>
             <label for="ministryFilter">Ministry</label>
@@ -50,7 +53,7 @@
                     foreach (Ministry ministry in ministries)
                     {
                         string selectedMinistry = "";
-                        if(ViewData["MinistryFilter"] != null)
+                        if (ViewData["MinistryFilter"] != null)
                             selectedMinistry = ViewData["MinistryFilter"].ToString();
 
                         if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
@@ -70,15 +73,17 @@
             <label for="categoryFilter">Service Category</label>
             <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
                 <option value="-1"></option>
-                @foreach(ServiceCategory category in ViewBag.ServiceCategories)
+                @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                 {
-                    if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
+                    Guid categoryFilterGuid = new Guid();
+
+                    if (ViewData["CategoryFilter"] != null && Guid.TryParse(ViewData["CategoryFilter"].ToString(), out categoryFilterGuid) && category.ServiceCategoryId == categoryFilterGuid)
                     {
-                        <option value="@category.ServiceId" selected>@category.Name</option>
+                        <option value="@category.ServiceCategoryId" selected>@category.Name</option>
                     }
                     else
                     {
-                        <option value="@category.ServiceId">@category.Name</option>
+                        <option value="@category.ServiceCategoryId">@category.Name</option>
                     }
                 }
             </select>
@@ -87,7 +92,7 @@
             <label for="clientNumber">Client #</label>
             <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
             <label for="meFilter">Created by me</label>
-            <input type="checkbox" name="meFilter" value="@ViewData["MeFilter"] onclick="return flipMeBool()" title="must match your IDIR displayname, i.e. 'lastname, firstname Ministry'"/>
+            <input type="checkbox" name="meFilter" value="@ViewData["MeFilter"] onclick="return flipMeBool()" title="must match your IDIR displayname, i.e. 'lastname, firstname Ministry'" />
             <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
             <input type="submit" value="Filter" class="btn btn-default" /> |
             <a asp-action="Index">Back to Full List</a>
@@ -101,7 +106,7 @@
                 <th scope="col">Service Category</th>
                 @if (ViewData["Quarter"] == "All Quarters")
                 {
-                   <th>Fiscal Period</th>
+                    <th>Fiscal Period</th>
                 }
                 <th scope="col">Amount</th>
                 <th scope="col">Unit Price</th>
@@ -113,39 +118,41 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var bill in Model.Bills)
+            @foreach (var charge in Model.Charges)
             {
-                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
-                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
+                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceCategoryId == charge.ServiceCategoryId);
+                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == charge.ClientAccountId);
                 <tr>
-                    <td>@bill.ClientName</td>
-                    <td>@bill.Title</td>
-                    <td>@{
-                           
-                            if(category != null)
+                    <td>@charge.ClientName</td>
+                    <td>@charge.Title</td>
+                    <td>
+                        @{
+
+                            if (category != null)
                             {
-                                @category.Name;
+                                @category.Name
+                                ;
                             }
                         }
-                        </td>
+                    </td>
                     @if (ViewData["Quarter"] == "All Quarters")
                     {
-                        <td>@bill.FiscalPeriod</td>
+                        <td>@charge.FiscalPeriod</td>
                     }
-                    
+
                     <td>
-                        @if (bill.Amount != null)
+                        @if (charge.Amount != null)
                         {
-                            @String.Format("{0:.##}", bill.Amount)
+                            @String.Format("{0:.##}", charge.Amount)
                         }
                     </td>
-                    @if(category != null)
+                    @if (category != null)
                     {
                         <td>
                             @category.Costs
                         </td>
                         <td>
-                            @bill.Quantity
+                            @charge.Quantity
                         </td>
                         <td>
                             @if (!String.IsNullOrEmpty(category.UOM))
@@ -157,40 +164,38 @@
                     else
                     {
                         <td>
-
                         </td>
                         <td>
-                            @bill.Quantity
+                            @charge.Quantity
                         </td>
                         <td>
-
                         </td>
                     }
                     <td>
                         @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
                         {
                             @client.ExpenseAuthorityName
-                        } 
+                        }
                     </td>
                     <td>
-                        @bill.CreatedBy
+                        @charge.CreatedBy
                     </td>
                     <td>
                         <a asp-controller="Bills"
                            asp-action="Details"
-                           asp-route-id="@bill.Id">See more</a>
+                           asp-route-id="@charge.Id">See more</a>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
-    
+
 
 </div>
 
 
-   <script>
-        function flipMeBool(){
-          @ViewData["MeFilter"] = !@ViewData["MeFilter"];
-        };
-   </script>
+<script>
+    function flipMeBool() {
+    @ViewData["MeFilter"] = !@ViewData["MeFilter"];
+    };
+</script>

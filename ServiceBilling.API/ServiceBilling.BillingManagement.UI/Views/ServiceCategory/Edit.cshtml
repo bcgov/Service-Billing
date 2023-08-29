@@ -1,22 +1,18 @@
-﻿@model Service_Billing.Models.ServiceCategory
+﻿@model ServiceCategory
 
-@{
-    ViewData["Title"] = "Create";
-    Layout = "_Layout";
-}
-
-<h1>Create</h1>
+<h1>Edit</h1>
 
 <h4>ServiceCategory</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="ServiceCategoryId" />
             <div class="form-group">
-                <label asp-for="GDXBusArea" class="control-label"></label>
-                <input asp-for="GDXBusArea" class="form-control" />
-                <span asp-validation-for="GDXBusArea" class="text-danger"></span>
+                <label asp-for="GdxBusinessArea" class="control-label"></label>
+                <input asp-for="GdxBusinessArea" class="form-control" readonly="true" />
+                <span asp-validation-for="GdxBusinessArea" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>
@@ -35,22 +31,16 @@
             </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
-                    <input class="form-check-input" asp-for="IsActive" />
+                    <input class="form-check-input" asp-for="IsActive" /> @Html.DisplayNameFor(model => model.IsActive)
                 </label>
             </div>
             <div class="form-group">
                 <label asp-for="UOM" class="control-label"></label>
-                @* <input asp-for="UOM" class="form-control" /> *@
-                <select asp-for="UOM" class="form-control">
-                    <option value=""></option>
-                    <option value="Month">Month</option>
-                    <option value="Hr">Hour</option>
-                    <option value="Each">Each</option>
-                </select>
+                <input asp-for="UOM" class="form-control" />
                 <span asp-validation-for="UOM" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save" class="btn btn-primary" />
             </div>
         </form>
     </div>
@@ -59,7 +49,3 @@
 <div>
     <a asp-action="Index">Back to List</a>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
