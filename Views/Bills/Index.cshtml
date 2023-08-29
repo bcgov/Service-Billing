@@ -2,16 +2,16 @@
 @model AllBillsViewModel
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
-    bool current = ViewData["quarterFilter"] == "current";
-    bool previous = ViewData["quarterFilter"] == "previous";
-    bool all = ViewData["quarterFilter"] == "all";
+    bool current = ViewData["Quarter"] == "Current Quarter";
+    bool previous = ViewData["Quarter"] == "Previous Quarter";
+    bool all = ViewData["Quarter"] == "All Quarters";
 }
 
 <h1>Bill info</h1>
 
 @if (!Model.Bills.Any())
 {
-    if (!String.IsNullOrEmpty(ViewData["ClientNumber"].ToString()))
+    if (!String.IsNullOrEmpty(ViewData["ClientNumber"].ToString()) && int.Parse(ViewData["ClientNumber"].ToString()) > 0)
     {
         <h3>No charges for client number @ViewData["ClientNumber"] have been found for the selected fiscal period. You can try searching previous or all quarters, or clearing other search filters.</h3>
     }
@@ -37,9 +37,9 @@
             <div id="quarter-select">
                 <label for="quarterFilter">Select Quarter</label>
                 <select name="quarterFilter">
-                    <option value="current" selected=@current>Current</option>
-                    <option value="previous" selected=@previous>Previous</option>
-                    <option value="all" selected=@all>All</option>
+                    <option value="current" selected="@current">Current</option>
+                    <option value="previous" selected="@previous">Previous</option>
+                    <option value="all" selected="@all">All</option>
                 </select>
             </div>
             <label for="ministryFilter">Ministry</label>

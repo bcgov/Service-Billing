@@ -300,8 +300,8 @@ header .nav-btn {
     }
 }
 
-#navbar {
-    margin-bottom: 20px;
+main {
+   padding-top: 150px;
 }
 /**/
 .inactive-service-category {
