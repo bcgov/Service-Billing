@@ -1,7 +1,7 @@
 ﻿using ServiceBilling.BillingManagement.UI.Models;
-using ServiceChargeing.ChargeingManagement.UI.Models.Repositories;
+using ServiceBilling.BillingManagement.UI.Models.Repositories;
 
-namespace ServiceChargeing.BillingManagement.UI.Models.Repositories
+namespace ServiceBilling.BillingManagement.UI.Models.Repositories
 {
     public class ChargesRepository : IChargesRepository
     {

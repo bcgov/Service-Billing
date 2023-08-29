@@ -6,7 +6,6 @@ using Microsoft.Identity.Web;
 using ServiceBilling.BillingManagement.UI.Models;
 using ServiceBilling.BillingManagement.UI.Models.Repositories;
 using ServiceBilling.BillingManagement.UI.ViewModels;
-using ServiceChargeing.ChargeingManagement.UI.Models.Repositories;
 
 namespace ServiceBilling.BillingManagement.UI.Controllers
 {
