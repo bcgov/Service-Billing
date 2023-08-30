@@ -13,11 +13,6 @@ namespace Service_Billing.Components
         private IContactLookupService _contactLookupService;
         private string _contactName {  get; set; }
 
-        public ContactLookup(IContactLookupService contactLookupService)
-        {
-            _contactLookupService = contactLookupService;
-        }
-
         public async Task<IViewComponentResult> InvokeAsync(string? elementId, List<SelectListItem> contactList )
         {
             ContactSelectViewModel contactSelectViewModel = new ContactSelectViewModel(elementId, contactList);
