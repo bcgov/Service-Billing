@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.EntityFrameworkCore;
-using Service_Billing.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Service_Billing.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Service_Billing.Services;
+using Service_Billing.Models.Repositories;
+using Service_Billing.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');

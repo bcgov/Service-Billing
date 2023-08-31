@@ -1,6 +1,6 @@
 ﻿using System.IO.Pipelines;
 
-namespace Service_Billing.Models
+namespace Service_Billing.Models.Repositories
 {
     public interface IBillRepositroy
     {

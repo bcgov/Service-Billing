@@ -1,4 +1,4 @@
-﻿namespace Service_Billing.Models
+﻿namespace Service_Billing.Models.Repositories
 {
     public interface IClientTeamRepository
     {

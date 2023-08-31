@@ -1,7 +1,8 @@
 ﻿using Microsoft.CodeAnalysis.Elfie.Model.Strings;
 using Service_Billing.Data;
+using Service_Billing.Models;
 
-namespace Service_Billing.Models
+namespace Service_Billing.Models.Repositories
 {
     public class ClientTeamRepository : IClientTeamRepository
     {

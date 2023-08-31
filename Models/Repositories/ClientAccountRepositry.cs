@@ -1,7 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Service_Billing.Data;
+using Service_Billing.Models;
 
-namespace Service_Billing.Models
+namespace Service_Billing.Models.Repositories
 {
     public class ClientAccountRepositry : IClientAccountRepository
     {
@@ -23,9 +24,7 @@ namespace Service_Billing.Models
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
         {
-            var x =  _context.ClientAccounts.Where(c => c.Name.Contains(queryString)).OrderBy(c => c.Name);
-            var y = x.ToList();
-            return x;
+            return _context.ClientAccounts.Where(c => c.Name.Contains(queryString)).OrderBy(c => c.Name);
         }
 
         public int AddClientAccount(ClientAccount account)
@@ -43,6 +42,22 @@ namespace Service_Billing.Models
                 return account.Id;
             else return 0;
         }
-       
+
+        public IEnumerable<ClientAccount> GetAccountsByContactName(string contactName)
+        {
+            List<ClientTeam> userTeams = _context.ClientTeams.Where(x => x.PrimaryContact == contactName).ToList();
+            userTeams.AddRange(_context.ClientTeams.Where(x => x.FinancialContact == contactName));
+            userTeams.AddRange(_context.ClientTeams.Where(x => x.Approver == contactName));
+            List<ClientAccount> accounts = new List<ClientAccount>();
+
+            foreach(ClientTeam team in userTeams)
+            {
+                accounts.AddRange(GetAll().Where(x => x.TeamId == team.Id));
+            }
+
+            return accounts;
+        }
+
+
     }
 }

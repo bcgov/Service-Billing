@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models;
+using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 
 namespace Service_Billing.Controllers
@@ -39,7 +40,6 @@ namespace Service_Billing.Controllers
             string titleFilter, 
             int categoryFilter,
             string authorityFilter,
-            bool meFilter,
             int clientNumber)
         {
             IEnumerable<Bill> bills;
@@ -54,7 +54,6 @@ namespace Service_Billing.Controllers
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ClientNumber"] = clientNumber;
-            //ViewData["MeFitler"] = meFilter;
 
             switch (quarterFilter)
             {

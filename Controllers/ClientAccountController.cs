@@ -5,6 +5,7 @@ using Service_Billing.ViewModels;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
+using Service_Billing.Models.Repositories;
 
 namespace Service_Billing.Controllers
 {
@@ -43,7 +44,7 @@ namespace Service_Billing.Controllers
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
 
-            if(!String.IsNullOrEmpty(ministryFilter))
+            if (!String.IsNullOrEmpty(ministryFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter)).ToList();
             if (numberFilter > 0)
                 clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
@@ -64,7 +65,7 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ViewData["clientTeam"] = team != null? team : "";
+            ViewData["clientTeam"] = team != null ? team : "";
             return View(account);
         }
 
@@ -84,8 +85,8 @@ namespace Service_Billing.Controllers
         {
             if (ModelState.IsValid)
             {
-                ClientAccount? accountToUpdate =  _clientAccountRepository.GetClientAccount(id);
-                if(accountToUpdate == null)
+                ClientAccount? accountToUpdate = _clientAccountRepository.GetClientAccount(id);
+                if (accountToUpdate == null)
                 {
                     return NotFound();
                 }
@@ -165,7 +166,7 @@ namespace Service_Billing.Controllers
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                 }
             }
-            catch(DbUpdateException ) 
+            catch (DbUpdateException)
             {
                 return View(new ClientIntakeViewModel());
             }
@@ -178,19 +179,19 @@ namespace Service_Billing.Controllers
         public async Task<IActionResult> SearchForContact(string query, string contactType, ClientIntakeViewModel model)
         {
             try
-           {
+            {
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{query}')")
                     .Top(5)
                     .Select("displayName, id")
                     .GetAsync();
-                
+
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 foreach (var user in queriedUsers)
                 {
                     contactItems.Add(new SelectListItem(user.DisplayName, user.DisplayName));
                 }
-             
+
                 model.Contacts = contactItems;
 
                 return ViewComponent("ContactLookup", new { elementId = contactType.Replace("Select", "Value"), contactList = contactItems, model = model });
@@ -201,5 +202,10 @@ namespace Service_Billing.Controllers
             }
         }
 
+        public async Task<IActionResult> CurrentUsersAccounts()
+        {
+            User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
+            return View();
+        }
     }
 }

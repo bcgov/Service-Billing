@@ -2,8 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Service_Billing.Data;
+using Service_Billing.Models;
 
-namespace Service_Billing.Models
+namespace Service_Billing.Models.Repositories
 {
     public class BillRepository : IBillRepositroy
     {
