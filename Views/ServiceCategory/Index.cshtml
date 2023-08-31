@@ -31,6 +31,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.UOM)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ServiceOwner)
+            </th>
             <th></th>
         </tr>
     </thead>
@@ -54,6 +57,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UOM)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ServiceOwner)
             </td>
             <td>
                 @* <a asp-action="Details" asp-route-id="@item.ServiceId">Details</a> | *@

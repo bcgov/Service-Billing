@@ -41,8 +41,19 @@
             </div>
             <div class="form-group">
                 <label asp-for="UOM" class="control-label"></label>
-                <input asp-for="UOM" class="form-control" />
+                @* <input asp-for="UOM" class="form-control" /> *@
+                <select asp-for="UOM" class="form-control">
+                    <option value=""></option>
+                    <option value="Month">Month</option>
+                    <option value="Hr">Hour</option>
+                    <option value="Each">Each</option>
+                </select>
                 <span asp-validation-for="UOM" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ServiceOwner" class="control-label"></label>
+                <input asp-for="ServiceOwner" class="form-control" />
+                <span asp-validation-for="ServiceOwner" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

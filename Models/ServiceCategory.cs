@@ -19,5 +19,7 @@ namespace Service_Billing.Models
         public bool IsActive { get; set; }
 
         public string? UOM { get; set; }
+
+        public string? ServiceOwner { get; set; }
     }
 }
