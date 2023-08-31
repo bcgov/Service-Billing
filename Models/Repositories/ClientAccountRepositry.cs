@@ -55,7 +55,7 @@ namespace Service_Billing.Models.Repositories
                 accounts.AddRange(GetAll().Where(x => x.TeamId == team.Id));
             }
 
-            return accounts;
+            return accounts.Distinct();
         }
 
 

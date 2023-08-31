@@ -202,10 +202,12 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> CurrentUsersAccounts()
+        public async Task<IActionResult> CurrentUserAccounts()
         {
             User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
-            return View();
+            IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
+
+            return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
     }
 }
