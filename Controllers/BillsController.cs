@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CsvHelper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -42,7 +43,7 @@ namespace Service_Billing.Controllers
             string authorityFilter,
             int clientNumber)
         {
-            IEnumerable<Bill> bills;
+
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -55,48 +56,8 @@ namespace Service_Billing.Controllers
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ClientNumber"] = clientNumber;
 
-            switch (quarterFilter)
-            {
-                case "current":
-                default:
-                    ViewData["Quarter"] = "Current Quarter";
-                    bills = _billRepository.GetCurrentQuarterBills();
-                    break;
-                case "previous":
-                    ViewData["Quarter"] = "Previous Quarter";
-                    bills = _billRepository.GetPreviousQuarterBills();
-                    break;
-                case "all":
-                    ViewData["Quarter"] = "All Quarters";
-                    bills = _billRepository.AllBills;
-                    break;
-            }
-            // now filter the results
-            if (!string.IsNullOrEmpty(ministryFilter))
-                bills = bills.Where(x => x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
-            if (!string.IsNullOrEmpty(titleFilter))
-                bills = bills.Where(x => x.Title.ToLower().Contains(titleFilter.ToLower()));
-            if (categoryFilter > 0)
-                bills = bills.Where(x => x.ServiceCategoryId == categoryFilter);
-            if (!string.IsNullOrEmpty(authorityFilter))
-            {
-                List<Bill> filteredBills = new List<Bill>();
-                foreach(Bill bill in bills)
-                {
-                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    if(account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(authorityFilter))
-                    {
-                        filteredBills.Append(bill);
-                    }
-                }
-
-                bills = filteredBills;
-            }
-            if(clientNumber > 0)
-            {
-                int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
-                bills = bills.Where(x => x.ClientAccountId == clientId);
-            }
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }
@@ -300,6 +261,112 @@ namespace Service_Billing.Controllers
             catch (Exception ex)
             {
                 return "Could not get user's Graph name";
+            }
+        }
+
+        private IEnumerable<Bill> GetFilteredBills(string quarterFilter,
+            string ministryFilter,
+            string titleFilter,
+            int categoryFilter,
+            string authorityFilter,
+            int clientNumber)
+        {
+            IEnumerable<Bill> bills;
+            switch (quarterFilter)
+            {
+                case "current":
+                default:
+                    ViewData["Quarter"] = "Current Quarter";
+                    bills = _billRepository.GetCurrentQuarterBills();
+                    break;
+                case "previous":
+                    ViewData["Quarter"] = "Previous Quarter";
+                    bills = _billRepository.GetPreviousQuarterBills();
+                    break;
+                case "all":
+                    ViewData["Quarter"] = "All Quarters";
+                    bills = _billRepository.AllBills;
+                    break;
+            }
+            // now filter the results
+            if (!string.IsNullOrEmpty(ministryFilter))
+                bills = bills.Where(x => x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
+            if (!string.IsNullOrEmpty(titleFilter))
+                bills = bills.Where(x => x.Title.ToLower().Contains(titleFilter.ToLower()));
+            if (categoryFilter > 0)
+                bills = bills.Where(x => x.ServiceCategoryId == categoryFilter);
+            if (!string.IsNullOrEmpty(authorityFilter))
+            {
+                List<Bill> filteredBills = new List<Bill>();
+                foreach (Bill bill in bills)
+                {
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(authorityFilter))
+                    {
+                        filteredBills.Append(bill);
+                    }
+                }
+
+                bills = filteredBills;
+            }
+            if (clientNumber > 0)
+            {
+                int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
+                bills = bills.Where(x => x.ClientAccountId == clientId);
+            }
+
+            return bills;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> WriteToCSV(string quarterFilter,
+            string ministryFilter,
+            string titleFilter,
+            int categoryFilter,
+            string authorityFilter,
+            int clientNumber)
+        {
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                using (var streamWriter = new StreamWriter(memoryStream))
+                {
+                    using var csvWriter = new CsvWriter(streamWriter);
+                    csvWriter.WriteRecords(bills);
+                }
+                string fileName = "Charges";
+                if(!string.IsNullOrEmpty(quarterFilter))
+                {
+                    if (quarterFilter == "all")
+                        fileName += "-all-Quarters";
+                    if(bills.Any())
+                    {
+                        fileName += $"={bills.First().BillingCycle}";
+                    }
+                }
+                if (!String.IsNullOrEmpty(ministryFilter))
+                    fileName += $"-{ministryFilter}";
+                if (!String.IsNullOrEmpty(titleFilter))
+                    fileName += $"-{titleFilter}";
+                if (categoryFilter > 0)
+                {
+                    ServiceCategory category = _categoryRepository.GetById(categoryFilter);
+                    if(category != null)
+                        fileName += $"-{category.Name}";
+                }    
+                if (!String.IsNullOrEmpty(authorityFilter))
+                    fileName += $"-{authorityFilter}";
+
+                fileName += DateTime.Today.ToString();
+                fileName += ".csv";
+
+                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+            }
+            catch (Exception ex)
+            {
+                //we really need an error page
+                return StatusCode(500);
             }
         }
     }
