@@ -4,12 +4,59 @@
     ViewData["Title"] = "Index";
     Layout = "_Layout";
 }
+@{
+    List<string> busAreas = new List<string>();
+    if (ViewData["BusAreas"] != null)
+    {
+        busAreas = ViewData["BusAreas"] as List<string>;
+    }
+    bool active = ViewData["IsActiveFilter"] == "active";
+    bool inactive = ViewData["IsActiveFilter"] == "inactive";
+    string uomFilterValue = string.Empty;
+    if (ViewData["UOMFilter"] != null) 
+        ViewData["UOMFilter"].ToString();
+}
 
 <h1>Service Categories</h1>
 
 <p>
     <a asp-action="Create">Create New</a>
 </p>
+<div class="table-filter-section">
+    <h3>Filter by...</h3>
+    <form asp-action="Index" asp-controller="ServiceCategory" method="post" role="form" class="form-horizontal">
+        <div id="business-area-select">
+            <label for="areaFilter">Business Area:</label>
+            <select name="areaFilter">
+                <option></option>
+                @{
+                    foreach(string gdxBusinessArea in busAreas)
+                    {
+                            <option>@gdxBusinessArea</option>
+                    }
+                }
+            </select>
+        </div>
+        <label for="nameFilter">Name: </label>
+        <input type="text" name="nameFilter" value="@ViewData["NameFilter"]" title="Name contains..." />
+        <input type="radio" name="activeFilter" value="active" />
+        <input type="radio" name="activeFilter" value="inactive" />
+        <input type="radio" name="activeFilter" value="both" />
+        <label name="uomFilter">UOM: </label>
+        <select name="uomFilter">
+            <option value=""></option>
+            <option value="Month" selected="true">Month</option>
+            <option value="Hr" checked="@uomFilterValue == "Hour">Hour</option>
+            <option value="Each" checked="@uomFilterValue == "Each">Each</option>
+        </select>
+        <label name="ownerFilter">Service Owner: </label>
+        <input type="text" name="ownerFilter" value="@ViewData["OwnerFilter"]" title="Portfolio owner name contains..." />
+        <input type="submit" value="Filter" class="btn btn-default" /> |
+        <a asp-action="Index">Back to Full List</a>
+        <input type="submit" value="Export to CSV" formaction="ServiceCategory/WriteToCSV" formmethod="post" />
+    </form>
+</div>
+
 <table class="table">
     <thead>
         <tr>
@@ -70,3 +117,44 @@
 }
     </tbody>
 </table>
+
+@section scripts{
+    // <script>
+    //     $(document).ready(() => {
+    //         const queryForUser = (query, contactType) => {
+    //             var url = "../../ClientAccount/SearchForContact?query=" + query + "&contactType=" + contactType;
+    //             var xhr = new XMLHttpRequest();
+    //             xhr.onreadystatechange = function () {
+    //                 if (this.readyState == 4 && this.status == 200) {
+    //                     var id = `#${contactType}`;
+    //                     $(id).html(xhr.response);
+    //                 }
+    //             };
+    //             xhr.open('get', url);
+    //             xhr.send();
+    //         };
+
+    //         var timer = null;
+
+    //         $("#ownerFilterSelect").on("change", (e) => {
+    //             $("#ownerFilter").val($("#ownerFilterValue").val());
+    //         });
+
+    //         $("#ownerFilter").on("keypress", (e) => {
+    //             // clear timeout if already applied
+    //             if (timer) {
+    //                 clearTimeout(timer);
+    //                 timer = null;
+    //             }
+    //             //  set new timeout;
+    //             timer = setTimeout(function () {
+    //                 //  call wait-function and clear timeout
+    //                 queryForUser($("#ownerFilter").val(), "ownerFilterSelect");
+    //                 clearTimeout(timer);
+    //                 timer = null;
+    //             }, 250);
+    //         });
+    //     });
+    // </script>
+}
+   

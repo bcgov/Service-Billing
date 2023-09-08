@@ -41,6 +41,7 @@ namespace Service_Billing.Models.Repositories
         public void Update(ServiceCategory serviceCategory)
         {
             _context.Update(serviceCategory);
+            _context.SaveChanges(true);
         }
     }
 }
