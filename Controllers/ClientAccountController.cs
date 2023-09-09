@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
+using CsvHelper;
 
 namespace Service_Billing.Controllers
 {
@@ -35,7 +36,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
         {
-            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ViewData["MinistryFilter"] = ministryFilter;
@@ -43,17 +44,7 @@ namespace Service_Billing.Controllers
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
-
-            if (!String.IsNullOrEmpty(ministryFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter)).ToList();
-            if (numberFilter > 0)
-                clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
-            if (!String.IsNullOrEmpty(responsibilityFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.Contains(responsibilityFilter)).ToList();
-            if (!String.IsNullOrEmpty(authorityFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.Contains(authorityFilter)).ToList();
-            if (!String.IsNullOrEmpty(teamFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.Contains(teamFilter)).ToList();
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
 
             return View(new ClientAccountViewModel(clients));
         }
@@ -208,6 +199,58 @@ namespace Service_Billing.Controllers
             IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
 
             return View("Index", new ClientAccountViewModel(currentUserAccounts));
+        }
+
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        {
+            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
+            if (!String.IsNullOrEmpty(ministryFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter));
+            if (numberFilter > 0)
+                clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
+            if (!String.IsNullOrEmpty(responsibilityFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
+            if (!String.IsNullOrEmpty(authorityFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
+            if (!String.IsNullOrEmpty(teamFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
+
+            return clients;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        {
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
+            try
+            {
+                using var memoryStream = new MemoryStream();
+                using (var streamWriter = new StreamWriter(memoryStream))
+                {
+                    using var csvWriter = new CsvWriter(streamWriter);
+                    csvWriter.WriteRecords(accounts);
+                }
+                string fileName = "Client-Accounts";
+                if (!String.IsNullOrEmpty(ministryFilter))
+                    fileName += $"-Client{numberFilter}";
+                if (!String.IsNullOrEmpty(responsibilityFilter))
+                    fileName += $"-{responsibilityFilter}";
+                if (!String.IsNullOrEmpty(authorityFilter))
+                    fileName += $"-{authorityFilter}";
+                if (!String.IsNullOrEmpty(teamFilter))
+                    fileName += $"-{teamFilter}";
+          
+
+                fileName += DateTime.Today.ToString("dd-mm-yyyy");
+                fileName += ".csv";
+
+                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+            }
+            catch (Exception ex)
+            {
+                //we really need an error page
+                return StatusCode(500);
+            }
         }
     }
 }

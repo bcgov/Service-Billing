@@ -358,7 +358,7 @@ namespace Service_Billing.Controllers
                 if (!String.IsNullOrEmpty(authorityFilter))
                     fileName += $"-{authorityFilter}";
 
-                fileName += DateTime.Today.ToString();
+                fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".csv";
 
                 return File(memoryStream.ToArray(), "application/octet-stream", fileName);

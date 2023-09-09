@@ -123,7 +123,7 @@ namespace Service_Billing.Controllers
                 if (!String.IsNullOrEmpty(ownerFilter))
                     fileName += $"-{ownerFilter}";
 
-                fileName += DateTime.Today.ToString();
+                fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".csv";
 
                 return File(memoryStream.ToArray(), "application/octet-stream", fileName);
