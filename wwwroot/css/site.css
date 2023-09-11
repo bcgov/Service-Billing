@@ -315,8 +315,27 @@ main {
     border-bottom-color: grey;
 }
 .table-filter-section form select {
-    max-width: 20%;
+
 }
 .text-center{
     padding-top: 100px;
+}
+#business-area-select
+{
+    display: inline-block;
+}
+.ui-section {
+    display: inline-block;
+}
+.filter-options{
+    display: inline-block;
+}
+.ui-section-buttons{
+
+}
+.option-buttons {
+   float: left;   
+}
+.export-button {
+    float: right;
 }

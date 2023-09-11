@@ -99,7 +99,7 @@ namespace Service_Billing.Controllers
             return View("index");
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> WriteToCSV(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);

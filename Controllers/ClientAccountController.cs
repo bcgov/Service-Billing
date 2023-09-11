@@ -218,7 +218,7 @@ namespace Service_Billing.Controllers
             return clients;
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
         {
             IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);

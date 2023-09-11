@@ -318,7 +318,7 @@ namespace Service_Billing.Controllers
             return bills;
         }
 
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> WriteToCSV(string quarterFilter,
             string ministryFilter,
             string titleFilter,
