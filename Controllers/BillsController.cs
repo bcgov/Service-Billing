@@ -430,7 +430,7 @@ namespace Service_Billing.Controllers
                 total += entry.Value;
             }
 
-            var arbitrary = new List<object>
+            var summedTotal = new List<object>
             {
                 new { Id = "Grand Total", Name = total },
             };
@@ -439,7 +439,7 @@ namespace Service_Billing.Controllers
             {
                 using var csvWriter = new CsvWriter(streamWriter);
                 csvWriter.WriteRecords(records);
-                csvWriter.WriteRecords(arbitrary);
+                csvWriter.WriteRecords(summedTotal);
             }
             string fileName = "GeneratedReport.csv";
 
