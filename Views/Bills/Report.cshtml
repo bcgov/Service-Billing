@@ -29,8 +29,14 @@ else
     <h3>Client Number: @Model.ClientNumber</h3>
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    <form asp-action="Index" method="get">
-        <input type="submit" value="Download as CSV" formaction="Bills/ReportToCSV" formmethod="get" />
+    <form asp-action="ReportToCSV" method="get">
+        <input type="text" name="quarterFilter" value="@Model.BillingQuarter" hidden />
+        <input type="text" name="ministryFilter" value="@Model.Ministry" hidden />
+        <input type="text" name="titleFilter" value="@Model.Title" hidden />
+        <input type="text" name="categoryFilter" value="@Model.ServiceCategoryId" hidden />
+        <input type="text" name="authorityFilter" value="@Model.Authority" hidden />
+        <input type="text" name="clientNumber" value="@Model.ClientNumber" hidden />
+        <input type="submit" value="Download as CSV" value="@Model.ServicesAndSums" formmethod="get" />
     </form>
     <table class="table table-striped">
         <thead>

@@ -1,5 +1,7 @@
 ﻿using CsvHelper;
+using CsvHelper.Configuration;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -371,7 +373,7 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> GenerateReport(string quarterFilter,
+        public async Task<IActionResult> ShowReport(string quarterFilter,
             string ministryFilter,
             string titleFilter,
             int categoryFilter,
@@ -382,41 +384,21 @@ namespace Service_Billing.Controllers
             try
             {
                 GeneratedReportViewModel model = new GeneratedReportViewModel();
-                if (!String.IsNullOrEmpty(quarterFilter))
-                {
-                    if (quarterFilter == "all")
-                        model.BillingQuarter = "All";
-                    else if (bills.Any())
-                        model.BillingQuarter = bills.First().BillingCycle;
-                }
+                model.BillingQuarter = quarterFilter;
                 model.Ministry = ministryFilter;
+                model.Title = titleFilter;
                 model.Authority = authorityFilter;
                 model.ClientNumber = clientNumber;
-                if(categoryFilter > 0)
+                if (categoryFilter > 0)
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(categoryFilter);
                     if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
                         model.Service = serviceCategory.Name;
                 }
-                SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
+                model.ServiceCategoryId = categoryFilter;
+                SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
 
-                foreach(Bill bill in bills)
-                {
-                    ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-                    if (serviceCategory != null)
-                    {
-                        if(servicesAndSums.ContainsKey(serviceCategory.Name))
-                        {
-                            servicesAndSums[serviceCategory.Name] += bill.Amount;
-                        }
-                        else
-                        {
-                            servicesAndSums.Add(!String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name 
-                                : $"Nameless category with ID: {serviceCategory.ServiceId} ", bill.Amount);
-                        }
-                    }
-                }
-       
+
                 model.ServicesAndSums = servicesAndSums;
 
                 return View("Report", model);
@@ -426,7 +408,78 @@ namespace Service_Billing.Controllers
 
             }
 
-            return Ok();
+            return Ok(500);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ReportToCSV(string quarterFilter,
+            string ministryFilter,
+            string titleFilter,
+            int categoryFilter,
+            string authorityFilter,
+            int clientNumber)
+        {
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
+            List<RecordEntry> records = new List<RecordEntry>();
+            decimal? total = 0;
+
+            foreach (var entry in servicesAndSums)
+            {
+                records.Add(new RecordEntry(entry.Key, entry.Value));
+                total += entry.Value;
+            }
+
+            var arbitrary = new List<object>
+            {
+                new { Id = "Grand Total", Name = total },
+            };
+            using var memoryStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(memoryStream))
+            {
+                using var csvWriter = new CsvWriter(streamWriter);
+                csvWriter.WriteRecords(records);
+                csvWriter.WriteRecords(arbitrary);
+            }
+            string fileName = "GeneratedReport.csv";
+
+            return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+        }
+
+        private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
+        {
+            SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
+
+            foreach (Bill bill in bills)
+            {
+                ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                if (serviceCategory != null)
+                {
+                    if (servicesAndSums.ContainsKey(serviceCategory.Name))
+                    {
+                        servicesAndSums[serviceCategory.Name] += bill.Amount;
+                    }
+                    else
+                    {
+                        servicesAndSums.Add(!String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name
+                            : $"Nameless category with ID: {serviceCategory.ServiceId} ", bill.Amount);
+                    }
+                }
+            }
+
+            return servicesAndSums;
+        }
+    }
+
+    public class RecordEntry
+    {
+        public string ServiceCategory { get; set; }
+        public decimal? Amount { get; set; }
+
+        public RecordEntry(string serviceCategory, decimal? amount)
+        {
+            ServiceCategory = serviceCategory;
+            Amount = amount;
         }
     }
 }

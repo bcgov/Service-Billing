@@ -6,7 +6,7 @@
 
 <div class="text-center">
    
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+@*     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
     {
         <p>This paragraph is displayed because you're in the FO role. Good work!'.</p>
     }
@@ -17,7 +17,7 @@
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireUserRole")).Succeeded)
     {
         <p>This paragraph is displayed because you're in the owner role. Good work!'.</p>
-    }
+    } *@
 </div>
 <div id="my-accounts"></div>
 <div id="my-charges"></div>

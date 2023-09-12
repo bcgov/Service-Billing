@@ -1,4 +1,7 @@
-﻿@using Service_Billing.ViewModels;
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@using Service_Billing.ViewModels;
 @model AllBillsViewModel;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
@@ -96,7 +99,10 @@
                     </div>
                     <div class="export-button">
                         <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays."/>
-                        <input type="submit" value="Run Report" formaction="Bills/GenerateReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                      @*   @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
+                        { *@
+                            <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                        @* } *@
                     </div>
                 </div>
             </div>
