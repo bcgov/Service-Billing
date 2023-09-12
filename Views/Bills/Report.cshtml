@@ -1,0 +1,59 @@
+﻿@using Service_Billing.ViewModels;
+@model GeneratedReportViewModel;
+
+@{
+    decimal? total = 0;
+}
+@if(!String.IsNullOrEmpty(Model.BillingQuarter))
+{
+    <h1>Summary of Charges: @Model.BillingQuarter</h1>
+}
+else
+{
+<h1>Summary of Charges</h1>
+}
+@if(!String.IsNullOrEmpty(Model.Ministry))
+{
+    <h3>Ministry: @Model.Ministry</h3>
+}
+@if (!String.IsNullOrEmpty(Model.Service))
+{
+    <h3>Service Category: @Model.Service</h3>
+}
+@if (!String.IsNullOrEmpty(Model.Authority))
+{
+    <h3>Expense Authority: @Model.Authority</h3>
+}
+@if (Model.ClientNumber > 0)
+{
+    <h3>Client Number: @Model.ClientNumber</h3>
+}
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    <form asp-action="Index" method="get">
+        <input type="submit" value="Download as CSV" formaction="Bills/ReportToCSV" formmethod="get" />
+    </form>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">ServiceCategory</th>
+                <th>Amount</th>
+                <th>Grand Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(KeyValuePair<string, decimal?> serviceAndSum in Model.ServicesAndSums)
+            {
+                total += @serviceAndSum.Value;
+                <tr>
+                    <td>@serviceAndSum.Key</td>
+                    <td>@serviceAndSum.Value</td>
+                </tr>
+            }
+            <tr>
+                <td></td>
+                <td></td>
+                <td>@total</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

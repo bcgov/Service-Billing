@@ -8,6 +8,7 @@ using Microsoft.Identity.Web;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
+using System.Collections.Immutable;
 
 namespace Service_Billing.Controllers
 {
@@ -36,9 +37,9 @@ namespace Service_Billing.Controllers
             _ministryRepository = ministryRepository;
         }
 
-        public IActionResult Index(string quarterFilter, 
+        public IActionResult Index(string quarterFilter,
             string ministryFilter,
-            string titleFilter, 
+            string titleFilter,
             int categoryFilter,
             string authorityFilter,
             int clientNumber)
@@ -57,7 +58,7 @@ namespace Service_Billing.Controllers
             ViewData["ClientNumber"] = clientNumber;
 
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
-            
+
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }
@@ -140,27 +141,27 @@ namespace Service_Billing.Controllers
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.DateCreated);
-       
+
             return View(bill);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
-       // public async Task<IActionResult> Create(IFormCollection collection)
-       public async Task<ActionResult> Create([Bind(include: "amount, billingCycle, clientName, title, idirOrUrl, serviceCategoryId, fiscalPeriod, quantity, ticketNumberAndRequester, dateModified, dateCreated, createdBy")] Bill bill)
+                                    // public async Task<IActionResult> Create(IFormCollection collection)
+        public async Task<ActionResult> Create([Bind(include: "amount, billingCycle, clientName, title, idirOrUrl, serviceCategoryId, fiscalPeriod, quantity, ticketNumberAndRequester, dateModified, dateCreated, createdBy")] Bill bill)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    await _billRepository.CreateBill(bill); 
+                    await _billRepository.CreateBill(bill);
                 }
             }
-            catch (DbUpdateException )
+            catch (DbUpdateException)
             {
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
-            
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -336,11 +337,11 @@ namespace Service_Billing.Controllers
                     csvWriter.WriteRecords(bills);
                 }
                 string fileName = "Charges";
-                if(!string.IsNullOrEmpty(quarterFilter))
+                if (!string.IsNullOrEmpty(quarterFilter))
                 {
                     if (quarterFilter == "all")
                         fileName += "-all-Quarters";
-                    if(bills.Any())
+                    if (bills.Any())
                     {
                         fileName += $"={bills.First().BillingCycle}";
                     }
@@ -352,9 +353,9 @@ namespace Service_Billing.Controllers
                 if (categoryFilter > 0)
                 {
                     ServiceCategory category = _categoryRepository.GetById(categoryFilter);
-                    if(category != null)
+                    if (category != null)
                         fileName += $"-{category.Name}";
-                }    
+                }
                 if (!String.IsNullOrEmpty(authorityFilter))
                     fileName += $"-{authorityFilter}";
 
@@ -368,6 +369,64 @@ namespace Service_Billing.Controllers
                 //we really need an error page
                 return StatusCode(500);
             }
+        }
+
+        public async Task<IActionResult> GenerateReport(string quarterFilter,
+            string ministryFilter,
+            string titleFilter,
+            int categoryFilter,
+            string authorityFilter,
+            int clientNumber)
+        {
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            try
+            {
+                GeneratedReportViewModel model = new GeneratedReportViewModel();
+                if (!String.IsNullOrEmpty(quarterFilter))
+                {
+                    if (quarterFilter == "all")
+                        model.BillingQuarter = "All";
+                    else if (bills.Any())
+                        model.BillingQuarter = bills.First().BillingCycle;
+                }
+                model.Ministry = ministryFilter;
+                model.Authority = authorityFilter;
+                model.ClientNumber = clientNumber;
+                if(categoryFilter > 0)
+                {
+                    ServiceCategory? serviceCategory = _categoryRepository.GetById(categoryFilter);
+                    if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
+                        model.Service = serviceCategory.Name;
+                }
+                SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
+
+                foreach(Bill bill in bills)
+                {
+                    ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                    if (serviceCategory != null)
+                    {
+                        if(servicesAndSums.ContainsKey(serviceCategory.Name))
+                        {
+                            servicesAndSums[serviceCategory.Name] += bill.Amount;
+                        }
+                        else
+                        {
+                            servicesAndSums.Add(!String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name 
+                                : $"Nameless category with ID: {serviceCategory.ServiceId} ", bill.Amount);
+                        }
+                    }
+                }
+       
+                model.ServicesAndSums = servicesAndSums;
+
+                return View("Report", model);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return Ok();
         }
     }
 }
