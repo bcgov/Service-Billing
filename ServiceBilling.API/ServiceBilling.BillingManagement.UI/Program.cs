@@ -32,8 +32,8 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 });
 
-builder.Services.AddDbContext<DataContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+//builder.Services.AddDbContext<DataContext>(options =>
+//            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
@@ -41,11 +41,11 @@ builder.Services.AddRazorPages()
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
 
-builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
-builder.Services.AddScoped<IChargesRepository, ChargesRepository>();
-builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
-builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
-builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
+//builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
+//builder.Services.AddScoped<IChargesRepository, ChargesRepository>();
+//builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
+//builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
+//builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
@@ -84,8 +84,8 @@ if (!app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<DataContext>();
-    await context.Database.MigrateAsync();
+    // var context = services.GetRequiredService<DataContext>();
+    // await context.Database.MigrateAsync();
     // DbInitializer.Seed(context);
 }
 
