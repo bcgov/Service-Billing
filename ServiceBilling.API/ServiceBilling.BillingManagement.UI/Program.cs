@@ -33,7 +33,7 @@ builder.Services.AddControllersWithViews(options =>
 });
 
 builder.Services.AddDbContext<DataContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddRazorPages()
     .AddMicrosoftIdentityUI();
@@ -85,8 +85,8 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<DataContext>();
-    await context.Database.MigrateAsync();
-    DbInitializer.Seed(context);
+    // await context.Database.MigrateAsync();
+    // DbInitializer.Seed(context);
 }
 
 app.UseHttpsRedirection();
