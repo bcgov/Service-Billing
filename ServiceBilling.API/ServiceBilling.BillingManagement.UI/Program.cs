@@ -86,7 +86,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<DataContext>();
     await context.Database.MigrateAsync();
-    DbInitializer.Seed(context);
+    // DbInitializer.Seed(context);
 }
 
 app.UseHttpsRedirection();
