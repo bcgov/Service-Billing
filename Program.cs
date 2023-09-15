@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Service_Billing.Models.Repositories;
 using Service_Billing.Models;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -69,6 +70,15 @@ builder.Services.AddSession(options =>
 
 var app = builder.Build();
 
+var fordwardedHeaderOptions = new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+};
+fordwardedHeaderOptions.KnownNetworks.Clear();
+fordwardedHeaderOptions.KnownProxies.Clear();
+
+// for making Azure AD OAuth work when deployed to OpenShift. 
+app.UseForwardedHeaders(fordwardedHeaderOptions);
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
