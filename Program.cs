@@ -23,6 +23,20 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
     .AddInMemoryTokenCaches();
 
+builder.Services
+    .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+{
+    options.SaveTokens = true; // this saves the token for the downstream api
+    options.Events = new OpenIdConnectEvents
+    {
+        OnRedirectToIdentityProvider = async ctxt =>
+        {
+
+            ctxt.ProtocolMessage.RedirectUri = "https://gdx-service-billing-review-20230913-2-baf118-dev.apps.silver.devops.gov.bc.ca/signin-oidc";
+            await Task.Yield();
+        }
+    };
+});
 builder.Services.AddControllersWithViews(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
