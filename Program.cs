@@ -32,7 +32,7 @@ builder.Services
             OnRedirectToIdentityProvider = async ctxt =>
             {
 
-                ctxt.ProtocolMessage.RedirectUri = "https://gdx-service-billing-review-20230913-2-baf118-dev.apps.silver.devops.gov.bc.ca/signin-oidc";
+                ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
                 await Task.Yield();
             }
         };
