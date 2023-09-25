@@ -51,6 +51,10 @@
                 </div>
             </div>
             <div class="form-group">
+                <label>UOM</label>
+                <input id="uom" class="form-control" readonly="true" />
+            </div>
+            <div class="form-group">
                 <label asp-for="@Model.FiscalPeriod" class="control-label"></label>
                 <input asp-for="@Model.FiscalPeriod" class="form-control" />
                 <span asp-validation-for="@Model.FiscalPeriod" class="text-danger"></span>
@@ -99,20 +103,23 @@
             calculateAmount = () => {
                 var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
                 var xhr = new XMLHttpRequest();
+                xhr.responseType = "JSON";
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
-                        $("#amount").val(xhr.responseText);
+                        var response = JSON.parse(xhr.response);
+                        $("#amount").val(response['amount']);
+                        $("#uom").val(response['uom']);
                     }
                 };
                 xhr.open('get', url);
                 xhr.send();
             }
-            $("#categorySelect").on("change" , (e) => {
-               calculateAmount();
-               if($("#categorySelect").val() < 21){ //id's greater than 21 are older categories, with slightly different names and prices
-                   $("#categoryWarning").hide();
+            $("#categorySelect").on("change", (e) => {
+                calculateAmount();
+                if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
+                    $("#categoryWarning").hide();
                     $("#categoryIdInput").val($("#categorySelect").val());
-               }
+                }
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();
@@ -150,6 +157,7 @@
                 });
             }
             createClientSelect();
+            calculateAmount();
         });
     </script>
 }

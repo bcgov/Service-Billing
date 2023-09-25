@@ -88,7 +88,7 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();//.Where(c => c.isActive == true);
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             if (bill == null)
                 return NotFound();
 
@@ -97,6 +97,8 @@ namespace Service_Billing.Controllers
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
             ViewData["Categories"] = categories;
+            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
 
             return View(bill);
         }
@@ -192,7 +194,11 @@ namespace Service_Billing.Controllers
                 }
                 if (category.ServiceId == 5)
                     newAmount = 85;
-                return new JsonResult(newAmount * quantity);
+                string? UOM = !string.IsNullOrEmpty(category.UOM) ? category.UOM : "n/a";
+                RecordEntry recordEntry = new RecordEntry(category.Name, newAmount * quantity);
+                recordEntry.UOM = UOM;
+                
+                return new JsonResult(recordEntry);
             }
             catch (Exception ex)
             {
@@ -481,6 +487,7 @@ namespace Service_Billing.Controllers
     {
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
+        public string UOM { get; set; }
 
         public RecordEntry(string serviceCategory, decimal? amount)
         {
