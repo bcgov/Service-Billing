@@ -46,6 +46,9 @@
                 <label asp-for="@Model.Amount" class="control-label"></label>
                 <input asp-for="@Model.Amount" class="form-control" id="amount"/>
                 <span asp-validation-for="@Model.Amount" class="text-danger"></span>
+                <div class="input-info">
+                    Typically, amount is calculated based on service and quantity, and shouldn't be changed. It can be overridden here if you have a good reason to do so.
+                </div>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.FiscalPeriod" class="control-label"></label>
