@@ -89,7 +89,7 @@
                 <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
                 <label for="clientNumber">Client #</label>
                 <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
-                <label for="meFilter">Created by me</label>
+                @* <label for="meFilter">Created by me</label> *@
                 <input type="checkbox" name="meFilter" value="@ViewData["MeFilter"] onclick="return flipMeBool()" title="must match your IDIR displayname, i.e. 'lastname, firstname Ministry'" />
                 <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
                 <div class="ui-section-buttons">
@@ -111,7 +111,8 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Client</th>
+                <th scope="col">Client #</th>
+                <th scope="col">Client Name</th>
                 <th scope="col">Title</th>
                 <th scope="col">Service Category</th>
                 @if (ViewData["Quarter"] == "All Quarters")
@@ -123,7 +124,6 @@
                 <th scope="col">Quantity</th>
                 <th scope="col">UOM</th>
                 <th scope="col">Expense Authority</th>
-                <th scope="col">Created By</th>
                 <th>Details</th>
             </tr>
         </thead>
@@ -133,6 +133,11 @@
                 var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
                 var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
                 <tr>
+                    <td>
+                    <a asp-controller="ClientAccount"
+                       asp-action="Details"
+                       asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
+                    </td>
                     <td>@bill.ClientName</td>
                     <td>@bill.Title</td>
                     <td>
@@ -186,9 +191,6 @@
                         {
                             @client.ExpenseAuthorityName
                         }
-                    </td>
-                    <td>
-                        @bill.CreatedBy
                     </td>
                     <td>
                         <a asp-controller="Bills"
