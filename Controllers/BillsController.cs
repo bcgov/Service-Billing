@@ -50,8 +50,11 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            ViewData["Ministries"] = ministries;
-            if( categories != null)
+            if(ministries != null && ministries.Any())
+            {
+                ViewData["Ministries"] = ministries;
+            }
+            if(categories != null && categories.Any())
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }

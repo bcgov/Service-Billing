@@ -30,11 +30,13 @@ namespace Service_Billing.Controllers
             ViewData["OwnerFilter"] = ownerFilter;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             List<string> busAreas = new List<string>();
-            
-            foreach(ServiceCategory category in categories)
+            if(categories != null && categories.Any())
             {
-                if(!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
-                    busAreas.Add(category.GDXBusArea);
+                foreach(ServiceCategory category in categories)
+                {
+                    if(!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
+                        busAreas.Add(category.GDXBusArea);
+                }
             }
 
             ViewData["BusAreas"] = busAreas;
