@@ -1,12 +1,13 @@
-name: sonar-maven-scan
+name: sonar-repo-scan
 on:
   workflow_dispatch:
   push:
 jobs:
-  sonar-scan-mvn:
-    uses: bcgov/pipeline-templates/.github/workflows/sonar-scanner-mvn.yaml@main
+  sonar-repo-scan:
+    uses: bcgov/pipeline-templates/.github/workflows/sonar-scanner.yaml@main
     with:
-      WORKDIR: ./
-      PROJECT_KEY: pipeline-templates
+      ORG: ci-testing
+      PROJECT_KEY: bcgov-pipeline-templates
+      URL: https://sonarcloud.io
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
