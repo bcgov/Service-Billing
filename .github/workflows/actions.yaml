@@ -1,14 +1,12 @@
-name: docker-build-push
+name: sonar-maven-scan
 on:
   workflow_dispatch:
   push:
 jobs:
-  build-push:
-    uses: bcgov/pipeline-templates/.github/workflows/build-push.yaml@main
+  sonar-scan-mvn:
+    uses: bcgov/pipeline-templates/.github/workflows/sonar-scanner-mvn.yaml@main
     with:
-      IMAGE_REGISTRY: docker.io
-      IMAGE: gregnrobinson/bcgov-nginx-demo
-      WORKDIR: ./demo/nginx
+      WORKDIR: ./tekton/demo/maven-test
+      PROJECT_KEY: pipeline-templates
     secrets:
-      IMAGE_REGISTRY_USER: ${{ secrets.IMAGE_REGISTRY_USER }}
-      IMAGE_REGISTRY_PASSWORD: ${{ secrets.IMAGE_REGISTRY_PASSWORD }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
