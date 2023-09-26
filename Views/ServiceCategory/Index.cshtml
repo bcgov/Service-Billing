@@ -12,7 +12,7 @@
     }
     bool inactive = ViewData["IsActiveFilter"] == "inactive";
     string uomFilterValue = string.Empty;
-    if (ViewData["UOMFilter"] != null) 
+    if (ViewData["UOMFilter"] != null)
         uomFilterValue = ViewData["UOMFilter"].ToString();
 }
 
@@ -22,104 +22,114 @@
     <a asp-action="Create">Create New</a>
 </p>
 <div class="table-filter-section">
-    <h3>Filter by...</h3>
     <form asp-action="Index" asp-controller="ServiceCategory" method="post" role="form" class="form-horizontal">
-        <div class="ui-section">
-            <div class="filter-options">
-                <div id="business-area-select">
-                    <label for="areaFilter">Business Area:</label>
-                    <select name="areaFilter">
-                        <option></option>
-                        @{
-                            foreach(string gdxBusinessArea in busAreas)
-                            {
-                                @if (gdxBusinessArea.Equals(ViewData["AreaFilter"]))
+        <fieldset>
+            <legend>
+                Filter by...
+            </legend>
+            <div class="ui-section">
+                <div class="filter-options">
+                    <div class="form-group">
+                        <label for="areaFilter">Business Area:</label>
+                        <select name="areaFilter">
+                            <option></option>
+                            @{
+                                foreach (string gdxBusinessArea in busAreas)
                                 {
-                                    <option selected>@gdxBusinessArea</option>
-                                }
-                                else
-                                {
-                                    <option>@gdxBusinessArea</option>
+                                    @if (gdxBusinessArea.Equals(ViewData["AreaFilter"]))
+                                    {
+                                        <option selected>@gdxBusinessArea</option>
+                                    }
+                                    else
+                                    {
+                                        <option>@gdxBusinessArea</option>
+                                    }
                                 }
                             }
-                        }
-                    </select>
+                        </select>
+                        <label for="nameFilter">Name: </label>
+                        <input type="text" name="nameFilter" value="@ViewData["NameFilter"]" title="Name contains..." />
+
+                        <div id="radio-buttons">
+                            @if (ViewData["IsActiveFilter"] != null && ViewData["IsActiveFilter"].ToString() == "active")
+                            {
+                                <input type="radio" id="active" name="activeFilter" value="active" checked />
+                                <label for="active">Active</label>
+                                <input type="radio" id="inactive" name="activeFilter" value="inactive" />
+                                <label for="inactive">Inactive</label>
+                                <input type="radio" id="both" name="activeFilter" value="both" />
+                                <label for="both">Both</label>
+                            }
+                            else if (ViewData["IsActiveFilter"] != null && ViewData["IsActiveFilter"].ToString() == "inactive")
+                            {
+                                <input type="radio" id="active" name="activeFilter" value="active" />
+                                <label for="active">Active</label>
+                                <input type="radio" id="inactive" name="activeFilter" value="inactive" checked />
+                                <label for="inactive">Inactive</label>
+                                <input type="radio" id="both" name="activeFilter" value="both" />
+                                <label for="both">Both</label>
+                            }
+                            else
+                            {
+                                <input type="radio" id="active" name="activeFilter" value="active" />
+                                <label for="active">Active</label>
+                                <input type="radio" id="inactive" name="activeFilter" value="inactive" />
+                                <label for="inactive">Inactive</label>
+                                <input type="radio" id="both" name="activeFilter" value="both" checked />
+                                <label for="both">Both</label>
+                            }
+                        </div>
+
+                        <label name="uomFilter">UOM: </label>
+                        <select name="uomFilter">
+                            @if (uomFilterValue == "Month")
+                            {
+                                <option value=""></option>
+                                <option value="Month" selected>Month</option>
+                                <option value="Hr">Hour</option>
+                                <option value="Each">Each</option>
+                            }
+                            else if (uomFilterValue == "Hr")
+                            {
+                                <option value=""></option>
+                                <option value="Month">Month</option>
+                                <option value="Hr" selected>Hour</option>
+                                <option value="Each">Each</option>
+                            }
+                            else if (uomFilterValue == "Each")
+                            {
+                                <option value=""></option>
+                                <option value="Month">Month</option>
+                                <option value="Hr">Hour</option>
+                                <option value="Each" selected>Each</option>
+                            }
+                            else
+                            {
+                                <option value="" selected></option>
+                                <option value="Month">Month</option>
+                                <option value="Hr">Hour</option>
+                                <option value="Each">Each</option>
+                            }
+
+                        </select>
+                        <label name="ownerFilter">Service Owner: </label>
+                        <input type="text" name="ownerFilter" value="@ViewData["OwnerFilter"]" title="Portfolio owner name contains..." />
+                    </div>
                 </div>
-                <label for="nameFilter">Name: </label>
-                <input type="text" name="nameFilter" value="@ViewData["NameFilter"]" title="Name contains..." />
-                <div class="form-group">
-                    @if (ViewData["IsActiveFilter"] != null && ViewData["IsActiveFilter"].ToString() == "active")
-                    {
-                        <input type="radio" id="active" name="activeFilter" value="active" checked />
-                        <label for="active">Active</label>
-                        <input type="radio" id="inactive" name="activeFilter" value="inactive" />
-                        <label for="inactive">Inactive</label>
-                        <input type="radio" id="both" name="activeFilter" value="both" />
-                        <label for="both">Both</label>
-                    }
-                    else if (ViewData["IsActiveFilter"] != null && ViewData["IsActiveFilter"].ToString() == "inactive")
-                    {
-                        <input type="radio" id="active" name="activeFilter" value="active"/>
-                        <label for="active">Active</label>
-                        <input type="radio" id="inactive" name="activeFilter" value="inactive" checked />
-                        <label for="inactive">Inactive</label>
-                        <input type="radio" id="both" name="activeFilter" value="both" />
-                        <label for="both">Both</label>
-                    }
-                    else
-                    {
-                        <input type="radio" id="active" name="activeFilter" value="active" />
-                        <label for="active">Active</label>
-                        <input type="radio" id="inactive" name="activeFilter" value="inactive" />
-                        <label for="inactive">Inactive</label>
-                        <input type="radio" id="both" name="activeFilter" value="both" checked />
-                        <label for="both">Both</label>
-                    }
+                <div class="ui-section-buttons">
+                    <div class="option-buttons">
+                        <input type="submit" value="Filter" class="btn btn-default" /> |
+                        <a asp-action="Index">Back to Full List</a>
+                    </div>
+
                 </div>
-                <label name="uomFilter">UOM: </label>
-                <select name="uomFilter">
-                    @if(uomFilterValue == "Month")
-                    {
-                        <option value=""></option>
-                        <option value="Month" selected>Month</option>
-                        <option value="Hr">Hour</option>
-                        <option value="Each">Each</option>
-                    }
-                    else if (uomFilterValue == "Hr")
-                    {
-                        <option value=""></option>
-                        <option value="Month">Month</option>
-                        <option value="Hr" selected>Hour</option>
-                        <option value="Each">Each</option>
-                    }
-                    else if (uomFilterValue == "Each")
-                    {
-                        <option value=""></option>
-                        <option value="Month">Month</option>
-                        <option value="Hr">Hour</option>
-                        <option value="Each" selected>Each</option>
-                    }
-                    else
-                    {
-                        <option value="" selected></option>
-                        <option value="Month">Month</option>
-                        <option value="Hr">Hour</option>
-                        <option value="Each">Each</option>
-                    }
-                    
-                </select>
-                <label name="ownerFilter">Service Owner: </label>
-                <input type="text" name="ownerFilter" value="@ViewData["OwnerFilter"]" title="Portfolio owner name contains..." />
             </div>
-            <div class="ui-section-buttons">
-                <div class="option-buttons">
-                    <input type="submit" value="Filter" class="btn btn-default" /> |
-                    <a asp-action="Index">Back to Full List</a>
-                </div>
-                <div class="export-button">
-                    <input type="submit" value="Export to CSV" formaction="ServiceCategory/WriteToCSV" formmethod="get" />
-                </div>
-            </div>
+        </fieldset>
+        <div class="create-new-button">
+            <input type="submit" value="Create New Service" formaction="ServiceCategory/Create" formmethod="get" />
+        </div>
+        <div class="export-button">
+            <input type="submit" value="Export to CSV" formaction="ServiceCategory/WriteToCSV" formmethod="get" />
         </div>
     </form>
 </div>
@@ -152,35 +162,35 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.GDXBusArea)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Name)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Costs)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Description)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsActive)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UOM)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.ServiceOwner)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a> 
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GDXBusArea)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Costs)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsActive)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UOM)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.ServiceOwner)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>
 
-   

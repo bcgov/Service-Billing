@@ -93,9 +93,6 @@ header {
         justify-content: flex-start;
         align-items: center;
         margin: 0 10px 0 0;
-        /* border-style: dotted;
-  border-width: 1px;
-  border-color: lightgrey; */
     }
 
         header .banner img {
@@ -105,9 +102,6 @@ header {
     header .other {
         display: flex;
         flex-grow: 1;
-        /* border-style: dotted;
-  border-width: 1px;
-  border-color: lightgrey; */
     }
 
 /*
@@ -222,9 +216,6 @@ header .nav-btn {
             color: #fff;
             list-style: none;
             margin-left: -25px;
-            /* border-style: dotted;
-    border-width: 1px;
-    border-color: red; */
         }
 
             .navigation-main .nav-container ul li {
@@ -238,9 +229,6 @@ header .nav-btn {
                     color: #fff;
                     padding: 0 15px 0 15px;
                     text-decoration: none;
-                    /* border-style: dotted;
-    border-width: 1px;
-    border-color: green; */
                 }
 
                     .navigation-main .nav-container ul li a:hover {
@@ -303,7 +291,7 @@ header .nav-btn {
 }
 
 main {
-   padding-top: 150px;
+   padding-top: 80px;
 }
 /**/
 .inactive-service-category {
@@ -312,10 +300,7 @@ main {
 .change-category-message {
     color: mediumorchid;
 }
-.table-filter-section {
-    border-bottom-style: solid;
-    border-bottom-color: grey;
-}
+
 .table-filter-section form select {
 
 }
@@ -338,6 +323,38 @@ main {
 .option-buttons {
    float: left;   
 }
+.create-new-button{
+    float: left;
+}
 .export-button {
     float: right;
+}
+
+fieldset {
+    display: block;
+    margin-inline-start: 2px;
+    margin-inline-end: 2px;
+    padding-block-start: 0.35em;
+    padding-inline-start: 0.75em;
+    padding-inline-end: 0.75em;
+    padding-block-end: 0.625em;
+    min-inline-size: min-content;
+    border-width: 2px;
+    border-style: groove;
+    border-color: rgb(192, 192, 192);
+    border-image: initial;
+    margin-bottom: 6px;
+}
+fieldset div{
+    margin-left: 4px;
+}
+legend{
+    margin-left: 10px;
+    padding-left: 10px;
+    width: 15%;
+    border: none;
+}
+#radio-buttons{
+    margin-left: 4px;
+    max-width: 40%;
 }

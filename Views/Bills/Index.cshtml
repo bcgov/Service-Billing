@@ -10,7 +10,7 @@
     bool all = ViewData["Quarter"] == "All Quarters";
 }
 
-<h1>Bill info</h1>
+<h1>Charges</h1>
 
 @if (!Model.Bills.Any())
 {
@@ -27,85 +27,88 @@
     }
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    <div>
-        <a asp-controller="Bills"
-           asp-action="Create">enter a new bill</a>
-    </div>
+
     <h2>Fiscal Period: @ViewData["Quarter"]</h2>
 
     <div class="table-filter-section">
-        <h3>Filter by...</h3>
         <form asp-action="Index" method="get">
-            <div class="ui-section">
-                <div>
-                    <div id="quarter-select">
-                        <label for="quarterFilter">Select Quarter</label>
-                        <select name="quarterFilter">
-                            <option value="current" selected="@current">Current</option>
-                            <option value="previous" selected="@previous">Previous</option>
-                            <option value="all" selected="@all">All</option>
+            <fieldset>
+                <legend>Filter by...</legend>
+                <div class="ui-section">
+                    <div>
+                        <div id="quarter-select">
+                            <label for="quarterFilter">Select Quarter</label>
+                            <select name="quarterFilter">
+                                <option value="current" selected="@current">Current</option>
+                                <option value="previous" selected="@previous">Previous</option>
+                                <option value="all" selected="@all">All</option>
+                            </select>
+                        </div>
+                        <label for="ministryFilter">Ministry</label>
+                        <select name="ministryFilter">
+                            <option value="" disabled selected hidden></option>
+                            @if (ministries != null)
+                            {
+                                foreach (Ministry ministry in ministries)
+                                {
+                                    string selectedMinistry = "";
+                                    if (ViewData["MinistryFilter"] != null)
+                                        selectedMinistry = ViewData["MinistryFilter"].ToString();
+
+                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                    {
+                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    }
+                                }
+                            }
                         </select>
                     </div>
-                    <label for="ministryFilter">Ministry</label>
-                    <select name="ministryFilter">
-                        <option value="" disabled selected hidden></option>
-                        @if (ministries != null)
-                        {
-                            foreach (Ministry ministry in ministries)
+                    <div>
+                        <label for="titleFilter">Title</label>
+                        <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
+                        <label for="categoryFilter">Service Category</label>
+                        <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
+                            <option value="-1"></option>
+                            @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                             {
-                                string selectedMinistry = "";
-                                if (ViewData["MinistryFilter"] != null)
-                                    selectedMinistry = ViewData["MinistryFilter"].ToString();
-
-                                if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
                                 {
-                                    <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    <option value="@category.ServiceId" selected>@category.Name</option>
                                 }
                                 else
                                 {
-                                    <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    <option value="@category.ServiceId">@category.Name</option>
                                 }
                             }
-                        }
-                    </select>
+                        </select>
+                        <label for="authorityFilter">Expense Authority</label>
+                        <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+                        <label for="clientNumber">Client #</label>
+                        <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
+                    </div>
+                    <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
                 </div>
-                <div>
-                    <label for="titleFilter">Title</label>
-                    <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
-                    <label for="categoryFilter">Service Category</label>
-                    <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
-                        <option value="-1"></option>
-                        @foreach (ServiceCategory category in ViewBag.ServiceCategories)
-                        {
-                            if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
-                            {
-                                <option value="@category.ServiceId" selected>@category.Name</option>
-                            }
-                            else
-                            {
-                                <option value="@category.ServiceId">@category.Name</option>
-                            }
-                        }
-                    </select>
-                    <label for="authorityFilter">Expense Authority</label>
-                    <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                    <label for="clientNumber">Client #</label>
-                    <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
-                </div>
-                <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
                 <div class="ui-section-buttons">
                     <div class="option-buttons">
                         <input type="submit" value="Filter" class="btn btn-default" /> |
                         <a asp-action="Index">Back to Full List</a>
                     </div>
-                    <div class="export-button">
-                        <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays."/>
-                      @*   @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
-                        { *@
-                            <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
-                        @* } *@
-                    </div>
+
                 </div>
+            </fieldset>
+            <div class="create-new-button">
+                <input type="submit" value="Create New Service" formaction="Bills/Create" formmethod="get" />
+            </div>
+            <div class="export-button">
+                <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                @*   @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
+                { *@
+                <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                @* } *@
             </div>
         </form>
     </div>
@@ -135,9 +138,9 @@
                 var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
                 <tr>
                     <td>
-                    <a asp-controller="ClientAccount"
-                       asp-action="Details"
-                       asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
+                        <a asp-controller="ClientAccount"
+                           asp-action="Details"
+                           asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
                     </td>
                     <td>@bill.ClientName</td>
                     <td>@bill.Title</td>
