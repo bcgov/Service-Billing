@@ -17,37 +17,40 @@
             <h3>Filter by...</h3>
             <form asp-action="Index" method="get">
                 <div class="ui-section">
-                    <label for="ministryFilter">Ministry</label>
-                    <select name="ministryFilter">
-                        <option value="" disabled selected hidden></option>
-                        @if (ministries != null)
-                        {
-                            foreach (Ministry ministry in ministries)
+                    <div>
+                        <label for="ministryFilter">Ministry</label>
+                        <select name="ministryFilter">
+                            <option value="" disabled selected hidden></option>
+                            @if (ministries != null)
                             {
-                                string selectedMinistry = "";
-                                if (ViewData["MinistryFilter"] != null)
-                                    selectedMinistry = ViewData["MinistryFilter"].ToString();
+                                foreach (Ministry ministry in ministries)
+                                {
+                                    string selectedMinistry = "";
+                                    if (ViewData["MinistryFilter"] != null)
+                                        selectedMinistry = ViewData["MinistryFilter"].ToString();
 
-                                if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
-                                {
-                                    <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
-                                }
-                                else
-                                {
-                                    <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                    {
+                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                    }
                                 }
                             }
-                        }
-                    </select>
-                    <label for="numberFilter">Client #</label>
-                    <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" />
-                    <label for="authorityFilter">Responsibility Centre</label>
-                    <input type="text" name="responsibilityFilter" value="@ViewData["ResponsibilityFilter"]" />
-                    <label for="authorityFilter">Expense Authority</label>
-                    <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                    <label for="authorityFilter">Team Name</label>
-                    <input type="text" name="teamFilter" value="@ViewData["TeamFilter"]" />
-
+                        </select>
+                        <label for="numberFilter">Client #</label>
+                        <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" />
+                    </div>
+                    <div>
+                        <label for="authorityFilter">Responsibility Centre</label>
+                        <input type="text" name="responsibilityFilter" value="@ViewData["ResponsibilityFilter"]" />
+                        <label for="authorityFilter">Expense Authority</label>
+                        <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+                        <label for="authorityFilter">Team Name</label>
+                        <input type="text" name="teamFilter" value="@ViewData["TeamFilter"]" />
+                    </div>
                     <div class="ui-section-buttons">
                         <div class="option-buttons">
                             <input type="submit" value="Filter" class="btn btn-default" />

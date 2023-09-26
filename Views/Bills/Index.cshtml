@@ -37,60 +37,61 @@
         <h3>Filter by...</h3>
         <form asp-action="Index" method="get">
             <div class="ui-section">
-                <div id="quarter-select">
-                    <label for="quarterFilter">Select Quarter</label>
-                    <select name="quarterFilter">
-                        <option value="current" selected="@current">Current</option>
-                        <option value="previous" selected="@previous">Previous</option>
-                        <option value="all" selected="@all">All</option>
+                <div>
+                    <div id="quarter-select">
+                        <label for="quarterFilter">Select Quarter</label>
+                        <select name="quarterFilter">
+                            <option value="current" selected="@current">Current</option>
+                            <option value="previous" selected="@previous">Previous</option>
+                            <option value="all" selected="@all">All</option>
+                        </select>
+                    </div>
+                    <label for="ministryFilter">Ministry</label>
+                    <select name="ministryFilter">
+                        <option value="" disabled selected hidden></option>
+                        @if (ministries != null)
+                        {
+                            foreach (Ministry ministry in ministries)
+                            {
+                                string selectedMinistry = "";
+                                if (ViewData["MinistryFilter"] != null)
+                                    selectedMinistry = ViewData["MinistryFilter"].ToString();
+
+                                if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                {
+                                    <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                }
+                                else
+                                {
+                                    <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                }
+                            }
+                        }
                     </select>
                 </div>
-                <label for="ministryFilter">Ministry</label>
-                <select name="ministryFilter">
-                    <option value="" disabled selected hidden></option>
-                    @if (ministries != null)
-                    {
-                        foreach (Ministry ministry in ministries)
+                <div>
+                    <label for="titleFilter">Title</label>
+                    <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
+                    <label for="categoryFilter">Service Category</label>
+                    <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
+                        <option value="-1"></option>
+                        @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                         {
-                            string selectedMinistry = "";
-                            if (ViewData["MinistryFilter"] != null)
-                                selectedMinistry = ViewData["MinistryFilter"].ToString();
-
-                            if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                            if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
                             {
-                                <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                <option value="@category.ServiceId" selected>@category.Name</option>
                             }
                             else
                             {
-                                <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                <option value="@category.ServiceId">@category.Name</option>
                             }
                         }
-                    }
-                </select>
-                @*<input type="text" name="clientFilter" value="@ViewData["ClientFilter"]" />*@
-                <label for="titleFilter">Title</label>
-                <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
-                <label for="categoryFilter">Service Category</label>
-                <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
-                    <option value="-1"></option>
-                    @foreach (ServiceCategory category in ViewBag.ServiceCategories)
-                    {
-                        if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
-                        {
-                            <option value="@category.ServiceId" selected>@category.Name</option>
-                        }
-                        else
-                        {
-                            <option value="@category.ServiceId">@category.Name</option>
-                        }
-                    }
-                </select>
-                <label for="authorityFilter">Expense Authority</label>
-                <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                <label for="clientNumber">Client #</label>
-                <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
-                @* <label for="meFilter">Created by me</label> *@
-                <input type="checkbox" name="meFilter" value="@ViewData["MeFilter"] onclick="return flipMeBool()" title="must match your IDIR displayname, i.e. 'lastname, firstname Ministry'" />
+                    </select>
+                    <label for="authorityFilter">Expense Authority</label>
+                    <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+                    <label for="clientNumber">Client #</label>
+                    <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
+                </div>
                 <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
                 <div class="ui-section-buttons">
                     <div class="option-buttons">
