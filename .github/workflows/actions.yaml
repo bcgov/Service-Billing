@@ -6,7 +6,7 @@ jobs:
   sonar-scan-mvn:
     uses: bcgov/pipeline-templates/.github/workflows/sonar-scanner-mvn.yaml@main
     with:
-      WORKDIR: ./tekton/demo/maven-test
+      WORKDIR: ./
       PROJECT_KEY: pipeline-templates
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
