@@ -189,7 +189,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
-                return new JsonResult(ex);
+                return new JsonResult(ex.InnerException);
             }
         }
 
