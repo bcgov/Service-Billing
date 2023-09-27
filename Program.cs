@@ -101,6 +101,20 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseExceptionHandler(new ExceptionHandlerOptions
+{
+    ExceptionHandler = async ctx => {
+        var feature = ctx.Features.Get<IExceptionHandlerFeature>();
+        if (feature?.Error is MsalUiRequiredException
+            or { InnerException: MsalUiRequiredException }
+            or { InnerException.InnerException: MsalUiRequiredException })
+        {
+            ctx.Response.Cookies.Delete($"{CookieAuthenticationDefaults.CookiePrefix}{CookieAuthenticationDefaults.AuthenticationScheme}");
+            ctx.Response.Redirect(ctx.Request.GetEncodedPathAndQuery());
+        }
+    }
+});
+
 app.UseSession();
 
 app.UseHttpsRedirection();
