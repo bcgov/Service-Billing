@@ -10,7 +10,6 @@ using Service_Billing.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Service_Billing.Models.Repositories;
-using Service_Billing.Models;
 using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,21 +21,6 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
     .AddInMemoryTokenCaches();
-
-builder.Services
-    .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
-    {
-        options.SaveTokens = true;
-        options.Events = new OpenIdConnectEvents
-        {
-            OnRedirectToIdentityProvider = async ctxt =>
-            {
-
-                ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
-                await Task.Yield();
-            }
-        };
-    });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -75,7 +59,6 @@ builder.Services.AddRazorPages().AddMvcOptions(options =>
                   .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddMicrosoftIdentityUI();
-
 
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
@@ -123,7 +106,6 @@ app.UseSession();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseCookiePolicy();
-
 app.UseRouting();
 
 app.UseAuthorization();
