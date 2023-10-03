@@ -46,6 +46,7 @@ public class HomeController : Controller
     //    _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
     }
 
+    [Authorize]
     [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
     public IActionResult Index()
     {

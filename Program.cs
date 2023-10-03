@@ -37,6 +37,17 @@ builder.Services
             }
         };
     });
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    // This lambda determines whether user consent 
+    // for non-essential cookies is needed for a given request.
+    options.CheckConsentNeeded = context => true;
+    options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
+    // Handling SameSite cookie according to 
+    options.HandleSameSiteCookieCompatibility();
+});
+
 builder.Services.AddControllersWithViews(options =>
 {
     var policy = new AuthorizationPolicyBuilder()
@@ -57,8 +68,14 @@ builder.Services.AddMvc();
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
-builder.Services.AddRazorPages()
-    .AddMicrosoftIdentityUI();
+builder.Services.AddRazorPages().AddMvcOptions(options =>
+{
+    var policy = new AuthorizationPolicyBuilder()
+                  .RequireAuthenticatedUser()
+                  .Build();
+    options.Filters.Add(new AuthorizeFilter(policy));
+}).AddMicrosoftIdentityUI();
+
 
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
@@ -105,6 +122,7 @@ app.UseSession();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseCookiePolicy();
 
 app.UseRouting();
 
