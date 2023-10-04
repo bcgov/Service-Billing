@@ -7,6 +7,7 @@ using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
 using CsvHelper;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace Service_Billing.Controllers
 {
@@ -135,10 +136,11 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-
-            return View(new ClientIntakeViewModel());
+            ClientIntakeViewModel model = new ClientIntakeViewModel();
+            model.Account.ClientNumber = GetNextClientNumber();
+            return View(model);
         }
-
+     
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
@@ -163,6 +165,21 @@ namespace Service_Billing.Controllers
             }
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private short GetNextClientNumber()
+        {
+            short ret = 184;
+            //IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
+            //if(accounts != null && accounts.Any())
+            //{
+            //    ret = (short)accounts.Count();
+
+            //    while (accounts.FirstOrDefault(a => a.ClientNumber == ret) != null)
+            //        ret++;
+            //}
+
+            return ret;
         }
 
         [HttpGet]

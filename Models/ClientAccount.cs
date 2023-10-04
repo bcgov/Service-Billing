@@ -18,8 +18,6 @@ o	Note: not all naming convention components are required. The naming convention
         public string? Name { get; set; }
 
         [BindRequired]
-        [StringLength(3)]
-        [MinLength(3)]
         //"must be unique, except for secondary accounts only used for alternative financial coding."
         [Display(Name = "Client Number")]
         public Int16? ClientNumber { get; set; } // three digit billing code
@@ -28,23 +26,20 @@ o	Note: not all naming convention components are required. The naming convention
         [BindRequired]
         [StringLength(5)]
         [MinLength(5)]
+        [MaxLength(5)]
         [Display(Name = "Responsibility Center")]
         public string? ResponsibilityCentre { get; set; }
 
         [BindRequired]
-        [StringLength(5)]
-        [MinLength(5)]
         [Display(Name = "Service Line")]
         public int? ServiceLine { get; set; }
 
         [BindRequired]
-        [StringLength(4)]
-        [MinLength(4)]
         public Int16? STOB { get; set; }
 
         [BindRequired]
-        [StringLength(5)]
-        [MinLength(5)]
+        [StringLength(7)]
+        [MinLength(7)]
         [Display(Name = "Project")]
         public string? Project { get; set; }
 
