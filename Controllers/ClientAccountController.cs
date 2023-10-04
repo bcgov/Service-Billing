@@ -170,14 +170,14 @@ namespace Service_Billing.Controllers
         private short GetNextClientNumber()
         {
             short ret = 184;
-            //IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
-            //if(accounts != null && accounts.Any())
-            //{
-            //    ret = (short)accounts.Count();
+            IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
+            if (accounts != null && accounts.Any())
+            {
+                ret = (short)accounts.Count();
 
-            //    while (accounts.FirstOrDefault(a => a.ClientNumber == ret) != null)
-            //        ret++;
-            //}
+                while (accounts.FirstOrDefault(a => a.ClientNumber == ret) != null)
+                    ret++;
+            }
 
             return ret;
         }

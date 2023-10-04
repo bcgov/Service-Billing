@@ -32,9 +32,11 @@ o	Note: not all naming convention components are required. The naming convention
 
         [BindRequired]
         [Display(Name = "Service Line")]
+        [Range(10000, 99999)]
         public int? ServiceLine { get; set; }
 
         [BindRequired]
+        [Range(1000, 9999)]
         public Int16? STOB { get; set; }
 
         [BindRequired]
