@@ -38,7 +38,7 @@ builder.Services.AddControllersWithViews(options =>
         .RequireAuthenticatedUser()
         .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
-});
+}).AddMicrosoftIdentityUI();
 
 builder.Services.AddScoped<IBillRepositroy, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
