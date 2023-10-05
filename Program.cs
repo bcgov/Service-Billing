@@ -62,6 +62,20 @@ builder.Services.AddRazorPages().AddMvcOptions(options =>
     options.Filters.Add(new AuthorizeFilter(policy));
 }).AddMicrosoftIdentityUI();
 
+builder.Services
+    .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    {
+        options.SaveTokens = true;
+        options.Events = new OpenIdConnectEvents
+        {
+            OnRedirectToIdentityProvider = async ctxt =>
+            {
+                ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
+                await Task.Yield();
+            }
+        };
+    });
+
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
 
