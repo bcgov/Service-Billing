@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Service_Billing.Models.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -31,6 +32,11 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     // Handling SameSite cookie according to 
     options.HandleSameSiteCookieCompatibility();
 });
+
+//trying to get application to work with OpenShift
+builder.Services.AddDataProtection()
+    .SetApplicationName("GDX-Service-Billing")
+    .PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/var/dpkeys/"));
 
 builder.Services.AddControllersWithViews(options =>
 {
