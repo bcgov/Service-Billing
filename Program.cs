@@ -33,10 +33,6 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.HandleSameSiteCookieCompatibility();
 });
 
-//trying to get application to work with OpenShift
-builder.Services.AddDataProtection()
-    .SetApplicationName("GDX-Service-Billing")
-    .PersistKeysToFileSystem(new System.IO.DirectoryInfo(@"/var/dpkeys/"));
 
 builder.Services.AddControllersWithViews(options =>
 {
