@@ -15,10 +15,12 @@ namespace Service_Billing.Controllers
     public class ServiceCategoryController: Controller
     {
         private readonly IServiceCategoryRepository _categoryRepository;
+        private readonly ILogger<ServiceCategoryController> _logger;
 
-        public ServiceCategoryController(IServiceCategoryRepository categoryRepository)
+        public ServiceCategoryController(ILogger<ServiceCategoryController> logger, IServiceCategoryRepository categoryRepository)
         {
             _categoryRepository = categoryRepository;
+            _logger = logger;
         }
 
         public IActionResult Index(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)

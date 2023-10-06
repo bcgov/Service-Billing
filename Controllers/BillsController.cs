@@ -22,8 +22,10 @@ namespace Service_Billing.Controllers
         private readonly IMinistryRepository _ministryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
+        private readonly ILogger<BillsController> _logger;
 
-        public BillsController(IBillRepositroy billRepository,
+        public BillsController(ILogger<BillsController> logger,
+            IBillRepositroy billRepository,
             IServiceCategoryRepository categoryRepository,
             IClientAccountRepository clientAccountRepository,
             IMinistryRepository ministryRepository,
@@ -37,6 +39,7 @@ namespace Service_Billing.Controllers
             _categoryRepository = categoryRepository;
             _clientAccountRepository = clientAccountRepository;
             _ministryRepository = ministryRepository;
+            _logger = logger;
         }
 
         public IActionResult Index(string quarterFilter,
@@ -88,6 +91,9 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
+            _logger.LogInformation($"Editing Bill with ID: {id}");
+            if (bill == null)
+                _logger.LogWarning($"Bill with Id: {id} was not found in database");
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             if (bill == null)
                 return NotFound();
@@ -130,8 +136,9 @@ namespace Service_Billing.Controllers
                 {
                     await _billRepository.CreateBill(billToUpdate);
                 }
-                catch (DbUpdateException /* ex */)
+                catch (DbUpdateException ex)
                 {
+                    _logger.LogError($"Bill failed to update. Exception: {ex.InnerException}");
                     ModelState.AddModelError("", "Unable to save changes. " +
                         "Try again, and if the problem persists, " +
                         "see your system administrator.");
@@ -164,11 +171,17 @@ namespace Service_Billing.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    _logger.LogInformation($"New charge is valid");
                     await _billRepository.CreateBill(bill);
                 }
+                else
+                {
+                    _logger.LogWarning($"New charge is not in a valid model state");
+                }
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
+                _logger.LogError($"Creating a new charge failed to write to database. Exception: {ex.InnerException}");
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
