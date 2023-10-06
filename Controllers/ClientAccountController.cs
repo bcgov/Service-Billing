@@ -18,8 +18,10 @@ namespace Service_Billing.Controllers
         private readonly IMinistryRepository _ministryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
+        private readonly ILogger<ClientAccountController> _logger;
 
-        public ClientAccountController(IClientAccountRepository clientAccountRepository,
+        public ClientAccountController(ILogger<ClientAccountController> logger,
+            IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
             IConfiguration configuration,
@@ -32,6 +34,7 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
+            _logger = logger;
         }
 
         // GET: ClientAccountController
@@ -72,6 +75,7 @@ namespace Service_Billing.Controllers
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, IFormCollection collection)
         {
             if (ModelState.IsValid)
@@ -117,6 +121,7 @@ namespace Service_Billing.Controllers
 
         // POST: ClientAccountController/Delete/5
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
         {
             try
@@ -132,6 +137,7 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult Intake()
         {
+            _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ClientIntakeViewModel model = new ClientIntakeViewModel();
@@ -140,12 +146,15 @@ namespace Service_Billing.Controllers
         }
      
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
         {
+            _logger.LogInformation("User submitted Intake form.");
             try
             {
                 if (ModelState.IsValid)
                 {
+                    _logger.LogInformation("Intake form is valid.");
                     string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                     model.Account.Name = accountName;
                     ClientTeam team = model.Team;
@@ -153,12 +162,18 @@ namespace Service_Billing.Controllers
                     int teamId = _clientTeamRepository.Add(team);
                     ClientAccount account = model.Account;
                     account.TeamId = teamId;
+                    _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                 }
             }
-            catch (DbUpdateException)
+            catch (DbUpdateException ex)
             {
+                _logger.LogError($"Error adding client account to DB. Inner Exception: {ex.InnerException}");
                 return View(new ClientIntakeViewModel());
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
 
             return RedirectToAction(nameof(Index));
