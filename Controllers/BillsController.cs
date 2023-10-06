@@ -165,7 +165,7 @@ namespace Service_Billing.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
                                     // public async Task<IActionResult> Create(IFormCollection collection)
-        public async Task<ActionResult> Create([Bind(include: "amount, billingCycle, clientName, title, idirOrUrl, serviceCategoryId, fiscalPeriod, quantity, ticketNumberAndRequester, dateModified, dateCreated, createdBy")] Bill bill)
+        public async Task<ActionResult> Create(Bill bill)
         {
             try
             {
