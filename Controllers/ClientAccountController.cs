@@ -72,7 +72,6 @@ namespace Service_Billing.Controllers
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, IFormCollection collection)
         {
             if (ModelState.IsValid)
@@ -118,7 +117,6 @@ namespace Service_Billing.Controllers
 
         // POST: ClientAccountController/Delete/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public ActionResult Delete(int id, IFormCollection collection)
         {
             try
@@ -142,7 +140,6 @@ namespace Service_Billing.Controllers
         }
      
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
         {
             try

@@ -105,7 +105,6 @@ namespace Service_Billing.Controllers
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, IFormCollection collection)
         {
             Bill? billToUpdate = _billRepository.GetBill(id);
@@ -156,7 +155,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
+         //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
                                     // public async Task<IActionResult> Create(IFormCollection collection)
         public async Task<ActionResult> Create([Bind(include: "amount, billingCycle, clientName, title, idirOrUrl, serviceCategoryId, fiscalPeriod, quantity, ticketNumberAndRequester, dateModified, dateCreated, createdBy")] Bill bill)
         {
