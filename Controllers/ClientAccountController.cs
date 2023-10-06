@@ -158,10 +158,11 @@ namespace Service_Billing.Controllers
                     string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                     model.Account.Name = accountName;
                     ClientTeam team = model.Team;
-                    team.Name = model.Account.Name;
+                    team.Name = $"{model.Account.Name} Team";
                     int teamId = _clientTeamRepository.Add(team);
                     ClientAccount account = model.Account;
                     account.TeamId = teamId;
+                    account.ClientTeam = team.Name;
                     _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                 }
