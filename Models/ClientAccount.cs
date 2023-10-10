@@ -62,6 +62,11 @@ o	Note: not all naming convention components are required. The naming convention
         public int? TeamId { get; set; }
 
         public bool IsApprovedByEA { get; set; } = false;
+
+        [BindRequired]
+        //"must be unique, except for secondary accounts only used for alternative financial coding."
+        [Display(Name = "CAS Client Number")]
+        public int? CasClientNumber { get; set; } // three digit billing code
     }
 }
 /* some validation concerns:

@@ -78,6 +78,7 @@
             <tr>
                 <th scope="col">Name</th>
                 <th scope="col">Client #</th>
+                <th scope="col">CAS Client #</th>
                 <th scope="col">Responsibility Centre</th>
                 <th scope="col">Expense Authority</th>
                 <th scope="col">Client Team</th>
@@ -99,6 +100,7 @@
                            asp-all-route-data="parms"
                            title="See charges associated with this account">@account.ClientNumber</a>
                     </td>
+                    <td>@account.CasClientNumber</td>
 
                     <td>@account.ResponsibilityCentre</td>
                     <td>@account.ExpenseAuthorityName</td>

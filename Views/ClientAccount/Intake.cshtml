@@ -106,6 +106,11 @@
                 <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">
+                <label asp-for="@Model.Account.CasClientNumber" class="control-label">CAS Client Number</label>
+                <input asp-for="@Model.Account.CasClientNumber" class="form-control" />
+                <span asp-validation-for="@Model.Account.CasClientNumber" class="text-danger" OnServerValidate="ServerValidation"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="@Model.Account.IsApprovedByEA">Active</label>
               
                 <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" checked="@Model.Account.IsApprovedByEA" />

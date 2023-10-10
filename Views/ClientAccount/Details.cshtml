@@ -76,6 +76,12 @@
         <dd class="col-sm-10" name="clientTeam">
             <partial name="_ClientTeam" model="@clientTeam" />
         </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CasClientNumber)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CasClientNumber)
+        </dd>
     </dl>
 </div>
 <div>
