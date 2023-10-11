@@ -28,8 +28,7 @@
             <a asp-controller="Bills"
                asp-action="Index"
                asp-all-route-data="parms"
-            title="See charges associated with this account">@Model.ClientNumber</a>
-           @*  @Html.DisplayFor(model => model.ClientNumber) *@
+            title="See charges associated with this account">@String.Format("{0:000}", Model.ClientNumber)</a>
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ResponsibilityCentre)
@@ -41,13 +40,13 @@
             @Html.DisplayNameFor(model => model.ServiceLine)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ServiceLine)
+            @String.Format("{0:00000}", Model.ServiceLine)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.STOB)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.STOB)
+            @String.Format("{0:0000}", Model.STOB)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Project)
@@ -67,20 +66,22 @@
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.ServicesEnabled)
         </dd>
-@*        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateCreated)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateCreated)
-        </dd>*@
         <dd class="col-sm-10" name="clientTeam">
             <partial name="_ClientTeam" model="@clientTeam" />
         </dd>
+        <br/>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CasClientNumber)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.CasClientNumber)
+            @if(Model.CasClientNumber != null && Model.CasClientNumber > 0)
+            {
+                String.Format("{0:000}", Model.CasClientNumber);
+            }
+            else
+            {
+                <br/>
+            }
         </dd>
     </dl>
 </div>

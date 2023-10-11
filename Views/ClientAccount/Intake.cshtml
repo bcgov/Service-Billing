@@ -42,12 +42,6 @@
                 <input asp-for="@Model.Account.ClientNumber" class="form-group" ReadOnly="true" />
                 <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
             </div>
-           @* 
-            One item that I would like removed is:  Client Team Name*.  The client team name is auto generated based on the 
-            ‘Ministry Acronym’ and the ‘Division or Branch’ info.  This is GDX’s client account name format and we do not want 
-            clients creating their own client team names.  So please don’t include in the new form. --Carolyn Mellor
-            *@
-
             <div class="form-group" id="intake-contacts">
                 <h3>Contacts</h3> 
                 <div id="intake-contacts-instructions">

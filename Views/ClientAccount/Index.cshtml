@@ -5,6 +5,7 @@
 @model ClientAccountViewModel
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+    string threeFmt = "000";
 }
 
 <h1>Client Account info</h1>
@@ -90,7 +91,7 @@
             {
                 var parms = new Dictionary<string, string>
             {
-            { "clientNumber", account.ClientNumber.ToString() }
+            { "clientNumber",  account.ClientNumber.ToString()}
             };
                 <tr>
                     <td>@account.Name</td>
@@ -98,9 +99,16 @@
                         <a asp-controller="Bills"
                            asp-action="Index"
                            asp-all-route-data="parms"
-                           title="See charges associated with this account">@account.ClientNumber</a>
+                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a>
                     </td>
-                    <td>@account.CasClientNumber</td>
+                    @if (account.CasClientNumber != null && account.CasClientNumber > 0)
+                    {
+                        <td>@String.Format("{0:00}", account.CasClientNumber)</td>
+                    }
+                    else
+                    {
+                        <td></td>
+                    }
 
                     <td>@account.ResponsibilityCentre</td>
                     <td>@account.ExpenseAuthorityName</td>
