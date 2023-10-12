@@ -30,12 +30,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="ServiceLine" class="control-label"></label>
-                <input asp-for="ServiceLine" class="form-control" value="@Model.ServiceLine" />
+                <input asp-for="ServiceLine" class="form-control" value="@Model.ServiceLine" maxlength="5" />
                 <span asp-validation-for="ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="STOB" class="control-label"></label>
-                <input asp-for="STOB" class="form-control" value="@String.Format("{0:0000}", Model.STOB)" />
+                <input asp-for="STOB" class="form-control" value="@String.Format("{0:0000}", Model.STOB)" maxlength="4" />
                 <span asp-validation-for="STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -55,7 +55,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="CasClientNumber" class="control-label"></label>
-                <input asp-for="CasClientNumber" class="form-control" value="@String.Format("{0:000}", Model.CasClientNumber)" />
+                <input asp-for="CasClientNumber" class="form-control" value="@String.Format("{0:000}", Model.CasClientNumber)" maxlength="3" />
                 <span asp-validation-for="CasClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group">

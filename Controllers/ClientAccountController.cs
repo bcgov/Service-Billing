@@ -152,19 +152,27 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
+
                 if (ModelState.IsValid)
                 {
                     _logger.LogInformation("Intake form is valid.");
                     string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                     model.Account.Name = accountName;
-                    ClientTeam team = model.Team;
-                    team.Name = $"{model.Account.Name} Team";
-                    int teamId = _clientTeamRepository.Add(team);
                     ClientAccount account = model.Account;
-                    account.TeamId = teamId;
-                    account.ClientTeam = team.Name;
+                    if(model.Team != null)
+                    {
+                        ClientTeam team = model.Team;
+                        team.Name = $"{model.Account.Name} Team";
+                        int teamId = _clientTeamRepository.Add(team);
+                        account.TeamId = teamId;
+                        account.ClientTeam = team.Name;
+                    }
                     _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
                     int accountId = _clientAccountRepository.AddClientAccount(account);
+                }
+                else
+                {
+                    return View(model);
                 }
             }
             catch (DbUpdateException ex)

@@ -28,7 +28,7 @@
             <a asp-controller="Bills"
                asp-action="Index"
                asp-all-route-data="parms"
-            title="See charges associated with this account">@String.Format("{0:000}", Model.ClientNumber)</a>
+            title="See charges associated with this account">@Model.ClientNumber</a>
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.ResponsibilityCentre)

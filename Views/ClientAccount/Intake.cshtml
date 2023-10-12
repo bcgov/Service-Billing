@@ -81,14 +81,14 @@
                 <span asp-validation-for="@Model.Account.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.ServiceLineString" class="control-label">CAS Service Line</label>
-                <input asp-for="@Model.ServiceLineString" class="form-control" />
-                <span asp-validation-for="@Model.ServiceLineString" class="text-danger"></span>
+                <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5"/>
+                <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.STOBString" class="control-label">CAS SToB Number</label>
-                <input asp-for="@Model.STOBString" class="form-control" />
-                <span asp-validation-for="@Model.STOBString" class="text-danger"></span>
+                <label asp-for="@Model.Account.STOB" class="control-label">CAS SToB Number</label>
+                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" />
+                <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.Project" class="control-label">CAS Project Number</label>
@@ -97,7 +97,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.CasClientNumber" class="control-label">CAS Client Number</label>
-                <input asp-for="@Model.Account.CasClientNumber" class="form-control" />
+                <input asp-for="@Model.Account.CasClientNumber" class="form-control" maxlength="3"/>
                 <span asp-validation-for="@Model.Account.CasClientNumber" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">

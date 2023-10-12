@@ -99,7 +99,7 @@
                         <a asp-controller="Bills"
                            asp-action="Index"
                            asp-all-route-data="parms"
-                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a>
+                           title="See charges associated with this account">@String.Format("{0:0000}", account.ClientNumber)</a>
                     </td>
                     @if (account.CasClientNumber != null && account.CasClientNumber > 0)
                     {
