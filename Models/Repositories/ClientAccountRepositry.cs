@@ -58,6 +58,12 @@ namespace Service_Billing.Models.Repositories
             return accounts.Distinct();
         }
 
+        public void Update(ClientAccount account)
+        {
+            _context.Update(account);
+            _context.SaveChanges(true);
+        }
+
 
     }
 }

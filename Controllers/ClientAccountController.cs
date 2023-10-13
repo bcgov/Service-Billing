@@ -8,6 +8,7 @@ using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Graph.TermStore;
 
 namespace Service_Billing.Controllers
 {
@@ -67,50 +68,60 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController/Edit/5
         public ActionResult Edit(int id)
         {
-            var account = _clientAccountRepository.GetClientAccount(id);
+            ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+            
             if (account == null)
                 return NotFound();
-            return View(account);
+            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
+            ClientIntakeViewModel model = new ClientIntakeViewModel();
+            model.Account = account;
+            if(team != null)
+            {
+                model.Team = team;
+            }
+            else
+            {
+                _logger.LogWarning($"No client team was found for client account with ID {account.Id}.");
+                model.Team = new ClientTeam();
+            }
+
+            return View(model);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(ClientIntakeViewModel model)
         {
             if (ModelState.IsValid)
             {
-                ClientAccount? accountToUpdate = _clientAccountRepository.GetClientAccount(id);
-                if (accountToUpdate == null)
+                try
                 {
-                    return NotFound();
+                    if(model.Team != null)
+                    {
+                        if(model.Team.Id == 0)
+                        {
+                            model.Team.Name = $"{model.Account.Name} Team";
+                            model.Account.TeamId = _clientTeamRepository.Add(model.Team);
+                            model.Account.ClientTeam = model.Team.Name;
+                        }
+                        else
+                        {
+                            _clientTeamRepository.Update(model.Team);
+                            model.Account.TeamId = model.Team.Id;
+                            model.Account.ClientTeam = model.Team.Name;
+                        }
+                    }
+                    _clientAccountRepository.Update(model.Account);
+                    return View("Details", model.Account); 
                 }
-                if (await TryUpdateModelAsync<ClientAccount>(accountToUpdate, "",
-                    a => a.Name,
-                    a => a.ClientNumber,
-                    a => a.ResponsibilityCentre,
-                    a => a.ServiceLine,
-                    a => a.STOB,
-                    a => a.Project,
-                    a => a.ExpenseAuthorityName,
-                    a => a.ServicesEnabled))
+                catch(DbUpdateException ex)
                 {
-                    try
-                    {
-                        _clientAccountRepository.AddClientAccount(accountToUpdate);
-                    }
-                    catch (DbUpdateException /* ex */)
-                    {
-                        ModelState.AddModelError("", "Unable to save changes. " +
-                            "Try again, and if the problem persists, " +
-                            "see your system administrator.");
-                    }
-
-                    return RedirectToAction(nameof(Index));
+                    _logger.LogError($"An error occurred while updating client account number {model.Account.Id}. Inner Exception: {ex.InnerException}");
+                    _logger.LogError(ex.Message);
                 }
             }
-
-            return Details(id);
+                return View(model);
         }
 
         // GET: ClientAccountController/Delete/5

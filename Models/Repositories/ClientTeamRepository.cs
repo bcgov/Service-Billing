@@ -41,5 +41,11 @@ namespace Service_Billing.Models.Repositories
             
             return team.Id;
         }
+
+        public void Update(ClientTeam team)
+        {
+            _billingContext.Update(team);
+            _billingContext.SaveChanges(true);
+        }
     }
 }

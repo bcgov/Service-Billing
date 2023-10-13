@@ -8,5 +8,6 @@
         int AddClientAccount(ClientAccount account);
         int GetClientIdFromClientNumber(int clientNumber);
         IEnumerable<ClientAccount> GetAccountsByContactName(string contactName);
+        void Update(ClientAccount account);
     }
 }

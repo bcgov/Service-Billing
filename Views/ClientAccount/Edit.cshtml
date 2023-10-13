@@ -1,7 +1,8 @@
-﻿@model Service_Billing.Models.ClientAccount
+﻿@model Service_Billing.ViewModels.ClientIntakeViewModel
 
 @{
     ViewData["Title"] = "Edit";
+    ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
 }
 
 <h1>Edit</h1>
@@ -14,53 +15,91 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" value="@Model.Name"/>
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="Account.Name" class="control-label"></label>
+                <input asp-for="Account.Name" class="form-control" value="@Model.Account.Name"/>
+                <span asp-validation-for="Account.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ClientNumber" class="control-label"></label>
-                <input asp-for="ClientNumber" class="form-control" value="@Model.ClientNumber" />
-                <span asp-validation-for="ClientNumber" class="text-danger"></span>
+                <label asp-for="Account.ClientNumber" class="control-label"></label>
+                <input asp-for="Account.ClientNumber" class="form-control" value="@Model.Account.ClientNumber" />
+                <span asp-validation-for="Account.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ResponsibilityCentre" class="control-label"></label>
-                <input asp-for="ResponsibilityCentre" class="form-control" value="@Model.ResponsibilityCentre" />
-                <span asp-validation-for="ResponsibilityCentre" class="text-danger"></span>
+                <label asp-for="Account.ResponsibilityCentre" class="control-label"></label>
+                <input asp-for="Account.ResponsibilityCentre" class="form-control" value="@Model.Account.ResponsibilityCentre" />
+                <span asp-validation-for="Account.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ServiceLine" class="control-label"></label>
-                <input asp-for="ServiceLine" class="form-control" value="@String.Format("{0:00000}", Model.ServiceLine)" maxlength="5" />
-                <span asp-validation-for="ServiceLine" class="text-danger"></span>
+                <label asp-for="Account.ServiceLine" class="control-label"></label>
+                <input asp-for="Account.ServiceLine" class="form-control" value="@String.Format("{0:00000}", Model.Account.ServiceLine)" maxlength="5" />
+                <span asp-validation-for="Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="STOB" class="control-label"></label>
-                <input asp-for="STOB" class="form-control" value="@String.Format("{0:0000}", Model.STOB)" maxlength="4" />
-                <span asp-validation-for="STOB" class="text-danger"></span>
+                <label asp-for="Account.STOB" class="control-label"></label>
+                <input asp-for="Account.STOB" class="form-control" value="@String.Format("{0:0000}", Model.Account.STOB)" maxlength="4" />
+                <span asp-validation-for="Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Project" class="control-label"></label>
-                <input asp-for="Project" class="form-control" value="@Model.Project" />
-                <span asp-validation-for="Project" class="text-danger"></span>
+                <label asp-for="Account.Project" class="control-label"></label>
+                <input asp-for="Account.Project" class="form-control" value="@Model.Account.Project" />
+                <span asp-validation-for="Account.Project" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ExpenseAuthorityName" class="control-label"></label>
-                <input asp-for="ExpenseAuthorityName" class="form-control" value="@Model.ExpenseAuthorityName" />
-                <span asp-validation-for="ExpenseAuthorityName" class="text-danger"></span>
+                <label asp-for="Account.ExpenseAuthorityName" class="control-label"></label>
+                <input asp-for="Account.ExpenseAuthorityName" class="form-control" value="@Model.Account.ExpenseAuthorityName" />
+                <span asp-validation-for="Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ServicesEnabled" class="control-label"></label>
-                <input asp-for="ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
-                <span asp-validation-for="ServicesEnabled" class="text-danger"></span>
+                <label asp-for="Account.ServicesEnabled" class="control-label"></label>
+                <input asp-for="Account.ServicesEnabled" class="form-control" value="@Model.Account.ServicesEnabled" />
+                <span asp-validation-for="Account.ServicesEnabled" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="CasClientNumber" class="control-label"></label>
-                <input asp-for="CasClientNumber" class="form-control" value="@String.Format("{0:000}", Model.CasClientNumber)" maxlength="3" />
-                <span asp-validation-for="CasClientNumber" class="text-danger"></span>
+                <label asp-for="Account.CasClientNumber" class="control-label"></label>
+                <input asp-for="Account.CasClientNumber" class="form-control" value="@String.Format("{0:000}", Model.Account.CasClientNumber)" maxlength="3" />
+                <span asp-validation-for="Account.CasClientNumber" class="text-danger"></span>
+            </div>
+            <div>
+                @if(!String.IsNullOrEmpty(Model.Team.Name))
+                {
+                    <h3>@Model.Team.Name</h3>
+                }
+                else
+                {
+                    <h3>Add a Client Team</h3>
+                }
+                <div id="intake-contacts-instructions">
+                    To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
+                    For example: "Smith, Jane CITZ:EX".
+                    <br />
+                    Contacts matching your input will display in a dropdown menu for you to pick.
+                </div>
+
+                <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+                <div id="primaryContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+
+                <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" placeholder="start entering surname to search" />
+                <div id="approverContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
+
+                <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+                <div id="financialContactSelect">
+                </div>
+                <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.Team.Id" class="form-control" />
+                <input type="hidden" asp-for="@Model.Team.Name" class="form-control" />
+                <input type="hidden" asp-for="@Model.Account.Id" class="form-control" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
+            
         </form>
     </div>
 </div>
@@ -71,4 +110,85 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function () {
+            const queryForUser = (query, contactType) => {
+                var url = "../../ClientAccount/SearchForContact?query=" + query + "&contactType=" + contactType;
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var id = `#${contactType}`;
+                        $(id).html(xhr.response);
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+            };
+
+            var timer = null;
+
+            $("#primaryContactSelect").on("change", (e) => {
+                $("#primaryContact").val($("#primaryContactValue").val());
+            });
+            $("#approverContactSelect").on("change", (e) => {
+                $("#approverContact").val($("#approverContactValue").val());
+            });
+            $("#financialContactSelect").on("change", (e) => {
+                $("#financialContact").val($("#financialContactValue").val());
+            });
+            $("#authorityContactSelect").on("change", (e) => {
+                $("#authorityContact").val($("#authorityContactValue").val());
+            });
+
+            $("#primaryContact").on("keypress", (e) => {
+                // clear timeout if already applied
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                //  set new timeout;
+                timer = setTimeout(function () {
+                    //  call wait-function and clear timeout
+                    queryForUser($("#primaryContact").val(), "primaryContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+
+            $("#approverContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#approverContact").val(), "approverContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+            $("#financialContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#financialContact").val(), "financialContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+            $("#authorityContact").on("keypress", (e) => {
+                if (timer) {
+                    clearTimeout(timer);
+                    timer = null;
+                }
+                timer = setTimeout(function () {
+                    queryForUser($("#authorityContact").val(), "authorityContactSelect");
+                    clearTimeout(timer);
+                    timer = null;
+                }, 250);
+            });
+        });
+    </script>
 }

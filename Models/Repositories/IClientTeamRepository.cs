@@ -9,5 +9,6 @@
         public IEnumerable<ClientTeam> GetTeamsByPrimaryContact(string primaryContact);
 
         public int Add(ClientTeam team);
+        public void Update(ClientTeam team);
     }
 }
