@@ -1,0 +1,66 @@
+=
+4C:\Repos\Service-Billing\Components\ContactLookup.csutf-8D
+;C:\Repos\Service-Billing\Components\ServiceCategoryInput.csutf-8@
+7C:\Repos\Service-Billing\Controllers\BillsController.csutf-8H
+?C:\Repos\Service-Billing\Controllers\ClientAccountController.csutf-8?
+6C:\Repos\Service-Billing\Controllers\HomeController.csutf-8J
+AC:\Repos\Service-Billing\Controllers\ServiceCategoryController.csutf-8?
+6C:\Repos\Service-Billing\Data\ServiceBillingContext.csutf-8F
+=C:\Repos\Service-Billing\Migrations\20230907214549_initial.csutf-8Q
+FC:\Repos\Service-Billing\Migrations\20230907214549_initial.Designer.csutf-8T
+IC:\Repos\Service-Billing\Migrations\ServiceBillingContextModelSnapshot.csutf-80
+'C:\Repos\Service-Billing\Models\Bill.csutf-89
+0C:\Repos\Service-Billing\Models\ClientAccount.csutf-86
+-C:\Repos\Service-Billing\Models\ClientTeam.csutf-8:
+1C:\Repos\Service-Billing\Models\ErrorViewModel.csutf-84
++C:\Repos\Service-Billing\Models\Ministry.csutf-8G
+>C:\Repos\Service-Billing\Models\Repositories\BillRepository.csutf-8O
+FC:\Repos\Service-Billing\Models\Repositories\ClientAccountRepositry.csutf-8M
+DC:\Repos\Service-Billing\Models\Repositories\ClientTeamRepository.csutf-8H
+?C:\Repos\Service-Billing\Models\Repositories\IBillRepository.csutf-8Q
+HC:\Repos\Service-Billing\Models\Repositories\IClientAccountRepository.csutf-8N
+EC:\Repos\Service-Billing\Models\Repositories\IClientTeamRepository.csutf-8L
+CC:\Repos\Service-Billing\Models\Repositories\IMinistryRepository.csutf-8S
+JC:\Repos\Service-Billing\Models\Repositories\IServiceCategoryRepository.csutf-8K
+BC:\Repos\Service-Billing\Models\Repositories\MinistryRepository.csutf-8R
+IC:\Repos\Service-Billing\Models\Repositories\ServiceCategoryRepository.csutf-8;
+2C:\Repos\Service-Billing\Models\SearchedContact.csutf-8;
+2C:\Repos\Service-Billing\Models\ServiceCategory.csutf-8,
+#C:\Repos\Service-Billing\Program.csutf-8<
+3C:\Repos\Service-Billing\Reports\ReportGenerator.csutf-8A
+8C:\Repos\Service-Billing\ViewModels\AllBillsViewModel.csutf-8F
+=C:\Repos\Service-Billing\ViewModels\ClientAccountViewModel.csutf-8E
+<C:\Repos\Service-Billing\ViewModels\ClientIntakeViewModel.csutf-8F
+=C:\Repos\Service-Billing\ViewModels\ContactSelectViewModel.csutf-8H
+?C:\Repos\Service-Billing\ViewModels\GeneratedReportViewModel.csutf-8V
+KC:\Repos\Service-Billing\obj\Debug\net7.0\Service Billing.GlobalUsings.g.csutf-8c
+XC:\Repos\Service-Billing\obj\Debug\net7.0\.NETCoreApp,Version=v7.0.AssemblyAttributes.csutf-8T
+IC:\Repos\Service-Billing\obj\Debug\net7.0\Service Billing.AssemblyInfo.csutf-8g
+\C:\Repos\Service-Billing\obj\Debug\net7.0\Service Billing.MvcApplicationPartsAssemblyInfo.csutf-8Y
+NC:\Repos\Service-Billing\obj\Debug\net7.0\Service Billing.RazorAssemblyInfo.csutf-8‘
+…Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Bills_Create_cshtml.g.csutf-8’
+†Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Bills_Details_cshtml.g.csutf-8
+ƒMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Bills_Edit_cshtml.g.csutf-8
+„Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Bills_Index_cshtml.g.csutf-8‘
+…Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Bills_Report_cshtml.g.csutf-8š
+ŽMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ClientAccount_Details_cshtml.g.csutf-8—
+‹Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ClientAccount_Edit_cshtml.g.csutf-8˜
+ŒMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ClientAccount_Index_cshtml.g.csutf-8™
+Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ClientAccount_Intake_cshtml.g.csutf-8
+ƒMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Home_Index_cshtml.g.csutf-8‘
+…Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Home_Privacy_cshtml.g.csutf-8›
+Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ServiceCategory_Create_cshtml.g.csutf-8œ
+Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ServiceCategory_Details_cshtml.g.csutf-8™
+Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ServiceCategory_Edit_cshtml.g.csutf-8š
+ŽMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_ServiceCategory_Index_cshtml.g.csutf-8¬
+ Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared_Components_ContactLookup_Default_cshtml.g.csutf-8³
+§Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared_Components_ServiceCategoryInput_Default_cshtml.g.csutf-8‘
+…Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared_Error_cshtml.g.csutf-8—
+‹Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__ClientTeam_cshtml.g.csutf-8“
+‡Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__Footer_cshtml.g.csutf-8“
+‡Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__Header_cshtml.g.csutf-8™
+Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__LoginPartial_cshtml.g.csutf-8¥
+™Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__ValidationScriptsPartial_cshtml.g.csutf-8‘
+…Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views__ViewImports_cshtml.g.csutf-8
+ƒMicrosoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views__ViewStart_cshtml.g.csutf-8“
+‡Microsoft.NET.Sdk.Razor.SourceGenerators\Microsoft.NET.Sdk.Razor.SourceGenerators.RazorSourceGenerator\Views_Shared__Layout_cshtml.g.csutf-8
