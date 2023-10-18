@@ -471,6 +471,14 @@ namespace Service_Billing.Controllers
             return File(memoryStream.ToArray(), "application/octet-stream", fileName);
         }
 
+        [HttpPut]
+        public async Task<IActionResult> PromoteChargesToNewQuarter()
+        {
+            _billRepository.PromoteChargesToNewQuarter();
+
+            return Ok(200);
+        }
+
         private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
         {
             SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
