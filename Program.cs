@@ -121,9 +121,9 @@ app.UseSession();
 
 using (var scope = app.Services.CreateScope())
 {
-    //var services = scope.ServiceProvider;
-    //var context = services.GetRequiredService<ServiceBillingContext>();
-    //await context.Database.MigrateAsync();
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<ServiceBillingContext>();
+    await context.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();
