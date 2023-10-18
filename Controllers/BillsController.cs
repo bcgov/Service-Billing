@@ -471,10 +471,10 @@ namespace Service_Billing.Controllers
             return File(memoryStream.ToArray(), "application/octet-stream", fileName);
         }
 
-        [HttpPut]
+        [HttpPost]
         public async Task<IActionResult> PromoteChargesToNewQuarter()
         {
-            _billRepository.PromoteChargesToNewQuarter();
+            await _billRepository.PromoteChargesToNewQuarter();
 
             return Ok(200);
         }

@@ -116,11 +116,8 @@ namespace Service_Billing.Models.Repositories
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
             List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
             && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
-            List<int> oneTimeServiceIds = serviceCategories.Where(x => String.IsNullOrEmpty(x.UOM) ||
-            x.UOM.ToLower() != "month").Select(x => x.ServiceId).ToList();
-
-            IEnumerable<Bill> allBills = _billingContext.Bills;
-            List<Bill> thisQuarterBills = new List<Bill>();
+            //List<int> oneTimeServiceIds = serviceCategories.Where(x => String.IsNullOrEmpty(x.UOM) ||
+            //x.UOM.ToLower() != "month").Select(x => x.ServiceId).ToList();
             string newQuarter = DetermineCurrentQuarter();
             await _billingContext.Bills.Where(b => b.ServiceCategoryId != null && fixedServiceIds.Contains((int)b.ServiceCategoryId))
                 .ExecuteUpdateAsync(b => b.SetProperty(x => x.FiscalPeriod, newQuarter));
