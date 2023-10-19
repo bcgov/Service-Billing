@@ -10,7 +10,7 @@
         <a href="https://gov.bc.ca">
             <img src="~/assets/BCID_H_rgb_rev.svg" alt="Go to the Government of British Columbia website" />
         </a>
-        <h1>Service Billing</h1>
+        <h1>GDX Service Billing</h1>
     </div>
     <div class="other">
         <a class="nav-btn">
@@ -30,7 +30,7 @@
             <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
             {
-                <li>@Html.ActionLink("Account Admin", "Index", "ClientAccount")</li>
+                <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
             }
             else
             {
@@ -38,10 +38,10 @@
             }
             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
             {
-                <li>@Html.ActionLink("Charges By Quarter", "Index", "Bills")</li>
+                <li>@Html.ActionLink("View Quarterly Reports", "Index", "Bills")</li>
             }
             <li>@Html.ActionLink("Order a Service", "Create", "Bills")</li>
-            <li>@Html.ActionLink("Service Admin", "Index", "ServiceCategory")</li>
+            <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
         </ul>
     </div>
 </nav>
