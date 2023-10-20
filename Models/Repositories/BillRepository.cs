@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Service_Billing.Data;
 using Service_Billing.Models;
+using System.Linq;
 
 namespace Service_Billing.Models.Repositories
 {
@@ -50,6 +52,77 @@ namespace Service_Billing.Models.Repositories
             }
 
             return $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+        }
+        private DateTime DetermineStartOfCurrentQuarter()
+        {
+            DateTime quarter = DateTime.Today;
+            switch (quarter.Month)
+            { // April 1 to March 31
+                case 4:
+                case 5:
+                case 6:
+                    return new DateTime(quarter.Year, 4, 1);
+                case 7:
+                case 8:
+                case 9:
+                    return new DateTime(quarter.Year, 7, 1);
+                case 10:
+                case 11:
+                case 12:
+                    return new DateTime(quarter.Year, 10, 1);
+                case 1:
+                case 2:
+                case 3:
+                    return new DateTime(quarter.Year, 1, 1);
+
+                default:
+                    return DateTime.Today;
+            }
+        }
+
+        private DateTime DetermineEndOfQuarter(DateTime quarterStart)
+        {
+            switch (quarterStart.Month)
+            {
+                case 4:
+                case 5:
+                case 6:
+                    return new DateTime(quarterStart.Year, 6, 31);
+                case 7:
+                case 8:
+                case 9:
+                    return new DateTime(quarterStart.Year, 9, 30);
+                case 10:
+                case 11:
+                case 12:
+                    return new DateTime(quarterStart.Year, 12, 31);
+                case 1:
+                case 2:
+                case 3:
+                    return new DateTime(quarterStart.Year, 3, 31);
+
+                default:
+                    return DateTime.Today;
+            }
+        }
+
+        public async Task PromoteChargesToNewQuarter()
+        {
+            // determine limits of current fiscal quarter
+            DateTime quarterStart = DetermineStartOfCurrentQuarter();
+            DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
+
+            // list which services are fixed consumptions, and which are  
+            IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
+            List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
+            && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
+            //List<int> oneTimeServiceIds = serviceCategories.Where(x => String.IsNullOrEmpty(x.UOM) ||
+            //x.UOM.ToLower() != "month").Select(x => x.ServiceId).ToList();
+            string newQuarter = DetermineCurrentQuarter();
+            await _billingContext.Bills.Where(b => b.ServiceCategoryId != null && fixedServiceIds.Contains((int)b.ServiceCategoryId))
+                .ExecuteUpdateAsync(b => b.SetProperty(x => x.FiscalPeriod, newQuarter));
+
+            await _billingContext.SaveChangesAsync();
         }
 
         public IEnumerable<Bill> GetCurrentQuarterBills()

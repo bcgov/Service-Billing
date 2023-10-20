@@ -25,11 +25,11 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    // This lambda determines whether user consent 
+    // This lambda determines whether user consent
     // for non-essential cookies is needed for a given request.
     options.CheckConsentNeeded = context => true;
     options.MinimumSameSitePolicy = SameSiteMode.Unspecified;
-    // Handling SameSite cookie according to 
+    // Handling SameSite cookie according to
     options.HandleSameSiteCookieCompatibility();
 });
 
@@ -107,7 +107,7 @@ var fordwardedHeaderOptions = new ForwardedHeadersOptions
 fordwardedHeaderOptions.KnownNetworks.Clear();
 fordwardedHeaderOptions.KnownProxies.Clear();
 
-// for making Azure AD OAuth work when deployed to OpenShift. 
+// for making Azure AD OAuth work when deployed to OpenShift.
 app.UseForwardedHeaders(fordwardedHeaderOptions);
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -121,9 +121,9 @@ app.UseSession();
 
 using (var scope = app.Services.CreateScope())
 {
-    // var services = scope.ServiceProvider;
-    // var context = services.GetRequiredService<ServiceBillingContext>();
-    // await context.Database.MigrateAsync();
+    //var services = scope.ServiceProvider;
+    //var context = services.GetRequiredService<ServiceBillingContext>();
+    //await context.Database.MigrateAsync();
 }
 
 app.UseHttpsRedirection();
