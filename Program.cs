@@ -18,6 +18,8 @@ using static Service_Billing.HostedServices.ChargePromotionService;
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
+builder.Services.AddHealthChecks();
+
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
@@ -142,5 +144,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
+
+app.MapHealthChecks("/healthz");
 
 app.Run();
