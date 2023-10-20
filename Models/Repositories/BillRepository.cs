@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace Service_Billing.Models.Repositories
 {
-    public class BillRepository : IBillRepositroy
+    public class BillRepository : IBillRepository
     {
         private readonly ServiceBillingContext _billingContext;
         public BillRepository  (ServiceBillingContext billingContext)
@@ -177,27 +177,27 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Bills.Where(b => !string.IsNullOrEmpty(b.Title) && b.Title.Contains(searchQuery));
         }
 
-        IEnumerable<Bill> IBillRepositroy.GetBillsByAuthority(string expenseAuthority)
+        IEnumerable<Bill> IBillRepository.GetBillsByAuthority(string expenseAuthority)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<Bill> IBillRepositroy.GetBillsByBillingCycle(DateOnly billingCycle)
+        IEnumerable<Bill> IBillRepository.GetBillsByBillingCycle(DateOnly billingCycle)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<Bill> IBillRepositroy.GetBillsByClientId(int clientId)
+        IEnumerable<Bill> IBillRepository.GetBillsByClientId(int clientId)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<Bill> IBillRepositroy.GetBillsByDateRange(DateTime start, DateTime end)
+        IEnumerable<Bill> IBillRepository.GetBillsByDateRange(DateTime start, DateTime end)
         {
             throw new NotImplementedException();
         }
 
-        IEnumerable<Bill> IBillRepositroy.GetBillsByServiceCategory(int serviceCategoryId)
+        IEnumerable<Bill> IBillRepository.GetBillsByServiceCategory(int serviceCategoryId)
         {
             throw new NotImplementedException();
         }

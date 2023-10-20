@@ -16,7 +16,7 @@ namespace Service_Billing.Controllers
 {
     public class BillsController : Controller
     {
-        private readonly IBillRepositroy _billRepository;
+        private readonly IBillRepository _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IMinistryRepository _ministryRepository;
@@ -25,7 +25,7 @@ namespace Service_Billing.Controllers
         private readonly ILogger<BillsController> _logger;
 
         public BillsController(ILogger<BillsController> logger,
-            IBillRepositroy billRepository,
+            IBillRepository billRepository,
             IServiceCategoryRepository categoryRepository,
             IClientAccountRepository clientAccountRepository,
             IMinistryRepository ministryRepository,

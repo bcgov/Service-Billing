@@ -2,7 +2,7 @@
 
 namespace Service_Billing.Models.Repositories
 {
-    public interface IBillRepositroy
+    public interface IBillRepository
     {
         IEnumerable<Bill> AllBills { get; }
         Bill? GetBill(int id);
