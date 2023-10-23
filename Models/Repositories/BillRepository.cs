@@ -111,14 +111,12 @@ namespace Service_Billing.Models.Repositories
             // determine limits of current fiscal quarter
             DateTime quarterStart = DetermineStartOfCurrentQuarter();
             DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
-
-            // list which services are fixed consumptions, and which are  
+            // list which services are fixed consumptions. Ignore charges where UOM is not month
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
             List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
             && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
-            //List<int> oneTimeServiceIds = serviceCategories.Where(x => String.IsNullOrEmpty(x.UOM) ||
-            //x.UOM.ToLower() != "month").Select(x => x.ServiceId).ToList();
             string newQuarter = DetermineCurrentQuarter();
+
             await _billingContext.Bills.Where(b => b.ServiceCategoryId != null && fixedServiceIds.Contains((int)b.ServiceCategoryId))
                 .ExecuteUpdateAsync(b => b.SetProperty(x => x.FiscalPeriod, newQuarter));
 
