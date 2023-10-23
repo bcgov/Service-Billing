@@ -41,7 +41,7 @@ namespace Service_Billing.HostedServices
             private int executionCount = 0;
             private readonly ILogger _logger;
             private readonly IBillRepository _chargeRepository;
-            private bool shouldRun = true;
+            private bool shouldRun = true; // stops update from running more than once per day of new quarter
 
             public ScopedProcessingService(ILogger<ScopedProcessingService> logger,
                 IBillRepository chargeRepository)
@@ -75,7 +75,7 @@ namespace Service_Billing.HostedServices
                         if(shouldRun == true)
                         {
                             _logger.LogInformation("It's a new quarter! Promoting fixed charges in repository to new quarter...");
-                            shouldRun = false; //only do this once, on first day of month (or quarter)
+                            shouldRun = false; //only do this once, on first day of quarter
                             await _chargeRepository.PromoteChargesToNewQuarter();
                         }
                         
