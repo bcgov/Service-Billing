@@ -151,10 +151,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ViewData["Categories"] = categories;
+            ViewData["CurrentUser"] = await GetMyName();
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.DateCreated);
