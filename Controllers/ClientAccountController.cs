@@ -216,25 +216,25 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
-        public async Task<IActionResult> SearchForContact(string query, string contactType, ClientIntakeViewModel model)
+        public async Task<IActionResult> SearchForContact(string term)
         {
             try
             {
                 var queriedUsers = await _graphServiceClient.Users.Request()
-                    .Filter($"startswith(displayName, '{query}')")
-                    .Top(5)
+                    .Filter($"startswith(displayName, '{term}')")
+                    .Top(8)
                     .Select("displayName, id")
                     .GetAsync();
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
+                List<string> contacts = new List<string>();
+
                 foreach (var user in queriedUsers)
                 {
-                    contactItems.Add(new SelectListItem(user.DisplayName, user.DisplayName));
+                    contacts.Add(user.DisplayName);
                 }
 
-                model.Contacts = contactItems;
-
-                return ViewComponent("ContactLookup", new { elementId = contactType.Replace("Select", "Value"), contactList = contactItems, model = model });
+                return new JsonResult(contacts);
             }
             catch (Exception ex)
             {
