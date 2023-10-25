@@ -34,6 +34,8 @@ namespace Service_Billing.Models
 
         public DateTime? DateModified { get; set; }
         public DateTime? DateCreated { get; set; }
+        public DateTime? EndDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
 

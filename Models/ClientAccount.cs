@@ -44,7 +44,7 @@ o	Note: not all naming convention components are required. The naming convention
         public string? Project { get; set; }
 
 
-        [BindRequired]
+        [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Expense Authority")]
         public string? ExpenseAuthorityName { get; set; }
 

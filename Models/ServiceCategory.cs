@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Service_Billing.Models
@@ -7,14 +8,16 @@ namespace Service_Billing.Models
     {
         [Key]
         public int ServiceId { get; set; }
-        
+
+        [Required (ErrorMessage = "A business area must be defined")]
         [Display(Name = "GDX Business Area")]
         public string? GDXBusArea { get; set; }
 
+        [Required(ErrorMessage = "Please give the service a descriptive name")]
         public string? Name { get; set; }
 
         public string? Costs { get; set; }
-
+        [BindRequired]
         public string? Description { get; set; }
 
         [Display(Name = "Is Active?")]

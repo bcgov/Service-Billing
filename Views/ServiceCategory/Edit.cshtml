@@ -74,39 +74,11 @@
 
     <script>
         $(document).ready(function () {
-            const queryForUser = (query, contactType) => {
-                var url = "../../ClientAccount/SearchForContact?query=" + query + "&contactType=" + contactType;
-                var xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = function () {
-                    if (this.readyState == 4 && this.status == 200) {
-                        var id = `#${contactType}`;
-                        $(id).html(xhr.response);
-                    }
-                };
-                xhr.open('get', url);
-                xhr.send();
-            };
+            const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
-            var timer = null;
-
-            $("#ownerSelect").on("change", (e) => {
-                $("#owner").val($("#ownerValue").val());
-            });
-
-
-            $("#owner").on("keypress", (e) => {
-                // clear timeout if already applied
-                if (timer) {
-                    clearTimeout(timer);
-                    timer = null;
-                }
-                //  set new timeout;
-                timer = setTimeout(function () {
-                    //  call wait-function and clear timeout
-                    queryForUser($("#owner").val(), "ownerSelect");
-                    clearTimeout(timer);
-                    timer = null;
-                }, 250);
+            $("#owner").autocomplete({
+                source: contactListUrl,
+                delay: 500
             });
         });
     </script>
