@@ -1,0 +1,122 @@
+[
+  {
+    "Id": 1,
+    "Title": "Energy, Mines and Low Carbon Innovation",
+    "Acronym": "EMLI"
+  },
+  {
+    "Id": 2,
+    "Title": "Tourism, Arts, Culture and Sport",
+    "Acronym": "TACS"
+  },
+  {
+    "Id": 3,
+    "Title": "Agency, Board or Commission",
+    "Acronym": "ABC"
+  },
+  {
+    "Id": 4,
+    "Title": "Agriculture and Food",
+    "Acronym": "AF"
+  },
+  {
+    "Id": 5,
+    "Title": "Attorney General",
+    "Acronym": "AG"
+  },
+  {
+    "Id": 6,
+    "Title": "Children & Family Development",
+    "Acronym": "MCFD"
+  },
+  {
+    "Id": 7,
+    "Title": "Citizens' Services",
+    "Acronym": "CITZ"
+  },
+  {
+    "Id": 8,
+    "Title": "Education and Child Care",
+    "Acronym": "ECC"
+  },
+  {
+    "Id": 9,
+    "Title": "Emergency Management and Climate Readiness",
+    "Acronym": "EMCR"
+  },
+  {
+    "Id": 10,
+    "Title": "Environment & Climate Change Strategy",
+    "Acronym": "ENV"
+  },
+  {
+    "Id": 11,
+    "Title": "Finance",
+    "Acronym": "FIN"
+  },
+  {
+    "Id": 12,
+    "Title": "Forest",
+    "Acronym": "FOR"
+  },
+  {
+    "Id": 13,
+    "Title": "Health",
+    "Acronym": "HLTH"
+  },
+  {
+    "Id": 14,
+    "Title": "Housing",
+    "Acronym": "HOUS"
+  },
+  {
+    "Id": 15,
+    "Title": "Indigenous Relations & Reconciliation",
+    "Acronym": "IRR"
+  },
+  {
+    "Id": 16,
+    "Title": "Jobs, Economic Development and Innovation",
+    "Acronym": "JEDI"
+  },
+  {
+    "Id": 17,
+    "Title": "Labour",
+    "Acronym": "LBR"
+  },
+  {
+    "Id": 18,
+    "Title": "Mental Health & Addictions",
+    "Acronym": "MHA"
+  },
+  {
+    "Id": 19,
+    "Title": "Municipal Affairs",
+    "Acronym": "MUNI"
+  },
+  {
+    "Id": 20,
+    "Title": "Post-Secondary Education and Future Skills",
+    "Acronym": "PSFS"
+  },
+  {
+    "Id": 21,
+    "Title": "Public Safety & Solicitor General & Emergency B.C.",
+    "Acronym": "PSSG"
+  },
+  {
+    "Id": 22,
+    "Title": "Social Development & Poverty Reduction",
+    "Acronym": "SDPR"
+  },
+  {
+    "Id": 23,
+    "Title": "Transportation & Infrastructure",
+    "Acronym": "TRAN"
+  },
+  {
+    "Id": 24,
+    "Title": "Water, Land and Resource Stewardship",
+    "Acronym": "WLRS"
+  }
+]
