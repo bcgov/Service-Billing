@@ -76,12 +76,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
-                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5"/>
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" id="casServiceLine"/>
                 <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.STOB" class="control-label">CAS SToB Number</label>
-                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" />
+                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber"/>
                 <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -143,6 +143,16 @@
                 $("#casClientNumber").val($("#casClientNumber").val().substring(0,3));
             }
         });
+            $("#casSTOBNumber").on("keyup", (e) => {
+                if ($("#casSTOBNumber").val().length > 3) {
+                    $("#casSTOBNumber").val($("#casSTOBNumber").val().substring(0, 4));
+                }
+            });
+            $("#casServiceLine").on("keyup", (e) => {
+                if ($("#casServiceLine").val().length > 3) {
+                    $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
+                }
+            });
     });
 
 
