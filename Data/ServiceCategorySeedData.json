@@ -1,0 +1,802 @@
+[
+  {
+    "ServiceId": 1,
+    "GDXBusArea": "OSS",
+    "Name": "CMS Lite license",
+    "Costs": "No Fee",
+    "Description": "NULL",
+    "IsActive": true,
+    "UOM": "NULL",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 2,
+    "GDXBusArea": "OSS",
+    "Name": "CMS Lite introductory training",
+    "Costs": "No Fee",
+    "Description": "1 day training session",
+    "IsActive": true,
+    "UOM": "NULL",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 3,
+    "GDXBusArea": "DES",
+    "Name": "WordPress – Hosting 1st Site",
+    "Costs": "450",
+    "Description": "$350 - Maintenance; $100 - Analytics Service",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 4,
+    "GDXBusArea": "DES",
+    "Name": "WordPress – Hosting additional sites",
+    "Costs": "400",
+    "Description": "$350 - Maintenance; $50 - Analytics Service; (Same Users)",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 5,
+    "GDXBusArea": "DES",
+    "Name": "WordPress – Expert help",
+    "Costs": "85 to 130",
+    "Description": "Minimum 1 hour",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 6,
+    "GDXBusArea": "DES",
+    "Name": "WordPress - Custom development",
+    "Costs": "130",
+    "Description": "One-time development costs depend on features; (Min 1 hour)",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 7,
+    "GDXBusArea": "ANA",
+    "Name": "Analytics – Ministry CMS Lite",
+    "Costs": "400",
+    "Description": "Ministry defined as having a Deputy Minister",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 8,
+    "GDXBusArea": "ANA",
+    "Name": "Analytics – 1st Custom dashboard",
+    "Costs": "100",
+    "Description": "You will be billed separately to build your custom dashboard",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 9,
+    "GDXBusArea": "ANA",
+    "Name": "Analytics – Additional custom dashboard",
+    "Costs": "50",
+    "Description": "Must be same users as 1st custom dashboard",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 10,
+    "GDXBusArea": "ANA",
+    "Name": "Analytics – Additional user fee",
+    "Costs": "10",
+    "Description": "Per user",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 11,
+    "GDXBusArea": "ANA",
+    "Name": "Analytics – Expert help",
+    "Costs": "100",
+    "Description": "Minimum 1 hour",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 12,
+    "GDXBusArea": "Search",
+    "Name": "Corporate Search",
+    "Costs": "No Fee",
+    "Description": "indexed documents",
+    "IsActive": true,
+    "UOM": "NULL",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 13,
+    "GDXBusArea": "Search",
+    "Name": "Corporate Search – Content Feed",
+    "Costs": "No Fee",
+    "Description": "Submit website content to the search appliance in real-time",
+    "IsActive": true,
+    "UOM": "NULL",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 14,
+    "GDXBusArea": "Search",
+    "Name": "Search – Expert help",
+    "Costs": "No Fee",
+    "Description": "Minimum 1 hour",
+    "IsActive": true,
+    "UOM": "NULL",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 15,
+    "GDXBusArea": "OSS",
+    "Name": "Orbeon Forms – Ministry fee",
+    "Costs": "2100",
+    "Description": "Ministry defined as having a Deputy Minister",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 16,
+    "GDXBusArea": "OSS",
+    "Name": "Orbeon Forms – Additional user fee",
+    "Costs": "400",
+    "Description": "NULL",
+    "IsActive": true,
+    "UOM": "month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 17,
+    "GDXBusArea": "Any",
+    "Name": "Professional services - level 1",
+    "Costs": "65",
+    "Description": "Quick simple tasks",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 18,
+    "GDXBusArea": "Any",
+    "Name": "Professional services - level 2",
+    "Costs": "85",
+    "Description": "More complex, but predictable tasks or advice",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 19,
+    "GDXBusArea": "Any",
+    "Name": "Professional services - level 3",
+    "Costs": "100",
+    "Description": "In-depth technical or expert advice",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 20,
+    "GDXBusArea": "Any",
+    "Name": "Professional services - level 4",
+    "Costs": "130",
+    "Description": "Expert product or service development sup",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 21,
+    "GDXBusArea": "Analytics",
+    "Name": "Additional Analytics Dashboard User",
+    "Costs": "10",
+    "Description": "An additional user above the pre-paid 5 users per analytics dashboard",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "Carmichael, Alexander CITZ:EX"
+  },
+  {
+    "ServiceId": 22,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics - ESB Reporting Analytics",
+    "Costs": "300",
+    "Description": "For the ESB Custom Reporting Analytics",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 23,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics - FOI Reporting Analytics",
+    "Costs": "360",
+    "Description": "For the FOI Custom Reporting Analytics",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 24,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics - SBC/SDPR analytics for TheQ",
+    "Costs": "2500",
+    "Description": "Monthly Cost for New Analytics Service Beginning November 1, 2020",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 25,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics - Service BC Analytics",
+    "Costs": "1500",
+    "Description": "Service BC Analytics - Monthly Cost",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 26,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics Dashboards - Additional Standalone Site",
+    "Costs": "50",
+    "Description": "Additional Standalone Analytics Site - Monthly Site Cost",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 28,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics Dashboards - Standalone Site",
+    "Costs": "100",
+    "Description": "Standalone Site Analytics - Monthly cost for five users access",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 29,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics Dashboards - WordPress Additional Site",
+    "Costs": "50",
+    "Description": "Additional GCPE Marketing WordPress Analytics Site - Monthly Site Cost",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 30,
+    "GDXBusArea": "Analytics",
+    "Name": "Analytics Dashboards - WordPress Site",
+    "Costs": "$100",
+    "Description": "GDX Analytics WordPress Monthly Fee",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "Dan Pollock"
+  },
+  {
+    "ServiceId": 31,
+    "GDXBusArea": "Other",
+    "Name": "Client Credit",
+    "Costs": "NULL",
+    "Description": "Credit to Client Account",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 32,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "CMS Lite (Orbeon) Forms additional user license (beyond the 5 included)",
+    "Costs": "400",
+    "Description": "Ministry level monthly rate for Orbeon Forms Additional Users on the CMS Lite Platform Beyond the 5 included",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 33,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "CMS Lite (Orbeon) Forms ministry license (includes 5 users)",
+    "Costs": "2100",
+    "Description": "Ministry level monthly rate for Orbeon Forms on the CMS Lite Platform for upto 5 users",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 34,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "CMS Lite (Orbeon) Forms ministry license (includes 5 users) - Discounted",
+    "Costs": "1500",
+    "Description": "Discounted Ministry level monthly rate for Orbeon Forms on the CMS Lite Platform for upto 5 users",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 35,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "CMS Lite Training - Advanced",
+    "Costs": "125",
+    "Description": "Advanced training for experienced CMS Lite users",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 36,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "CMS Lite Training - Basic",
+    "Costs": "125",
+    "Description": "Basic training for new CMS Lite users",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 37,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "CMS Lite Training - Refresher",
+    "Costs": "60",
+    "Description": "A refresher course for existing CMS Lite users",
+    "IsActive": false,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 38,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "CMS Lite User Licence",
+    "Costs": "5",
+    "Description": "Monthly licence charge for access to CMS Lite for each user",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 39,
+    "GDXBusArea": "Other",
+    "Name": "Monthly Client Credit",
+    "Costs": "NULL",
+    "Description": "Monthly credit applied for on-going discounts of monthly service fees",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 40,
+    "GDXBusArea": "Multi Project Mapping Platform",
+    "Name": "Multi Project Mapping Platform Service",
+    "Costs": "1400",
+    "Description": "Monthly fee for running the Multi Project Mapping Platform service",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 41,
+    "GDXBusArea": "Analytics",
+    "Name": "Professional Services L1 - Anaytics",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for Analytics; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 42,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "Professional Services L1 - CMS Lite / Gov",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for CMS Lite and Gov; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 43,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "Professional Services L1 - Orbeon Forms",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for Orbeon Forms; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 44,
+    "GDXBusArea": "Other",
+    "Name": "Professional Services L1 - Other",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for other services; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 45,
+    "GDXBusArea": "Search",
+    "Name": "Professional Services L1 - Search",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for Search; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 46,
+    "GDXBusArea": "WordPress",
+    "Name": "Professional Services L1 - WordPress",
+    "Costs": "65",
+    "Description": "Professional services charges at $65/hour for WordPress; Professional Services L1 = IS18 or IS21",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 47,
+    "GDXBusArea": "Analytics",
+    "Name": "Professional Services L2 - Anaytics",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for Analytics; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 48,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "Professional Services L2 - CMS Lite / Gov",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for CMS Lite and Gov; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 49,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "Professional Services L2 - Orbeon Forms",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for Orbeon Forms; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 50,
+    "GDXBusArea": "Other",
+    "Name": "Professional Services L2 - Other",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for other services; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 51,
+    "GDXBusArea": "Search",
+    "Name": "Professional Services L2 - Search",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for Search; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 52,
+    "GDXBusArea": "WordPress",
+    "Name": "Professional Services L2 - WordPress",
+    "Costs": "85",
+    "Description": "Professional services charges at $85/hour for WordPress; Professional Services�L2 = IS24",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 53,
+    "GDXBusArea": "Analytics",
+    "Name": "Professional Services L3 - Anaytics",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for Analytics; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 54,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "Professional Services L3 - CMS Lite / Gov",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for CMS Lite and Gov; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 55,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "Professional Services L3 - Orbeon Forms",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for Orbeon Forms; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 56,
+    "GDXBusArea": "Other",
+    "Name": "Professional Services L3 - Other",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for other services; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 57,
+    "GDXBusArea": "Search",
+    "Name": "Professional Services L3 - Search",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for Search; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 58,
+    "GDXBusArea": "WordPress",
+    "Name": "Professional Services L3 - WordPress",
+    "Costs": "95",
+    "Description": "Professional services charges at $95/hour for WordPress; Professional Services�L3 = IS27",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 59,
+    "GDXBusArea": "Analytics",
+    "Name": "Professional Services L4 - Analytics",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for Analytics; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 60,
+    "GDXBusArea": "CMS Lite / Gov",
+    "Name": "Professional Services L4 - CMS Lite / Gov",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for CMS Lite and Gov; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 61,
+    "GDXBusArea": "Multi Project Mapping Platform",
+    "Name": "Professional Services L4 - Engagement Platform Service",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for Engagement Platform Service; Professional Services L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 62,
+    "GDXBusArea": "Orbeon Forms",
+    "Name": "Professional Services L4 - Orbeon Forms",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for Orbeon Forms; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 63,
+    "GDXBusArea": "Other",
+    "Name": "Professional Services L4 - Other",
+    "Costs": "$100",
+    "Description": "Professional services charges at $100/hour for other services; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 64,
+    "GDXBusArea": "Search",
+    "Name": "Professional Services L4 - Search",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for Search; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 65,
+    "GDXBusArea": "WordPress",
+    "Name": "Professional Services L4 - WordPress",
+    "Costs": "100",
+    "Description": "Professional services charges at $100/hour for WordPress; Professional Services�L4 = IS30",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 66,
+    "GDXBusArea": "Search",
+    "Name": "Search Collection Tier 1 - up to 15,000 indexed documents",
+    "Costs": "75",
+    "Description": "Search Collection of up to 15,000 indexed documents charged monthly",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 67,
+    "GDXBusArea": "Search",
+    "Name": "Search Collection Tier 2 - up to 100,000 indexed documents",
+    "Costs": "225",
+    "Description": "Search Collection of up to 100,000 indexed documents charged monthly",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 68,
+    "GDXBusArea": "Search",
+    "Name": "Search Collection Tier 3 - up to 250,000 indexed documents",
+    "Costs": "375",
+    "Description": "Search Collection of up to 250,000 indexed documents charged monthly",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 69,
+    "GDXBusArea": "Search",
+    "Name": "Search Feed Service",
+    "Costs": "15",
+    "Description": "Monthly access to feed content to the search index in XML format",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 70,
+    "GDXBusArea": "WordPress",
+    "Name": "WordPress - Standard Setup",
+    "Costs": "3500",
+    "Description": "One time set up fee for a standard WordPress site",
+    "IsActive": true,
+    "UOM": "Each",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 71,
+    "GDXBusArea": "WordPress",
+    "Name": "WordPress Domain Redirect",
+    "Costs": "32",
+    "Description": "Monthly Fee for WordPress domain redirected to another URL after site decommissioned. 12 month minimum commitment",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 72,
+    "GDXBusArea": "WordPress",
+    "Name": "WordPress Hosting",
+    "Costs": "350",
+    "Description": "Monthly hosting charge for a WordPress instance/site.",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 73,
+    "GDXBusArea": "NBA",
+    "Name": "Test Service Category",
+    "Costs": "3.5",
+    "Description": "about $3.50",
+    "IsActive": false,
+    "UOM": "Hr",
+    "ServiceOwner": "NULL"
+  },
+  {
+    "ServiceId": 74,
+    "GDXBusArea": "ANA",
+    "Name": "MegTest custom dashboard",
+    "Costs": "350",
+    "Description": "abc123",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "Meaghan Stewart"
+  },
+  {
+    "ServiceId": 75,
+    "GDXBusArea": "BCS",
+    "Name": "Greg Test Dashboard",
+    "Costs": "350",
+    "Description": "good",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "Greg Hannas"
+  },
+  {
+    "ServiceId": 76,
+    "GDXBusArea": "BCS",
+    "Name": "2023 Service Category TEST 2",
+    "Costs": "$125",
+    "Description": "Digital Asset Manager enhancements",
+    "IsActive": true,
+    "UOM": "Each",
+    "ServiceOwner": "Carolynn Hunter"
+  },
+  {
+    "ServiceId": 77,
+    "GDXBusArea": "BCS",
+    "Name": "2023 Service Category TEST 3",
+    "Costs": "$50",
+    "Description": "Digital Hub App enhancements",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "Carolynn Hunter"
+  },
+  {
+    "ServiceId": 78,
+    "GDXBusArea": "BCS",
+    "Name": "2023 Service Category TEST 4",
+    "Costs": "$150",
+    "Description": "Media Monitoring Insights build and deploy MVP",
+    "IsActive": true,
+    "UOM": "Hr",
+    "ServiceOwner": "Carolynn Hunter"
+  },
+  {
+    "ServiceId": 79,
+    "GDXBusArea": "Business & Communications Solutions",
+    "Name": "2023 Service Category TEST 5",
+    "Costs": "$1,275",
+    "Description": "GDX Service Billing App: build & deploy",
+    "IsActive": true,
+    "UOM": "Month",
+    "ServiceOwner": "Carolynn Hunter"
+  },
+  {
+    "ServiceId": 80,
+    "GDXBusArea": "BCS",
+    "Name": "TEST Megs custom dashboard",
+    "Costs": "500",
+    "Description": "abc123",
+    "IsActive": false,
+    "UOM": "Month",
+    "ServiceOwner": "Meaghan Stewart"
+  },
+  {
+    "ServiceId": 81,
+    "GDXBusArea": "GDX Business & Communications",
+    "Name": "2023 Service Category TEST 1",
+    "Costs": "$250",
+    "Description": "Lean Mean Graphics Machine",
+    "IsActive": true,
+    "UOM": "Month",
+    "ServiceOwner": "Carolynn Hunter"
+  }
+]
