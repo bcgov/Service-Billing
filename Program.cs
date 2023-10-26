@@ -130,12 +130,12 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ServiceBillingContext>();
-    await context.Database.MigrateAsync();
-    DbInitializer.SeedMinistries(context);
-    DbInitializer.SeedServices(context);
-    DbInitializer.SeedTeams(context);
-    DbInitializer.SeedAccounts(context);
-    DbInitializer.SeedCharges(context);
+    //await context.Database.MigrateAsync();
+    //DbInitializer.SeedMinistries(context);
+    //DbInitializer.SeedServices(context);
+    //DbInitializer.SeedTeams(context);
+    //DbInitializer.SeedAccounts(context);
+    //DbInitializer.SeedCharges(context);
 }
 
 app.UseHttpsRedirection();
