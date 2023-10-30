@@ -60,31 +60,31 @@ namespace Service_Billing.HostedServices
                 {
                     /* Logic for deciding whether or not promoting charges to next quarter is appropriate */
                     DateTime now = DateTime.UtcNow; //Note that this is server time
-                    ////if (now.Day == 1) //is it the first of the month?
-                    ////{
-                    ////    switch (now.Month)
-                    ////    {
-                    ////        case 1:
-                    ////        case 4:
-                    ////        case 7:
-                    ////        case 10:
-                    ////            break;
-                    ////        default: 
-                    ////            return;
-                    ////    }
-                    ////    if(shouldRun == true)
-                    ////    {
+                    if (now.Day == 1) //is it the first of the month?
+                    {
+                        switch (now.Month)
+                        {
+                            case 1:
+                            case 4:
+                            case 7:
+                            case 10:
+                                break;
+                            default:
+                                return;
+                        }
+                        if (shouldRun == true)
+                        {
                             _logger.LogInformation("It's a new quarter! Promoting fixed charges in repository to new quarter...");
                             shouldRun = false; //only do this once, on first day of quarter
                             await _chargeRepository.PromoteChargesToNewQuarter();
-                    //    }
-                        
-                    //}
-                    //else
-                    //{   //if it's not the first of the month, just get ready for next time.
-                    //    shouldRun = true;
-                    //}
-                    
+                        }
+
+                    }
+                    else
+                    {   //if it's not the first of the month, just get ready for next time.
+                        shouldRun = true;
+                    }
+
                     _logger.LogInformation($"A quick check to see if quarterly charges need to be updated was done by the app hosted service at {DateTime.Now} (server time)");
 
                     await Task.Delay(5400_000, stoppingToken);
