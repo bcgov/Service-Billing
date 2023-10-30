@@ -69,6 +69,8 @@ namespace Service_Billing.Controllers
             ViewData["ClientNumber"] = clientNumber;
 
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
+            bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
 
 
             return View(new AllBillsViewModel(bills, categories, clients));
@@ -407,6 +409,7 @@ namespace Service_Billing.Controllers
             int clientNumber)
         {
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try
             {
                 GeneratedReportViewModel model = new GeneratedReportViewModel();
