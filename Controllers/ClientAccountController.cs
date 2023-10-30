@@ -201,7 +201,7 @@ namespace Service_Billing.Controllers
 
         private short GetNextClientNumber()
         {
-            short ret = 184;
+            short ret = 2054;
             IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
             if (accounts != null && accounts.Any())
             {
