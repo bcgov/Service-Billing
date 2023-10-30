@@ -64,25 +64,33 @@
             @Html.DisplayNameFor(model => model.ServicesEnabled)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ServicesEnabled)
+            @if(String.IsNullOrEmpty(Model.ServicesEnabled))
+            {
+                <br/>
+            }
+            else
+            {
+                @Html.DisplayFor(model => model.ServicesEnabled)
+            }
         </dd>
-        <dd class="col-sm-10" name="clientTeam">
-            <partial name="_ClientTeam" model="@clientTeam" />
-        </dd>
-        <br/>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.CasClientNumber)
         </dt>
         <dd class="col-sm-10">
-            @if(Model.CasClientNumber != null && Model.CasClientNumber > 0)
+            @if (Model.CasClientNumber == null || Model.CasClientNumber < 1)
             {
-                String.Format("{0:000}", Model.CasClientNumber);
+                <br />
             }
             else
             {
-                <br/>
+                @Html.DisplayFor(model => model.CasClientNumber)
             }
+           
         </dd>
+        <dd class="col-sm-10" name="clientTeam">
+            <partial name="_ClientTeam" model="@clientTeam" />
+        </dd>
+
     </dl>
 </div>
 <div>
