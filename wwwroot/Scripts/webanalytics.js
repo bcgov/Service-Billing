@@ -23,7 +23,7 @@
   "snowplow"
 );
 
-var collector = "spm.apps.gov.bc.ca";
+var collector = "spt.apps.gov.bc.ca";
 
 window.snowplow("newTracker", "rt", collector, {
   appId: "Snowplow_standalone",
