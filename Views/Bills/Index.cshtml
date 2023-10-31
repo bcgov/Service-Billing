@@ -121,6 +121,7 @@
                 <th scope="col">Client #</th>
                 <th scope="col">Client Name</th>
                 <th scope="col">Title</th>
+                <th scope="col">URL or IDIR</th>
                 <th scope="col">Service Category</th>
                 @if (ViewData["Quarter"] == "All Quarters")
                 {
@@ -130,6 +131,7 @@
                 <th scope="col">Unit Price</th>
                 <th scope="col">Quantity</th>
                 <th scope="col">UOM</th>
+                <th scope="col">Aggregated Financial Code</th>
                 <th scope="col">Expense Authority</th>
                 <th>Details</th>
             </tr>
@@ -147,6 +149,7 @@
                     </td>
                     <td>@bill.ClientName</td>
                     <td>@bill.Title</td>
+                    <td>@bill.IdirOrUrl</td>
                     <td>
                         @{
 
@@ -193,6 +196,9 @@
                         <td>
                         </td>
                     }
+                    <td>
+                        @bill.AggregateGLCoding
+                    </td>
                     <td>
                         @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
                         {
