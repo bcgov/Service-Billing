@@ -53,11 +53,11 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            if(ministries != null && ministries.Any())
+            if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
             }
-            if(categories != null && categories.Any())
+            if (categories != null && categories.Any())
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }
@@ -175,6 +175,16 @@ namespace Service_Billing.Controllers
                 if (ModelState.IsValid)
                 {
                     _logger.LogInformation($"New charge is valid");
+                    // Add aggregate gl code. 
+                    string aggregateCode = string.Empty;
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    if(account != null)
+                    {
+                        aggregateCode = $"{account.CasClientNumber}.{account.ResponsibilityCentre}." +
+                            $"{account.ServiceLine}.{account.STOB}.{account.Project}";
+                    }
+                    bill.AggregateGLCoding = aggregateCode;
+
                     await _billRepository.CreateBill(bill);
                 }
                 else
@@ -213,7 +223,7 @@ namespace Service_Billing.Controllers
                 string? UOM = !string.IsNullOrEmpty(category.UOM) ? category.UOM : "n/a";
                 RecordEntry recordEntry = new RecordEntry(category.Name, newAmount * quantity);
                 recordEntry.UOM = UOM;
-                
+
                 return new JsonResult(recordEntry);
             }
             catch (Exception ex)
@@ -284,8 +294,8 @@ namespace Service_Billing.Controllers
             try
             {
                 var myName = await _graphServiceClient.Me.Request()
-                    .Select("displayName")
-                    .GetAsync();
+                .Select("displayName")
+                .GetAsync();
 
                 return myName.DisplayName;
             }
@@ -296,11 +306,11 @@ namespace Service_Billing.Controllers
         }
 
         private IEnumerable<Bill> GetFilteredBills(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber)
         {
             IEnumerable<Bill> bills;
             switch (quarterFilter)
@@ -351,11 +361,11 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         public async Task<IActionResult> WriteToCSV(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber)
         {
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
             try
@@ -402,11 +412,11 @@ namespace Service_Billing.Controllers
         }
 
         public async Task<IActionResult> ShowReport(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber)
         {
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
@@ -442,11 +452,11 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ReportToCSV(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber)
         {
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
             SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
@@ -460,9 +470,9 @@ namespace Service_Billing.Controllers
             }
 
             var summedTotal = new List<object>
-            {
-                new { Id = "Grand Total", Name = total },
-            };
+{
+new { Id = "Grand Total", Name = total },
+};
             using var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream))
             {
