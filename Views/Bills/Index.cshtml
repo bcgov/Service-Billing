@@ -7,6 +7,7 @@
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     bool current = ViewData["Quarter"] == "Current Quarter";
     bool previous = ViewData["Quarter"] == "Previous Quarter";
+    bool next = ViewData["Quarter"] == "Next Quarter";
     bool all = ViewData["Quarter"] == "All Quarters";
 }
 
@@ -41,6 +42,7 @@
                             <select name="quarterFilter">
                                 <option value="current" selected="@current">Current</option>
                                 <option value="previous" selected="@previous">Previous</option>
+                                <option value="next" selected="@previous">Next</option>
                                 <option value="all" selected="@all">All</option>
                             </select>
                         </div>

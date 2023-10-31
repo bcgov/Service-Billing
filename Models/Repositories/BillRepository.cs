@@ -79,6 +79,32 @@ namespace Service_Billing.Models.Repositories
                     return DateTime.Today;
             }
         }
+        private DateTime DetermineStartOfNextQuarter()
+        {
+            DateTime quarter = DateTime.Today;
+            switch (quarter.Month)
+            { // April 1 to March 31
+                case 4:
+                case 5:
+                case 6:
+                    return new DateTime(quarter.Year, 7, 1);
+                case 7:
+                case 8:
+                case 9:
+                    return new DateTime(quarter.Year, 10, 1);
+                case 10:
+                case 11:
+                case 12:
+                    return new DateTime(quarter.Year, 1, 1);
+                case 1:
+                case 2:
+                case 3:
+                    return new DateTime(quarter.Year, 4, 1);
+
+                default:
+                    return DateTime.Today;
+            }
+        }
 
         private DateTime DetermineEndOfQuarter(DateTime quarterStart)
         {
@@ -106,17 +132,30 @@ namespace Service_Billing.Models.Repositories
             }
         }
 
+        public List<int> GetFixedServices()
+        {
+            IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
+            List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
+            && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
+
+            return fixedServiceIds;
+        }
+        public List<int> GetOneTimeServices()
+        {
+            IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
+            List<int> oneTimeServiceIds = serviceCategories.Where(x => x.UOM == null || x.UOM.ToLower() != "month")
+               .Select(x => x.ServiceId).ToList();
+
+            return oneTimeServiceIds;
+        }
         public async Task PromoteChargesToNewQuarter()
         {
             // determine limits of current fiscal quarter
             DateTime quarterStart = DetermineStartOfCurrentQuarter();
             DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
             // list which services are fixed consumptions. Ignore charges where UOM is not month
-            IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
-            List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
-            && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
-            List<int> oneTimeServiceIds = serviceCategories.Where(x => x.UOM == null || x.UOM.ToLower() != "month")
-                .Select(x => x.ServiceId).ToList();
+            List<int> fixedServiceIds = GetFixedServices();
+            List<int> oneTimeServiceIds = GetOneTimeServices();
             string newQuarter = DetermineCurrentQuarter();
 
             await _billingContext.Bills.Where(b => b.ServiceCategoryId != null 
@@ -164,6 +203,25 @@ namespace Service_Billing.Models.Repositories
             catch(Exception e) 
             {
                 //Todo: Add error logging.
+            }
+
+            return null;
+        }
+
+        public IEnumerable<Bill> GetNextQuarterBills()
+        {
+            try
+            {
+                DateTime nextQuarterStart = DetermineStartOfNextQuarter();
+                string currentFiscalPeriod = DetermineCurrentQuarter();
+                List<int> fixedServiceIds = GetFixedServices();
+                return _billingContext.Bills.Where(b => b.ServiceCategoryId != null
+                   && fixedServiceIds.Contains((int)b.ServiceCategoryId)
+                   && (b.EndDate == null || b.EndDate > nextQuarterStart));
+            }
+            catch (Exception e)
+            {
+                // Todo: this interface could really use some good old logging. 
             }
 
             return null;

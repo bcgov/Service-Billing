@@ -324,6 +324,10 @@ namespace Service_Billing.Controllers
                     ViewData["Quarter"] = "Previous Quarter";
                     bills = _billRepository.GetPreviousQuarterBills();
                     break;
+                case "next":
+                    ViewData["Quarter"] = "Next Quarter";
+                    bills = _billRepository.GetNextQuarterBills();
+                    break;
                 case "all":
                     ViewData["Quarter"] = "All Quarters";
                     bills = _billRepository.AllBills;
