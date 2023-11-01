@@ -39,9 +39,9 @@ namespace Service_Billing.Controllers
         }
 
         // GET: ClientAccountController
-        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
-            
+
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ViewData["MinistryFilter"] = ministryFilter;
@@ -49,7 +49,8 @@ namespace Service_Billing.Controllers
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
+            ViewData["Keyword"] = keyword;
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
 
             return View(new ClientAccountViewModel(clients));
         }
@@ -69,13 +70,13 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
-            
+
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ClientIntakeViewModel model = new ClientIntakeViewModel();
             model.Account = account;
-            if(team != null)
+            if (team != null)
             {
                 model.Team = team;
             }
@@ -97,9 +98,9 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    if(model.Team != null)
+                    if (model.Team != null)
                     {
-                        if(model.Team.Id == 0)
+                        if (model.Team.Id == 0)
                         {
                             model.Team.Name = $"{model.Account.Name} Team";
                             model.Account.TeamId = _clientTeamRepository.Add(model.Team);
@@ -113,15 +114,15 @@ namespace Service_Billing.Controllers
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
-                    return View("Details", model.Account); 
+                    return View("Details", model.Account);
                 }
-                catch(DbUpdateException ex)
+                catch (DbUpdateException ex)
                 {
                     _logger.LogError($"An error occurred while updating client account number {model.Account.Id}. Inner Exception: {ex.InnerException}");
                     _logger.LogError(ex.Message);
                 }
             }
-                return View(model);
+            return View(model);
         }
 
         // GET: ClientAccountController/Delete/5
@@ -155,7 +156,7 @@ namespace Service_Billing.Controllers
             model.Account.ClientNumber = GetNextClientNumber();
             return View(model);
         }
-     
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
@@ -170,7 +171,7 @@ namespace Service_Billing.Controllers
                     string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                     model.Account.Name = accountName;
                     ClientAccount account = model.Account;
-                    if(model.Team != null)
+                    if (model.Team != null)
                     {
                         ClientTeam team = model.Team;
                         team.Name = $"{model.Account.Name} Team";
@@ -191,7 +192,7 @@ namespace Service_Billing.Controllers
                 _logger.LogError($"Error adding client account to DB. Inner Exception: {ex.InnerException}");
                 return View(new ClientIntakeViewModel());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
@@ -250,7 +251,7 @@ namespace Service_Billing.Controllers
             return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (!String.IsNullOrEmpty(ministryFilter))
@@ -263,14 +264,24 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
             if (!String.IsNullOrEmpty(teamFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
+            if (!String.IsNullOrEmpty(keyword))
+            {
+                clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
+                (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                );
+            }
 
             return clients;
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
-            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             try
             {
                 using var memoryStream = new MemoryStream();
@@ -288,7 +299,7 @@ namespace Service_Billing.Controllers
                     fileName += $"-{authorityFilter}";
                 if (!String.IsNullOrEmpty(teamFilter))
                     fileName += $"-{teamFilter}";
-          
+
 
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".csv";
