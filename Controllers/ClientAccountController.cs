@@ -239,6 +239,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"An exception occurred while trying to fetch graph data: \n {ex.Message}");
                 return new JsonResult(ex.InnerException);
             }
         }
