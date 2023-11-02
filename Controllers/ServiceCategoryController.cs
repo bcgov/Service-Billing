@@ -77,22 +77,36 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-          
-            return View();
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            List<string> busAreas = new List<string>();
+            if (categories != null && categories.Any())
+            {
+                foreach (ServiceCategory category in categories)
+                {
+                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
+                        busAreas.Add(category.GDXBusArea);
+                }
+            }
+            CreateServiceViewModel model = new CreateServiceViewModel();
+            model.BusArea = busAreas;
+
+            return View(model); 
         }
 
         [HttpPost]
-        public IActionResult Create(ServiceCategory serviceCategory)
+        public IActionResult Create(CreateServiceViewModel model)
         {
             try
             {
-               int id = _categoryRepository.Add(serviceCategory);
+               int id = _categoryRepository.Add(model.Service);
             }
             catch (DbUpdateException ex)
             {
-
+                _logger.LogError($"A database update exception occurred: {ex.Message}");
+                
             }
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+
             return View("index", categories);
         }
 
