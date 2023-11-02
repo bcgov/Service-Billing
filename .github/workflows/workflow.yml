@@ -15,5 +15,7 @@ jobs:
         with:
           dotnet-version: 7.x
           
-      - name: Build
-        run: dotnet build
+      - name: Build .NET Core App
+        run: |
+          dotnet restore
+          dotnet build
