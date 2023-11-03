@@ -3,14 +3,37 @@ on:
   push:
     branches:
       - develop
-      
+      - master
+    
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
+      - name: Set environment based on branch
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
+            echo "Setting environment to DEV"
+            export ENVIRONMENT="DEV"
+          elif [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "Setting environment to PROD"
+            export ENVIRONMENT="PROD"
+          fi
+
+      - name: Set environment-specific secrets
+        run: |
+          if [ "${{ ENVIRONMENT }}" = "DEV" ]; then
+            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_DEVELOPMENT }}"
+            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_DEVELOPMENT }}"
+            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_DEVELOPMENT }}"
+          elif [ "${{ ENVIRONMENT }}" = "PROD" ]; then
+            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_PRODUCTION }}"
+            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_PRODUCTION }}"
+            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_PRODUCTION }}"
+          fi
+
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v3
         with:
