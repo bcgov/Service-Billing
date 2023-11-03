@@ -4,41 +4,21 @@ on:
     branches:
       - develop
       - master
-    
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ENVIRONMENT: ${{ github.ref == 'refs/heads/develop' && 'DEV' || github.ref == 'refs/heads/master' && 'PROD' || 'OTHER' }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set environment based on branch
-        run: |
-          if [ "${{ github.ref }}" = "refs/heads/develop" ]; then
-            echo "Setting environment to DEV"
-            export ENVIRONMENT="DEV"
-          elif [ "${{ github.ref }}" = "refs/heads/master" ]; then
-            echo "Setting environment to PROD"
-            export ENVIRONMENT="PROD"
-          fi
-
-      - name: Set environment-specific secrets
-        run: |
-          if [ "${{ ENVIRONMENT }}" = "DEV" ]; then
-            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_DEVELOPMENT }}"
-            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_DEVELOPMENT }}"
-            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_DEVELOPMENT }}"
-          elif [ "${{ ENVIRONMENT }}" = "PROD" ]; then
-            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_PRODUCTION }}"
-            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_PRODUCTION }}"
-            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_PRODUCTION }}"
-          fi
+        uses: actions/checkout@v2
 
       - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 7.x
-          
+
       - name: Build .NET Core App
         run: |
           dotnet restore
@@ -49,13 +29,25 @@ jobs:
         with:
           oc: 4.10
 
+      - name: Set environment-specific secrets
+        run: |
+          if [ "${{ env.ENVIRONMENT }}" == "DEV" ]; then
+            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_DEVELOPMENT }}"
+            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_DEVELOPMENT }}"
+            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_DEVELOPMENT }}"
+          elif [ "${{ env.ENVIRONMENT }}" == "PROD" ]; then
+            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_PRODUCTION }}"
+            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_PRODUCTION }}"
+            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_PRODUCTION }}"
+          fi
+
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
         with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
-          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          openshift_server_url: ${{ env.OPENSHIFT_SERVER }}
+          openshift_token: ${{ env.OPENSHIFT_TOKEN }}
           insecure_skip_tls_verify: true
-          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
 
       - name: Start OpenShift Build
         run: |
