@@ -35,19 +35,7 @@ jobs:
 
       - name: Start OpenShift Build
         run: |
-          oc start-build bc/service-billing
-
-      - name: Wait for Build to Complete
-        run: |
-          STATUS=""
-          while [[ $STATUS != "Complete" ]]; do
-            STATUS=$(oc get build bc/service-billing -o jsonpath='{.status.phase}')
-            if [[ $STATUS == "Failed" ]]; then
-              echo "Build failed. Exiting..."
-              exit 1
-            fi
-            sleep 30
-          done
+          oc start-build bc/service-billing --wait
 
       - name: Rollout latest image
         run: oc rollout latest dc/service-billing
