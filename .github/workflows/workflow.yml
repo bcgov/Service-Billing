@@ -37,6 +37,3 @@ jobs:
       - name: Start OpenShift Build
         run: |
           oc start-build bc/service-billing --wait
-
-      - name: Rollout latest image
-        run: oc rollout latest dc/service-billing
