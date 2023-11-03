@@ -2,7 +2,8 @@ name: CI/CD Workflow
 on:
   push:
     branches:
-      - main
+      - develop
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,5 +16,20 @@ jobs:
         with:
           dotnet-version: 7.x
           
-      - name: Build
-        run: dotnet build
+      - name: Build .NET Core App
+        run: |
+          dotnet restore
+          dotnet build
+
+      - name: Install oc
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: 4.10
+
+      - name: Log in to OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
