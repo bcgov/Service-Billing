@@ -9,6 +9,7 @@ using Service_Billing.Models.Repositories;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Graph.TermStore;
+using Microsoft.Identity.Client;
 
 namespace Service_Billing.Controllers
 {
@@ -221,6 +222,7 @@ namespace Service_Billing.Controllers
         {
             try
             {
+               
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{term}')")
                     .Top(8)
@@ -240,6 +242,8 @@ namespace Service_Billing.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"An exception occurred while trying to fetch graph data: \n {ex.Message}");
+                _logger.LogError($"TokenSource: /n IdentProvider: {TokenSource.IdentityProvider}" +
+                   $" \n:Broker: {TokenSource.Broker} \n  Cache: {TokenSource.Cache}");
                 return new JsonResult(ex.InnerException);
             }
         }

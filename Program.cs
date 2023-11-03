@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using Service_Billing.HostedServices;
 using static Service_Billing.HostedServices.ChargePromotionService;
+using Microsoft.Identity.Web.TokenCacheProviders.Distributed;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -25,7 +26,30 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
     .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
-    .AddInMemoryTokenCaches();
+    .AddDistributedTokenCaches();
+
+builder.Services.Configure<MsalDistributedTokenCacheAdapterOptions>(options =>
+{
+    // Optional: Disable the L1 cache in apps that don't use session affinity
+    //                 by setting DisableL1Cache to 'true'.
+    options.DisableL1Cache = false;
+
+    // Or limit the memory (by default, this is 500 MB)
+    options.L1CacheOptions.SizeLimit = 1024 * 1024 * 1024; // 1 GB
+
+    // You can choose if you encrypt or not encrypt the cache
+    options.Encrypt = false;
+
+    // And you can set eviction policies for the distributed
+    // cache.
+    options.SlidingExpiration = TimeSpan.FromHours(1);
+});
+
+// Then, choose your implementation of distributed cache
+// -----------------------------------------------------
+
+// good for prototyping and testing, but this is NOT persisted and it is NOT distributed - do not use in production
+builder.Services.AddDistributedMemoryCache();
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
@@ -73,14 +97,14 @@ builder.Services
     .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
         options.SaveTokens = true;
-        options.Events = new OpenIdConnectEvents
-        {
-            OnRedirectToIdentityProvider = async ctxt =>
-            {
-                ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
-                await Task.Yield();
-            }
-        };
+        //options.Events = new OpenIdConnectEvents
+        //{
+        //    OnRedirectToIdentityProvider = async ctxt =>
+        //    {
+        //        ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
+        //        await Task.Yield();
+        //    }
+        //};
     });
 
 builder.Services.AddServerSideBlazor()
