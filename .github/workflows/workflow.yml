@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - develop
-
+      
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -33,3 +33,7 @@ jobs:
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
           insecure_skip_tls_verify: true
           namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+
+      - name: Start OpenShift Build
+        run: |
+          oc start-build bc/service-billing --wait
