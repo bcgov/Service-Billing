@@ -3,8 +3,6 @@ on:
   push:
     branches:
       - develop
-
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,3 +32,9 @@ jobs:
           openshift_token: ${{ secrets.OPENSHIFT_TOKEN }}
           insecure_skip_tls_verify: true
           namespace: ${{ secrets.OPENSHIFT_NAMESPACE }}
+
+      - name: Build image
+        run: oc start-build bc/service-billing --follow
+
+      - name: Rollout latest image
+        run: oc rollout latest dc/service-billing --follow
