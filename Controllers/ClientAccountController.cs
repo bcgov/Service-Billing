@@ -10,6 +10,8 @@ using CsvHelper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Graph.TermStore;
 using Microsoft.Identity.Client;
+using static System.Formats.Asn1.AsnWriter;
+using Service_Billing.Graph;
 
 namespace Service_Billing.Controllers
 {
@@ -21,11 +23,13 @@ namespace Service_Billing.Controllers
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
+        private readonly ITokenAcquisition _tokenAcquisition;
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
+            ITokenAcquisition tokenAcquisition,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -37,6 +41,7 @@ namespace Service_Billing.Controllers
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
             _logger = logger;
+            _tokenAcquisition = tokenAcquisition;
         }
 
         // GET: ClientAccountController
@@ -222,12 +227,31 @@ namespace Service_Billing.Controllers
         {
             try
             {
-               
+                GraphServiceClient thisGraphClient = await GraphHelper.GetGraphServiceClient();
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{term}')")
                     .Top(8)
                     .Select("displayName, id")
                     .GetAsync();
+
+                //try
+                //{
+
+                //    string[] scopes = new string[] { "user.read", "user.readbasic.all" };
+                //    string accessToken = await _tokenAcquisition.GetAccessTokenForUserAsync(scopes);
+                //}
+                //catch (MsalUiRequiredException ex)
+                //{
+                //    _logger.LogError("This was logged in the catch block for MsalUiRequiredException");
+                //    _logger.LogError(ex.Message);
+                //    throw;
+                //}
+
+                //var queriedUsers = await _graphServiceClient.Users.Request()
+                //    .Filter($"startswith(displayName, '{term}')")
+                //    .Top(8)
+                //    .Select("displayName, id")
+                //    .GetAsync();
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
