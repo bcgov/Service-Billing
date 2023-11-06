@@ -18,6 +18,7 @@ using Microsoft.Graph;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Net;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -135,9 +136,29 @@ builder.Services
             {
                 ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
                 await Task.Yield();
-            }
+            },
+            OnMessageReceived = async ctxt =>
+            {
+                await Task.Yield();
+            },
+            OnTicketReceived = async ctxt =>
+            {
+                // Invoked after the remote ticket has been received.
+                // Can be used to modify the Principal before it is passed to the Cookie scheme for sign-in.
+                // This example removes all 'groups' claims from the Principal (assuming the AAD app has been configured
+                // with "groupMembershipClaims": "SecurityGroup"). Group memberships can be checked here and turned into
+                // roles, to be persisted in the cookie.
+                if (ctxt.Principal.Identity is ClaimsIdentity identity)
+                {
+                    ctxt.Principal.FindAll(x => x.Type == "groups")
+                        .ToList()
+                        .ForEach(identity.RemoveClaim);
+                }
+                await Task.Yield();
+            },
         };
     });
+
 
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
