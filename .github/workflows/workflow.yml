@@ -3,12 +3,11 @@ on:
   push:
     branches:
       - develop
-      - master
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: ${{ github.ref == 'refs/heads/develop' && 'DEV' || github.ref == 'refs/heads/master' && 'PROD' || 'OTHER' }}
+    environment: 'DEV'
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
