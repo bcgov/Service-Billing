@@ -8,8 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ENVIRONMENT: ${{ github.ref == 'refs/heads/develop' && 'DEV' || github.ref == 'refs/heads/master' && 'PROD' || 'OTHER' }}
+    environment: ${{ github.ref == 'refs/heads/develop' && 'DEV' || github.ref == 'refs/heads/master' && 'PROD' || 'OTHER' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
