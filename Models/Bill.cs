@@ -41,6 +41,7 @@ namespace Service_Billing.Models
 
         public string? AggregateGLCoding { get; set; }
 
+
         public Bill()
         {
             this.Quantity = 1;

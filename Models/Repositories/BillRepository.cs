@@ -249,7 +249,7 @@ namespace Service_Billing.Models.Repositories
 
         IEnumerable<Bill> IBillRepository.GetBillsByClientId(int clientId)
         {
-            throw new NotImplementedException();
+            return _billingContext.Bills.Where(b => b.ClientAccountId == clientId);
         }
 
         IEnumerable<Bill> IBillRepository.GetBillsByDateRange(DateTime start, DateTime end)

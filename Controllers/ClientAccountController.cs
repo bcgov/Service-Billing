@@ -20,6 +20,8 @@ namespace Service_Billing.Controllers
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
+        private readonly IBillRepository _billRepository;
+        private readonly IServiceCategoryRepository _categoryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
@@ -29,6 +31,8 @@ namespace Service_Billing.Controllers
             IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
+            IBillRepository billRepository,
+            IServiceCategoryRepository categoryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -39,6 +43,8 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
+            _billRepository = billRepository;
+            _categoryRepository = categoryRepository;
             _logger = logger;
             _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
         }
@@ -67,8 +73,13 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ViewData["clientTeam"] = team != null ? team : "";
-            return View(account);
+            if(team == null)
+                team = new ClientTeam();
+            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
+            
+            return View(model);
         }
 
         // GET: ClientAccountController/Edit/5
