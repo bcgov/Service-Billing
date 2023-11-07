@@ -116,7 +116,14 @@
                     <td>@Model.CategoryNames[charge.Id]</td>
                     <td>@charge.Amount</td>
                     <td>@charge.StartDate</td>
-                    <td>@charge.EndDate</td>
+                    @if(charge.EndDate == null)
+                    {
+                        <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                    }
+                    else
+                    {
+                        <td>@charge.EndDate</td>
+                    }
                     <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                 </tr>
             }

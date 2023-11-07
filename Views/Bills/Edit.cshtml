@@ -70,6 +70,16 @@
                 <span asp-validation-for="@Model.TicketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="@Model.StartDate" class="control-label"></label>
+                <input asp-for="@Model.StartDate" class="form-control" />
+                <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.EndDate" class="control-label"></label>
+                <input asp-for="@Model.EndDate" class="form-control" />
+                <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="@Model.DateModified" class="control-label"></label>
                 <input asp-for="@Model.DateModified" class="form-control" readonly="true" />
                 <span asp-validation-for="@Model.DateModified" class="text-danger"></span>

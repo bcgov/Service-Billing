@@ -138,6 +138,8 @@
                 <th scope="col">Quantity</th>
                 <th scope="col">UOM</th>
                 <th scope="col">Aggregated Financial Code</th>
+                <th scope="col">Start</th>
+                <th scope="col">End</th>
                 <th scope="col">Expense Authority</th>
                 <th>Details</th>
             </tr>
@@ -204,6 +206,12 @@
                     }
                     <td>
                         @bill.AggregateGLCoding
+                    </td>
+                    <td>
+                        @bill.StartDate
+                    </td>
+                    <td>
+                        @bill.EndDate
                     </td>
                     <td>
                         @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
