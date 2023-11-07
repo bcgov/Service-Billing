@@ -28,18 +28,6 @@ jobs:
         with:
           oc: 4.10
 
-      - name: Set environment-specific secrets
-        run: |
-          if [ "${{ env.ENVIRONMENT }}" == "DEV" ]; then
-            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_DEVELOPMENT }}"
-            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_DEVELOPMENT }}"
-            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_DEVELOPMENT }}"
-          elif [ "${{ env.ENVIRONMENT }}" == "PROD" ]; then
-            export OPENSHIFT_SERVER="${{ secrets.OPENSHIFT_SERVER_PRODUCTION }}"
-            export OPENSHIFT_TOKEN="${{ secrets.OPENSHIFT_TOKEN_PRODUCTION }}"
-            export OPENSHIFT_NAMESPACE="${{ secrets.OPENSHIFT_NAMESPACE_PRODUCTION }}"
-          fi
-
       - name: Log in to OpenShift
         uses: redhat-actions/oc-login@v1
         with:
