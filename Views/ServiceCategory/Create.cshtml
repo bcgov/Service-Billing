@@ -35,7 +35,7 @@
             </div>
             <div class="form-group form-check">
                 <label asp-for="@Model.Service.IsActive" class="control-label"></label>
-                <input class="form-check-input" asp-for="@Model.Service.IsActive" />
+                <input class="form-check-input" asp-for="@Model.Service.IsActive" checked="true" title="Charges for inactive services are not carried over to the next billing cycle, regardless of their UOM" />
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Service.UOM" class="control-label"></label>
