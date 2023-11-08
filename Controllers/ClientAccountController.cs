@@ -8,12 +8,15 @@ using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.Identity.Client;
 using Microsoft.Graph.TermStore;
+using Microsoft.Identity.Abstractions;
 using MailKit.Security;
 using MimeKit;
 using MailKit.Net.Smtp;
 using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
+
 
 namespace Service_Billing.Controllers
 {
@@ -22,15 +25,20 @@ namespace Service_Billing.Controllers
         private readonly IClientAccountRepository _clientAccountRepository;
         private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
+        private readonly IBillRepository _billRepository;
+        private readonly IServiceCategoryRepository _categoryRepository;
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
+        private readonly string[] _graphScopes;
         private readonly IEmailService _emailService;
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
+            IBillRepository billRepository,
+            IServiceCategoryRepository categoryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -42,12 +50,15 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
+            _billRepository = billRepository;
+            _categoryRepository = categoryRepository;
             _logger = logger;
+            _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             _emailService = emailService;
         }
 
         // GET: ClientAccountController
-        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
 
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -57,7 +68,8 @@ namespace Service_Billing.Controllers
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
+            ViewData["Keyword"] = keyword;
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
 
             return View(new ClientAccountViewModel(clients));
         }
@@ -69,8 +81,13 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ViewData["clientTeam"] = team != null ? team : "";
-            return View(account);
+            if(team == null)
+                team = new ClientTeam();
+            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
+            
+            return View(model);
         }
 
         // GET: ClientAccountController/Edit/5
@@ -280,6 +297,9 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"An exception occurred while trying to fetch graph data: \n {ex.Message}");
+                _logger.LogError($"TokenSource: /n IdentProvider: {TokenSource.IdentityProvider}" +
+                   $" \n:Broker: {TokenSource.Broker} \n  Cache: {TokenSource.Cache}");
                 return new JsonResult(ex.InnerException);
             }
         }
@@ -292,7 +312,7 @@ namespace Service_Billing.Controllers
             return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (!String.IsNullOrEmpty(ministryFilter))
@@ -305,14 +325,24 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
             if (!String.IsNullOrEmpty(teamFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
+            if (!String.IsNullOrEmpty(keyword))
+            {
+                clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
+                (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())) ||
+                (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                );
+            }
 
             return clients;
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
+        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
-            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter);
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             try
             {
                 using var memoryStream = new MemoryStream();

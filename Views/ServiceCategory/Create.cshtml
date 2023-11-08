@@ -1,4 +1,4 @@
-﻿@model Service_Billing.Models.ServiceCategory
+﻿@model Service_Billing.ViewModels.CreateServiceViewModel
 
 @{
     ViewData["Title"] = "Create";
@@ -14,46 +14,44 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="GDXBusArea" class="control-label"></label>
-                <input asp-for="GDXBusArea" class="form-control" />
-                <span asp-validation-for="GDXBusArea" class="text-danger"></span>
+                <label asp-for="@Model.Service.GDXBusArea" class="control-label"></label>
+                <input asp-for="@Model.Service.GDXBusArea" class="form-control" id="busArea"/>
+                <span asp-validation-for="@Model.Service.GDXBusArea" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+                <label asp-for="@Model.Service.Name" class="control-label"></label>
+                <input asp-for="@Model.Service.Name" class="form-control" />
+                <span asp-validation-for="@Model.Service.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Costs" class="control-label"></label>
-                <input asp-for="Costs" class="form-control" />
-                <span asp-validation-for="Costs" class="text-danger"></span>
+                <label asp-for="@Model.Service.Costs" class="control-label"></label>
+                <input asp-for="@Model.Service.Costs" class="form-control" />
+                <span asp-validation-for="@Model.Service.Costs" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <label asp-for="@Model.Service.Description" class="control-label"></label>
+                <input asp-for="@Model.Service.Description" class="form-@Model.Service." />
+                <span asp-validation-for="@Model.Service.Description" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
-                <label asp-for="IsActive" class="control-label"></label>
-                <input class="form-check-input" asp-for="IsActive" />
+                <label asp-for="@Model.Service.IsActive" class="control-label"></label>
+                <input class="form-check-input" asp-for="@Model.Service.IsActive" />
             </div>
             <div class="form-group">
-                <label asp-for="UOM" class="control-label"></label>
+                <label asp-for="@Model.Service.UOM" class="control-label"></label>
                 @* <input asp-for="UOM" class="form-control" /> *@
-                <select asp-for="UOM" class="form-control">
+                <select asp-for="@Model.Service.UOM" class="form-control">
                     <option value=""></option>
                     <option value="Month">Month</option>
                     <option value="Hr">Hour</option>
                     <option value="Each">Each</option>
                 </select>
-                <span asp-validation-for="UOM" class="text-danger"></span>
+                <span asp-validation-for="@Model.Service.UOM" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="ServiceOwner" class="control-label"></label>
-                <input asp-for="ServiceOwner" class="form-control" id="owner"/>
-                <div id="ownerSelect">
-                </div>
-                <span asp-validation-for="ServiceOwner" class="text-danger"></span>
+                <label asp-for="@Model.Service.ServiceOwner" class="control-label"></label>
+                <input asp-for="@Model.Service.ServiceOwner" class="form-control" id="owner" />
+                <span asp-validation-for="@Model.Service.ServiceOwner" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -67,19 +65,28 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
 
-<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-<script>
-    $(document).ready(function () {
+    <script>
+        $(document).ready(function () {
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
             $("#owner").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-    });
-</script>
+
+            const busAreas = @Html.Raw(Json.Serialize(Model.BusArea));
+            $("#busArea").autocomplete({
+                source: busAreas,
+                delay: 500
+            });
+        });
+
+    </script>
 }

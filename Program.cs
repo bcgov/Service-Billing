@@ -14,16 +14,72 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using Service_Billing.HostedServices;
 using static Service_Billing.HostedServices.ChargePromotionService;
+using Microsoft.Graph;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using System.Net;
+using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
 
 builder.Services.AddHealthChecks();
 
 // Add services to the container.
 builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    //.AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"))
+    .AddMicrosoftIdentityWebApp(options =>
+    {
+        builder.Configuration.Bind("AzureAd", options);
+
+        // This causes the signin to prompt the user for which
+        // account to use - useful when there are multiple accounts signed
+        // into the browser
+        options.Prompt = "select_account";
+
+        options.Events.OnTokenValidated = async context =>
+        {
+            var tokenAcquisition = context.HttpContext.RequestServices
+                .GetRequiredService<ITokenAcquisition>();
+            string[] scopes = { "user.read", "user.readbasic.all" };
+            var graphClient = new GraphServiceClient(
+                new DelegateAuthenticationProvider(async (request) => {
+                    var token = await tokenAcquisition
+                        .GetAccessTokenForUserAsync(scopes, user: context.Principal);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                })
+            );
+
+
+            // Get the user's photo
+            // If the user doesn't have a photo, this throws
+
+        };
+
+        options.Events.OnAuthenticationFailed = context =>
+        {
+            var error = WebUtility.UrlEncode(context.Exception.Message);
+            context.Response
+                .Redirect($"/Home/ErrorWithMessage?message=Authentication+error&debug={error}");
+            context.HandleResponse();
+
+            return Task.FromResult(0);
+        };
+
+        options.Events.OnRemoteFailure = context =>
+        {
+            if (context.Failure is OpenIdConnectProtocolException)
+            {
+                var error = WebUtility.UrlEncode(context.Failure.Message);
+                context.Response
+                    .Redirect($"/Home/ErrorWithMessage?message=Sign+in+error&debug={error}");
+                context.HandleResponse();
+            }
+
+            return Task.FromResult(0);
+        };
+    })
     .EnableTokenAcquisitionToCallDownstreamApi(initialScopes)
     .AddMicrosoftGraph(builder.Configuration.GetSection("DownstreamAPI"))
     .AddInMemoryTokenCaches();
@@ -90,6 +146,7 @@ builder.Services
 builder.Services.AddServerSideBlazor()
                .AddMicrosoftIdentityConsentHandler();
 
+
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("RequireFinancialOfficerRole",
@@ -98,7 +155,7 @@ builder.Services.AddAuthorization(options =>
         policy => policy.RequireRole("GDXBillingService.Owner"));
     options.AddPolicy("RequireUserRole",
         policy => policy.RequireRole("GDXBillingService.User"));
-});
+}).AddMicrosoftIdentityConsentHandler();
 
 //track session data
 builder.Services.AddDistributedMemoryCache();

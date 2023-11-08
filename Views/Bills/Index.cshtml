@@ -7,10 +7,11 @@
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     bool current = ViewData["Quarter"] == "Current Quarter";
     bool previous = ViewData["Quarter"] == "Previous Quarter";
+    bool next = ViewData["Quarter"] == "Next Quarter";
     bool all = ViewData["Quarter"] == "All Quarters";
 }
 
-<h1>Charges</h1>
+<h1>Service Billing Charges</h1>
 
 @if (!Model.Bills.Any())
 {
@@ -28,7 +29,7 @@
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    <h2>Fiscal Period: @ViewData["Quarter"]</h2>
+    <h2>@ViewData["Quarter"]</h2>
 
     <div class="table-filter-section">
         <form asp-action="Index" method="get">
@@ -41,10 +42,11 @@
                             <select name="quarterFilter">
                                 <option value="current" selected="@current">Current</option>
                                 <option value="previous" selected="@previous">Previous</option>
+                                <option value="next" selected="@next">Next</option>
                                 <option value="all" selected="@all">All</option>
                             </select>
                         </div>
-                        <label for="ministryFilter">Ministry</label>
+                        <label for="ministryFilter">Organization</label>
                         <select name="ministryFilter">
                             <option value="" disabled selected hidden></option>
                             @if (ministries != null)
@@ -68,7 +70,7 @@
                         </select>
                     </div>
                     <div>
-                        <label for="titleFilter">Title</label>
+                        <label for="titleFilter">Program</label>
                         <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
                         <label for="categoryFilter">Service Category</label>
                         <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
@@ -87,8 +89,12 @@
                         </select>
                         <label for="authorityFilter">Expense Authority</label>
                         <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                        <label for="clientNumber">Client #</label>
+                        <label for="clientNumber">GDX Client No.</label>
                         <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
+                        
+                        <label for="keyword">Keyword</label>
+                        <input type="text" name="keyword" value="@ViewData["Keyword"]" />
+
                     </div>
                     <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
                 </div>
@@ -108,19 +114,21 @@
             }
             <div class="export-button">
                 <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
-                @*   @if ((await AuthorizationService.AuthorizeAsync(User, "RequireOwnerRole")).Succeeded)
-                { *@
+                  @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                { 
                 <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
-                @* } *@
+                }
             </div>
         </form>
     </div>
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Client #</th>
-                <th scope="col">Client Name</th>
-                <th scope="col">Title</th>
+                <th scope="col">GDX Client No. and Account Details</th>
+                <th scope="col">GDX Client Name</th>
+                <th scope="col">Program</th>
+                <th scope="col">Fiscal Period</th>
+                <th scope="col">URL or IDIR</th>
                 <th scope="col">Service Category</th>
                 @if (ViewData["Quarter"] == "All Quarters")
                 {
@@ -130,8 +138,10 @@
                 <th scope="col">Unit Price</th>
                 <th scope="col">Quantity</th>
                 <th scope="col">UOM</th>
+                <th scope="col">Aggregated Financial Code</th>
+                <th scope="col">Start</th>
+                <th scope="col">End</th>
                 <th scope="col">Expense Authority</th>
-                <th>Details</th>
             </tr>
         </thead>
         <tbody>
@@ -147,6 +157,8 @@
                     </td>
                     <td>@bill.ClientName</td>
                     <td>@bill.Title</td>
+                    <td>@bill.FiscalPeriod</td>
+                    <td>@bill.IdirOrUrl</td>
                     <td>
                         @{
 
@@ -194,15 +206,19 @@
                         </td>
                     }
                     <td>
+                        @bill.AggregateGLCoding
+                    </td>
+                    <td>
+                        @bill.StartDate
+                    </td>
+                    <td>
+                        @bill.EndDate
+                    </td>
+                    <td>
                         @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
                         {
                             @client.ExpenseAuthorityName
                         }
-                    </td>
-                    <td>
-                        <a asp-controller="Bills"
-                           asp-action="Details"
-                           asp-route-id="@bill.Id">See more</a>
                     </td>
                 </tr>
             }
@@ -212,9 +228,3 @@
 
 </div>
 
-
-<script>
-    function flipMeBool() {
-    @ViewData["MeFilter"] = !@ViewData["MeFilter"];
-    };
-</script>

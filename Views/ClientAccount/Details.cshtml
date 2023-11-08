@@ -1,100 +1,137 @@
-﻿@model Service_Billing.Models.ClientAccount
+﻿@model Service_Billing.ViewModels.ClientDetailsViewModel
 
 @{
     ViewData["Title"] = "Details";
     ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
     var parms = new Dictionary<string, string>
             {
-                { "clientNumber", Model.ClientNumber.ToString() }
+                { "clientNumber", Model.Account.ClientNumber.ToString() }
             };
 }
 
 <h1>Client Account Information</h1>
 
 <div>
-    <h4>@Model.Id-@Model.Name</h4>
+    <h4>@Model.Account.Id-@Model.Account.Name</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
+            @Html.DisplayNameFor(model => model.Account.Name)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
+            @Html.DisplayFor(model => model.Account.Name)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ClientNumber)
+            @Html.DisplayNameFor(model => model.Account.ClientNumber)
         </dt>
         <dd class = "col-sm-10">
             <a asp-controller="Bills"
                asp-action="Index"
                asp-all-route-data="parms"
-            title="See charges associated with this account">@Model.ClientNumber</a>
+            title="See charges associated with this account">@Model.Account.ClientNumber</a>
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ResponsibilityCentre)
+            @Html.DisplayNameFor(model => model.Account.ResponsibilityCentre)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ResponsibilityCentre)
+            @Html.DisplayFor(model => model.Account.ResponsibilityCentre)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ServiceLine)
+            @Html.DisplayNameFor(model => model.Account.ServiceLine)
         </dt>
         <dd class = "col-sm-10">
-            @String.Format("{0:00000}", Model.ServiceLine)
+            @String.Format("{0:00000}", Model.Account.ServiceLine)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.STOB)
+            @Html.DisplayNameFor(model => model.Account.STOB)
         </dt>
         <dd class = "col-sm-10">
-            @String.Format("{0:0000}", Model.STOB)
+            @String.Format("{0:0000}", Model.Account.STOB)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Project)
+            @Html.DisplayNameFor(model => model.Account.Project)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Project)
+            @Html.DisplayFor(model => model.Account.Project)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ExpenseAuthorityName)
+            @Html.DisplayNameFor(model => model.Account.ExpenseAuthorityName)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ExpenseAuthorityName)
+            @Html.DisplayFor(model => model.Account.ExpenseAuthorityName)
         </dd>
         <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ServicesEnabled)
+            @Html.DisplayNameFor(model => model.Account.ServicesEnabled)
         </dt>
         <dd class = "col-sm-10">
-            @if(String.IsNullOrEmpty(Model.ServicesEnabled))
+            @if(String.IsNullOrEmpty(Model.Account.ServicesEnabled))
             {
                 <br/>
             }
             else
             {
-                @Html.DisplayFor(model => model.ServicesEnabled)
+                @Html.DisplayFor(model => model.Account.ServicesEnabled)
             }
         </dd>
         <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.CasClientNumber)
+            @Html.DisplayNameFor(model => model.Account.CasClientNumber)
         </dt>
         <dd class="col-sm-10">
-            @if (Model.CasClientNumber == null || Model.CasClientNumber < 1)
+            @if (Model.Account.CasClientNumber == null || Model.Account.CasClientNumber < 1)
             {
                 <br />
             }
             else
             {
-                @Html.DisplayFor(model => model.CasClientNumber)
+                @Html.DisplayFor(model => model.Account.CasClientNumber)
             }
            
         </dd>
         <dd class="col-sm-10" name="clientTeam">
-            <partial name="_ClientTeam" model="@clientTeam" />
+            <partial name="_ClientTeam" model="@Model.Team" />
         </dd>
+        @* <dd>
+            <partial name="_ClientCharges" model="@Model.Charges" />
+        </dd> *@
 
     </dl>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Service Category</th>
+                <th scope="col">Amount</th>
+              @*   <th scope="col">UOM</th>
+                <th scope="col">Quantity</th> *@
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col">Details</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Bill charge in Model.Charges)
+            {
+                <tr>
+                    <td>@charge.Title</td>
+                    <td>@Model.CategoryNames[charge.Id]</td>
+                    <td>@charge.Amount</td>
+                    <td>@charge.StartDate</td>
+                    @if(charge.EndDate == null)
+                    {
+                        <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                    }
+                    else
+                    {
+                        <td>@charge.EndDate</td>
+                    }
+                    <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
     <a asp-action="Create" asp-controller="Bills">Order a Service</a> |
     <a asp-action="Index">Back to List</a>
 </div>

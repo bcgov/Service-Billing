@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Graph;
 using Service_Billing.Models;
 using System.ComponentModel.DataAnnotations.Schema;
 

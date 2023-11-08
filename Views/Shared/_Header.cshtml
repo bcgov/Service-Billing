@@ -26,7 +26,7 @@
 <nav class="navigation-main" id="navbar">
     <div class="nav-container">
         <ul>
-            @*<li><a href="" class="active">Home</a></li>*@
+            <li>@Html.ActionLink("Home", "Index", "Home")</li>
             <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
             {

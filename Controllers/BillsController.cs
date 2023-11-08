@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
+using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
@@ -42,22 +43,24 @@ namespace Service_Billing.Controllers
             _logger = logger;
         }
 
+        //That's a lot of parameters. Maybe we should pass a JSON object instead.
         public IActionResult Index(string quarterFilter,
             string ministryFilter,
             string titleFilter,
             int categoryFilter,
             string authorityFilter,
-            int clientNumber)
+            int clientNumber,
+            string keyword)
         {
 
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            if(ministries != null && ministries.Any())
+            if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
             }
-            if(categories != null && categories.Any())
+            if (categories != null && categories.Any())
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }
@@ -67,8 +70,9 @@ namespace Service_Billing.Controllers
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ClientNumber"] = clientNumber;
+            ViewData["Keyword"] = keyword;
 
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
 
@@ -175,6 +179,16 @@ namespace Service_Billing.Controllers
                 if (ModelState.IsValid)
                 {
                     _logger.LogInformation($"New charge is valid");
+                    // Add aggregate gl code. 
+                    string aggregateCode = string.Empty;
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    if(account != null)
+                    {
+                        aggregateCode = $"{account.CasClientNumber}.{account.ResponsibilityCentre}." +
+                            $"{account.ServiceLine}.{account.STOB}.{account.Project}";
+                    }
+                    bill.AggregateGLCoding = aggregateCode;
+
                     await _billRepository.CreateBill(bill);
                 }
                 else
@@ -213,7 +227,7 @@ namespace Service_Billing.Controllers
                 string? UOM = !string.IsNullOrEmpty(category.UOM) ? category.UOM : "n/a";
                 RecordEntry recordEntry = new RecordEntry(category.Name, newAmount * quantity);
                 recordEntry.UOM = UOM;
-                
+
                 return new JsonResult(recordEntry);
             }
             catch (Exception ex)
@@ -284,8 +298,8 @@ namespace Service_Billing.Controllers
             try
             {
                 var myName = await _graphServiceClient.Me.Request()
-                    .Select("displayName")
-                    .GetAsync();
+                .Select("displayName")
+                .GetAsync();
 
                 return myName.DisplayName;
             }
@@ -296,11 +310,12 @@ namespace Service_Billing.Controllers
         }
 
         private IEnumerable<Bill> GetFilteredBills(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber,
+        string keyword)
         {
             IEnumerable<Bill> bills;
             switch (quarterFilter)
@@ -314,6 +329,10 @@ namespace Service_Billing.Controllers
                     ViewData["Quarter"] = "Previous Quarter";
                     bills = _billRepository.GetPreviousQuarterBills();
                     break;
+                case "next":
+                    ViewData["Quarter"] = "Next Quarter";
+                    bills = _billRepository.GetNextQuarterBills();
+                    break;
                 case "all":
                     ViewData["Quarter"] = "All Quarters";
                     bills = _billRepository.AllBills;
@@ -321,11 +340,16 @@ namespace Service_Billing.Controllers
             }
             // now filter the results
             if (!string.IsNullOrEmpty(ministryFilter))
-                bills = bills.Where(x => x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
+                bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
             if (!string.IsNullOrEmpty(titleFilter))
-                bills = bills.Where(x => x.Title.ToLower().Contains(titleFilter.ToLower()));
+                bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(titleFilter.ToLower()));
             if (categoryFilter > 0)
                 bills = bills.Where(x => x.ServiceCategoryId == categoryFilter);
+            if (!string.IsNullOrEmpty(keyword))
+                bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(keyword.ToLower())) ||
+                   (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(keyword.ToLower())) ||
+                    (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(keyword.ToLower())) ||
+                    (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(keyword.ToLower())));
             if (!string.IsNullOrEmpty(authorityFilter))
             {
                 List<Bill> filteredBills = new List<Bill>();
@@ -351,13 +375,14 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         public async Task<IActionResult> WriteToCSV(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber,
+        string keyword)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
             try
             {
                 using var memoryStream = new MemoryStream();
@@ -402,13 +427,14 @@ namespace Service_Billing.Controllers
         }
 
         public async Task<IActionResult> ShowReport(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber,
+        string keyword)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try
             {
@@ -442,13 +468,14 @@ namespace Service_Billing.Controllers
 
         [HttpGet]
         public async Task<IActionResult> ReportToCSV(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber)
+        string ministryFilter,
+        string titleFilter,
+        int categoryFilter,
+        string authorityFilter,
+        int clientNumber,
+        string keyword)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber);
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
             SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;
@@ -460,9 +487,9 @@ namespace Service_Billing.Controllers
             }
 
             var summedTotal = new List<object>
-            {
-                new { Id = "Grand Total", Name = total },
-            };
+{
+new { Id = "Grand Total", Name = total },
+};
             using var memoryStream = new MemoryStream();
             using (var streamWriter = new StreamWriter(memoryStream))
             {
