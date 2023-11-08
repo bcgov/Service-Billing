@@ -136,14 +136,17 @@ namespace Service_Billing.Models.Repositories
         {
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
             List<int> fixedServiceIds = serviceCategories.Where(x => !String.IsNullOrEmpty(x.UOM)
-            && x.UOM.ToLower() == "month").Select(x => x.ServiceId).ToList();
+            && x.UOM.ToLower() == "month"
+            && x.IsActive)
+                .Select(x => x.ServiceId).ToList();
 
             return fixedServiceIds;
         }
         public List<int> GetOneTimeServices()
         {
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
-            List<int> oneTimeServiceIds = serviceCategories.Where(x => x.UOM == null || x.UOM.ToLower() != "month")
+            List<int> oneTimeServiceIds = serviceCategories.Where(x => x.UOM == null || x.UOM.ToLower() != "month"
+            && x.IsActive)
                .Select(x => x.ServiceId).ToList();
 
             return oneTimeServiceIds;
