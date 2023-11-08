@@ -8,7 +8,7 @@
     string threeFmt = "000";
 }
 
-<h1>Client Account info</h1>
+<h1>Manage Client Account Information</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
@@ -20,7 +20,7 @@
                     <legend>Filter by...</legend>
                     <div class="ui-section">
                         <div>
-                            <label for="ministryFilter">Ministry</label>
+                            <label for="ministryFilter">Organization</label>
                             <select name="ministryFilter">
                                 <option value="" disabled selected hidden></option>
                                 @if (ministries != null)
@@ -42,16 +42,16 @@
                                     }
                                 }
                             </select>
-                            <label for="numberFilter">Client #</label>
+                            <label for="numberFilter">GDX Client No.</label>
                             <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" />
                         </div>
                         <div>
-                            <label for="authorityFilter">Responsibility Centre</label>
-                            <input type="text" name="responsibilityFilter" value="@ViewData["ResponsibilityFilter"]" />
                             <label for="authorityFilter">Expense Authority</label>
                             <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                            <label for="authorityFilter">Team Name</label>
-                            <input type="text" name="teamFilter" value="@ViewData["TeamFilter"]" />
+                         @*    <label for="servicesEnabled">Services Enabled</label>
+                            <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
+                            @*    <label for="notes">Notes</label>
+                        <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
                             <label for="keyword">Keyword</label>
                             <input type="text" name="keyword" value="@ViewData["Keyword"]" />
                         </div>
@@ -79,13 +79,11 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Client #</th>
-                <th scope="col">CAS Client #</th>
-                <th scope="col">Responsibility Centre</th>
+                <th scope="col">GDX Client No. and Account Details</th>
+                <th scope="col">GDX Client Name</th>
                 <th scope="col">Expense Authority</th>
+                <th scope="col">Primary Contact</th>
                 <th scope="col">Client Team</th>
-                <th scope="col">Details</th>
             </tr>
         </thead>
         <tbody>
@@ -95,7 +93,13 @@
             {
             { "clientNumber",  account.ClientNumber.ToString()}
             };
+
                 <tr>
+                    <td>
+                        <a asp-controller="ClientAccount"
+                           asp-action="Details"
+                           asp-route-id="@account.Id">@account.ClientNumber</a>
+                    </td>
                     <td>@account.Name</td>
                     <td>
                         <a asp-controller="Bills"
@@ -103,23 +107,11 @@
                            asp-all-route-data="parms"
                            title="See charges associated with this account">@String.Format("{0:0000}", account.ClientNumber)</a>
                     </td>
-                    @if (account.CasClientNumber != null && account.CasClientNumber > 0)
-                    {
-                        <td>@String.Format("{0:00}", account.CasClientNumber)</td>
-                    }
-                    else
-                    {
-                        <td></td>
-                    }
-
-                    <td>@account.ResponsibilityCentre</td>
+                    
                     <td>@account.ExpenseAuthorityName</td>
+                    <td>@Model.PrimaryContacts[account.Id]</td>
                     <td>@account.ClientTeam</td>
-                    <td>
-                        <a asp-controller="ClientAccount"
-                           asp-action="Details"
-                           asp-route-id="@account.Id">See more</a>
-                    </td>
+                    
                 </tr>
             }
         </tbody>
