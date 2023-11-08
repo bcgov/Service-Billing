@@ -50,7 +50,7 @@ namespace Service_Billing.Models.Repositories
             userTeams.AddRange(_context.ClientTeams.Where(x => x.Approver == contactName));
             List<ClientAccount> accounts = new List<ClientAccount>();
 
-            foreach(ClientTeam team in userTeams)
+            foreach (ClientTeam team in userTeams)
             {
                 accounts.AddRange(GetAll().Where(x => x.TeamId == team.Id));
             }
@@ -64,6 +64,11 @@ namespace Service_Billing.Models.Repositories
             _context.SaveChanges(true);
         }
 
-
+        public void Approve(ClientAccount account)
+        {
+            account.IsApprovedByEA = true;
+            _context.Update(account);
+            _context.SaveChanges(true);
+        }
     }
 }

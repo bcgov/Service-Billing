@@ -9,6 +9,11 @@ using Service_Billing.Models.Repositories;
 using CsvHelper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Graph.TermStore;
+using MailKit.Security;
+using MimeKit;
+using MailKit.Net.Smtp;
+using Microsoft.Identity.Client;
+using Service_Billing.Services.Email;
 
 namespace Service_Billing.Controllers
 {
@@ -20,6 +25,7 @@ namespace Service_Billing.Controllers
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
+        private readonly IEmailService _emailService;
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
@@ -27,7 +33,8 @@ namespace Service_Billing.Controllers
             IMinistryRepository ministryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
-                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
+                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
+                            IEmailService emailService)
         {
             _graphServiceClient = graphServiceClient;
             _consentHandler = consentHandler;
@@ -36,12 +43,13 @@ namespace Service_Billing.Controllers
             _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
             _logger = logger;
+            _emailService = emailService;
         }
 
         // GET: ClientAccountController
         public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter)
         {
-            
+
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ViewData["MinistryFilter"] = ministryFilter;
@@ -69,13 +77,13 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
-            
+
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ClientIntakeViewModel model = new ClientIntakeViewModel();
             model.Account = account;
-            if(team != null)
+            if (team != null)
             {
                 model.Team = team;
             }
@@ -97,9 +105,9 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    if(model.Team != null)
+                    if (model.Team != null)
                     {
-                        if(model.Team.Id == 0)
+                        if (model.Team.Id == 0)
                         {
                             model.Team.Name = $"{model.Account.Name} Team";
                             model.Account.TeamId = _clientTeamRepository.Add(model.Team);
@@ -113,15 +121,15 @@ namespace Service_Billing.Controllers
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
-                    return View("Details", model.Account); 
+                    return View("Details", model.Account);
                 }
-                catch(DbUpdateException ex)
+                catch (DbUpdateException ex)
                 {
                     _logger.LogError($"An error occurred while updating client account number {model.Account.Id}. Inner Exception: {ex.InnerException}");
                     _logger.LogError(ex.Message);
                 }
             }
-                return View(model);
+            return View(model);
         }
 
         // GET: ClientAccountController/Delete/5
@@ -155,7 +163,7 @@ namespace Service_Billing.Controllers
             model.Account.ClientNumber = GetNextClientNumber();
             return View(model);
         }
-     
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
@@ -170,16 +178,22 @@ namespace Service_Billing.Controllers
                     string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                     model.Account.Name = accountName;
                     ClientAccount account = model.Account;
-                    if(model.Team != null)
+                    if (model.Team != null)
                     {
                         ClientTeam team = model.Team;
                         team.Name = $"{model.Account.Name} Team";
                         int teamId = _clientTeamRepository.Add(team);
                         account.TeamId = teamId;
                         account.ClientTeam = team.Name;
+                        account.IsApprovedByEA = false;
                     }
                     _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
+
                     int accountId = _clientAccountRepository.AddClientAccount(account);
+                    var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
+                    await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                        "New account created",
+                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
                 }
                 else
                 {
@@ -191,7 +205,7 @@ namespace Service_Billing.Controllers
                 _logger.LogError($"Error adding client account to DB. Inner Exception: {ex.InnerException}");
                 return View(new ClientIntakeViewModel());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
@@ -212,6 +226,34 @@ namespace Service_Billing.Controllers
             }
 
             return ret;
+        }
+
+        public ActionResult Approve(int id)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Approve(int id, IFormCollection collection)
+        {
+            try
+            {
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+                if (account == null)
+                    return NotFound();
+                _clientAccountRepository.Approve(account);
+
+                await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                      $"Account {id} approved",
+                       $"<p>Account {id} has been approved.</p>");
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
         }
 
         [HttpGet]
@@ -288,7 +330,7 @@ namespace Service_Billing.Controllers
                     fileName += $"-{authorityFilter}";
                 if (!String.IsNullOrEmpty(teamFilter))
                     fileName += $"-{teamFilter}";
-          
+
 
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".csv";

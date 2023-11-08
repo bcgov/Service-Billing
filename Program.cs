@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
 using Service_Billing.HostedServices;
 using static Service_Billing.HostedServices.ChargePromotionService;
+using Service_Billing.Services.Email;
 
 var builder = WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -51,9 +52,12 @@ builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
+
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddMvc();
 
