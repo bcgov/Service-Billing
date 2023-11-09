@@ -11,8 +11,7 @@ namespace Service_Billing.Models.Repositories
         {
             _billingContext = billingContext;
         }
-        public IEnumerable<ClientTeam> AllTeams => _billingContext.ClientTeams.OrderBy(b => b.Name);
-
+        public IEnumerable<ClientTeam> AllTeams => _billingContext.ClientTeams;
         public ClientTeam? GetTeamById(int? id)
         {
             if (id == null) return null;
