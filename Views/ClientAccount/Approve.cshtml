@@ -1,0 +1,10 @@
+﻿<h2>Approve this account?</h2>
+
+<p>
+    Are you sure you want to approve this account?
+</p>
+
+<form asp-action="Approve" method="post">
+    @Html.AntiForgeryToken()
+    <button type="submit" class="btn btn-primary">Approve</button>
+</form>

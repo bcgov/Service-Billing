@@ -11,6 +11,11 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Identity.Client;
 using Microsoft.Graph.TermStore;
 using Microsoft.Identity.Abstractions;
+using MailKit.Security;
+using MimeKit;
+using MailKit.Net.Smtp;
+using Microsoft.Identity.Client;
+using Service_Billing.Services.Email;
 
 
 namespace Service_Billing.Controllers
@@ -26,6 +31,7 @@ namespace Service_Billing.Controllers
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
         private readonly string[] _graphScopes;
+        private readonly IEmailService _emailService;
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
@@ -35,7 +41,8 @@ namespace Service_Billing.Controllers
             IServiceCategoryRepository categoryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
-                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
+                            MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
+                            IEmailService emailService)
         {
             _graphServiceClient = graphServiceClient;
             _consentHandler = consentHandler;
@@ -47,6 +54,7 @@ namespace Service_Billing.Controllers
             _categoryRepository = categoryRepository;
             _logger = logger;
             _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
+            _emailService = emailService;
         }
 
         // GET: ClientAccountController
@@ -195,9 +203,15 @@ namespace Service_Billing.Controllers
                         int teamId = _clientTeamRepository.Add(team);
                         account.TeamId = teamId;
                         account.ClientTeam = team.Name;
+                        account.IsApprovedByEA = false;
                     }
                     _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
+
                     int accountId = _clientAccountRepository.AddClientAccount(account);
+                    var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
+                    await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                        "New account created",
+                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
                 }
                 else
                 {
@@ -230,6 +244,34 @@ namespace Service_Billing.Controllers
             }
 
             return ret;
+        }
+
+        public ActionResult Approve(int id)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Approve(int id, IFormCollection collection)
+        {
+            try
+            {
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+                if (account == null)
+                    return NotFound();
+                _clientAccountRepository.Approve(account);
+
+                await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                      $"Account {id} approved",
+                       $"<p>Account {id} has been approved.</p>");
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
         }
 
         [HttpGet]
