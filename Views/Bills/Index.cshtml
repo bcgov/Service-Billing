@@ -91,7 +91,7 @@
                         <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
                         <label for="clientNumber">GDX Client No.</label>
                         <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
-                        
+
                         <label for="keyword">Keyword</label>
                         <input type="text" name="keyword" value="@ViewData["Keyword"]" />
 
@@ -114,9 +114,9 @@
             }
             <div class="export-button">
                 <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
-                  @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-                { 
-                <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                {
+                    <input type="submit" value="Run Report" formaction="Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                 }
             </div>
         </form>

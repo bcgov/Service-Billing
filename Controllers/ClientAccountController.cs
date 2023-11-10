@@ -60,7 +60,8 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
-
+            // TODO: Add filtering options or Services Enabled and Notes
+            // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ViewData["MinistryFilter"] = ministryFilter;
@@ -70,8 +71,8 @@ namespace Service_Billing.Controllers
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-
-            return View(new ClientAccountViewModel(clients));
+            IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
+            return View(new ClientAccountViewModel(clients, teams));
         }
 
         // GET: ClientAccountController/Details/5
@@ -309,7 +310,7 @@ namespace Service_Billing.Controllers
             User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
             IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
 
-            return View("Index", new ClientAccountViewModel(currentUserAccounts));
+            return View("Index", new ClientAccountViewModel(currentUserAccounts, null));
         }
 
         private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
