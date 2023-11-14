@@ -254,11 +254,22 @@ namespace Service_Billing.Controllers
 
                 return new JsonResult(contacts);
             }
+            catch(ServiceException svcex)
+            {
+                _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
+                _logger.LogWarning(svcex.Message);
+                string claimChallenge = WwwAuthenticateParameters.GetClaimChallengeFromResponseHeaders(svcex.ResponseHeaders);
+                _logger.LogInformation(claimChallenge);
+                string[] scopes = { "user.readbasic", "user.readbasic.all" };
+                _consentHandler.ChallengeUser(scopes, claimChallenge);
+                return new EmptyResult();
+            }
             catch (Exception ex)
             {
                 _logger.LogError($"An exception occurred while trying to fetch graph data: \n {ex.Message}");
                 _logger.LogError($"TokenSource: /n IdentProvider: {TokenSource.IdentityProvider}" +
                    $" \n:Broker: {TokenSource.Broker} \n  Cache: {TokenSource.Cache}");
+                _consentHandler.HandleException(ex);
                 return new JsonResult(ex.InnerException);
             }
         }
