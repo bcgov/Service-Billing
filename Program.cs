@@ -18,6 +18,7 @@ using Microsoft.Graph;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Net;
 using System.Net.Http.Headers;
+using Service_Billing.Services.Email;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -53,7 +54,7 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
 
             // Get the user's photo
             // If the user doesn't have a photo, this throws
-          
+
         };
 
         options.Events.OnAuthenticationFailed = context =>
@@ -107,9 +108,12 @@ builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
+
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddMvc();
 
@@ -187,7 +191,7 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ServiceBillingContext>();
-    //await context.Database.MigrateAsync();
+    await context.Database.MigrateAsync();
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
     //DbInitializer.SeedTeams(context);

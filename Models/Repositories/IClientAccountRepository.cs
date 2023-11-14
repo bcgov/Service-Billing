@@ -9,5 +9,6 @@
         int GetClientIdFromClientNumber(int clientNumber);
         IEnumerable<ClientAccount> GetAccountsByContactName(string contactName);
         void Update(ClientAccount account);
+        void Approve(ClientAccount account);
     }
 }
