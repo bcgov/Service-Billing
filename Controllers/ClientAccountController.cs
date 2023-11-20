@@ -329,7 +329,7 @@ namespace Service_Billing.Controllers
             if (!String.IsNullOrEmpty(ministryFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter));
             if (numberFilter > 0)
-                clients = clients.Where(x => x.ClientNumber == numberFilter).ToList();
+                clients = clients.Where(x => x.Id == numberFilter).ToList();
             if (!String.IsNullOrEmpty(responsibilityFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
             if (!String.IsNullOrEmpty(authorityFilter))
