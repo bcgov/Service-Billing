@@ -184,7 +184,7 @@ namespace Service_Billing.Controllers
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                     if(account != null)
                     {
-                        aggregateCode = $"{account.CasClientNumber}.{account.ResponsibilityCentre}." +
+                        aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
                             $"{account.ServiceLine}.{account.STOB}.{account.Project}";
                     }
                     bill.AggregateGLCoding = aggregateCode;

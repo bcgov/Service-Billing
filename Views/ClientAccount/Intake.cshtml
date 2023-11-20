@@ -38,8 +38,8 @@
                 <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label class="control-label">Client Account Number</label>
-                <input asp-for="@Model.Account.ClientNumber" class="form-group" ReadOnly="true" />
+                <label class="control-label">CAS Client Number</label>
+                <input asp-for="@Model.Account.ClientNumber" class="form-group" />
                 <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group" id="intake-contacts">
@@ -88,11 +88,6 @@
                 <label asp-for="@Model.Account.Project" class="control-label">CAS Project Number</label>
                 <input asp-for="@Model.Account.Project" class="form-control" />
                 <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="@Model.Account.CasClientNumber" class="control-label">CAS Client Number</label>
-                <input asp-for="@Model.Account.CasClientNumber" class="form-control" minlength="3" maxlength="3" id="casClientNumber" />
-                <span asp-validation-for="@Model.Account.CasClientNumber" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.IsApprovedByEA">Active</label>

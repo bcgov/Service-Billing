@@ -178,7 +178,7 @@ namespace Service_Billing.Controllers
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
             ClientIntakeViewModel model = new ClientIntakeViewModel();
-            model.Account.ClientNumber = GetNextClientNumber();
+
             return View(model);
         }
 
@@ -215,7 +215,7 @@ namespace Service_Billing.Controllers
                 }
                 else
                 {
-                    return View(model);
+                    return View();
                 }
             }
             catch (DbUpdateException ex)
@@ -228,7 +228,7 @@ namespace Service_Billing.Controllers
                 _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
 
-            return RedirectToAction(nameof(Index));
+            return View("details", model.Account.Id);
         }
 
         private short GetNextClientNumber()

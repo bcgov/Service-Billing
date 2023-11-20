@@ -81,6 +81,7 @@
             <tr>
                 <th scope="col">GDX Client No. and Account Details</th>
                 <th scope="col">GDX Client Name</th>
+                <th scope="col">CAS Client No.</th>
                 <th scope="col">Expense Authority</th>
                 <th scope="col">Primary Contact</th>
                 <th scope="col">Client Team</th>
@@ -98,7 +99,7 @@
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
-                           asp-route-id="@account.Id">@account.ClientNumber</a>
+                           asp-route-id="@account.Id">@account.Id</a>
                     </td>
                     <td>@account.Name</td>
                     <td>
