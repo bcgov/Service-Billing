@@ -17,5 +17,6 @@ namespace Service_Billing.Models.Repositories
         IEnumerable<Bill> GetNextQuarterBills();
         Task CreateBill(Bill bill);
         Task PromoteChargesToNewQuarter();
+        Task Update(Bill bill);
     }
 }

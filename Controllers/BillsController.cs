@@ -118,29 +118,13 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, IFormCollection collection)
+        public async Task<IActionResult> Edit(Bill bill)
         {
-            Bill? billToUpdate = _billRepository.GetBill(id);
-            if (billToUpdate == null)
-            {
-                return NotFound();
-            }
-            if (await TryUpdateModelAsync<Bill>(billToUpdate, "",
-                b => b.ClientAccountId,
-                b => b.ClientName,
-                b => b.Title,
-                b => b.IdirOrUrl,
-                b => b.ServiceCategoryId,
-                b => b.Amount,
-                b => b.Quantity,
-                b => b.TicketNumberAndRequester,
-                b => b.DateModified,
-                b => b.CreatedBy
-                ))
-            {
+            
                 try
                 {
-                    await _billRepository.CreateBill(billToUpdate);
+                    await _billRepository.Update(bill);
+                    return View("details", bill);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -152,9 +136,6 @@ namespace Service_Billing.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-
-            return Details(id);
-        }
 
         [HttpGet]
         public async Task<ActionResult> Create()

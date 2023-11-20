@@ -271,5 +271,11 @@ namespace Service_Billing.Models.Repositories
             await _billingContext.SaveChangesAsync();
         }
 
+        public async Task Update(Bill bill)
+        {
+            _billingContext.Update(bill);
+            await _billingContext.SaveChangesAsync();
+        }
+
     }
 }
