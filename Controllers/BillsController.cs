@@ -389,7 +389,36 @@ namespace Service_Billing.Controllers
                 using (var streamWriter = new StreamWriter(memoryStream))
                 {
                     using var csvWriter = new CsvWriter(streamWriter);
-                    csvWriter.WriteRecords(bills);
+                    csvWriter.WriteHeader<ChargeRow>();
+                    csvWriter.NextRecord();
+                    foreach (Bill bill in bills)
+                    {
+                        ServiceCategory serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                        ClientAccount account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                        ChargeRow row = new ChargeRow();
+                        row.ClientName = bill.ClientName;
+                        row.Program = bill.Title;
+                        if(serviceCategory != null)
+                        {
+                            row.GDXBusArea = serviceCategory.GDXBusArea;
+                            row.ServiceCategory = serviceCategory.Name;
+                        }
+                        row.TicketNumber = bill.TicketNumberAndRequester;
+                        row.Amount = bill.Amount;
+                        row.Quantity = bill.Quantity;
+                        row.Created = bill.DateCreated;
+                        row.Start = bill.StartDate;
+                        row.End = bill.EndDate;
+                        row.CreatedBy = bill.CreatedBy;
+                        row.AggregateGLCode = bill.AggregateGLCoding;
+                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                            row.ExpenseAuthority = account.ExpenseAuthorityName;
+
+                        csvWriter.WriteRecord(row);
+                        csvWriter.NextRecord();
+                    }
+                
+                  //  csvWriter.WriteRecords(bills);
                 }
                 string fileName = "Charges";
                 if (!string.IsNullOrEmpty(quarterFilter))
@@ -535,6 +564,29 @@ new { Id = "Grand Total", Name = total },
         }
     }
 
+    // For exporting (filtered) charges from the Index view
+    public class ChargeRow
+    {
+        public string? ClientName { get; set; }
+        public string? Program { get; set; } //"Title"
+        public string? IdirOrURL { get; set; }
+        public string? GDXBusArea { get; set; }
+        public string? ServiceCategory { get; set; }
+        public Decimal? Amount { get; set; }
+        public string? FiscalPeriod { get; set; }
+        public Decimal? Quantity { get; set; }
+        public string? TicketNumber { get; set; }
+        public DateTime? Created { get; set; }
+        public DateTime? Start { get; set; }
+        public DateTime? End { get; set; }
+        public DateTime? Cycle { get; set; }
+        public string? AggregateGLCode { get; set; }
+        public string? CreatedBy { get; set; }
+        public string? ExpenseAuthority { get; set; }
+    }
+
+
+    // For creating the exported quarterly reports. 
     public class RecordEntry
     {
         public string ServiceCategory { get; set; }

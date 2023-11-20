@@ -300,10 +300,9 @@ namespace Service_Billing.Controllers
             {
                 _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
                 _logger.LogWarning(svcex.Message);
-                string claimChallenge = WwwAuthenticateParameters.GetClaimChallengeFromResponseHeaders(svcex.ResponseHeaders);
-                _logger.LogInformation(claimChallenge);
+         
                 string[] scopes = { "user.readbasic", "user.readbasic.all" };
-                _consentHandler.ChallengeUser(scopes, claimChallenge);
+                _consentHandler.ChallengeUser(scopes);
                 return new EmptyResult();
             }
             catch (Exception ex)
