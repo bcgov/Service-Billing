@@ -9,7 +9,7 @@
 <h1>Details</h1>
 
 <div>
-    <h4>Charge</h4>
+    <h4>@Model.Id - @Model.Title</h4>
     <hr />
     <dl class="row">
         <dt class = "col-sm-2">
@@ -22,6 +22,12 @@
                    asp-action="Details"
                    asp-route-id="@clientAccount.Id">@clientAccount.Name</a>
             }
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Id)
         </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.Title)
@@ -130,6 +136,12 @@
             {
                 <br />
             }
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.AggregateGLCoding)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AggregateGLCoding)
         </dd>
     </dl>
 </div>

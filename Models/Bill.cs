@@ -39,7 +39,6 @@ namespace Service_Billing.Models
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
 
-        [NotMapped]
         public string? AggregateGLCoding { get; set; }
 
 
