@@ -301,7 +301,7 @@ namespace Service_Billing.Controllers
                 _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
                 _logger.LogWarning(svcex.Message);
          
-                string[] scopes = { "user.readbasic", "user.readbasic.all" };
+                string[] scopes = { "user.read", "user.readbasic.all" };
                 _consentHandler.ChallengeUser(scopes);
                 return new EmptyResult();
             }

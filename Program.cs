@@ -133,14 +133,14 @@ builder.Services
     .Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
         options.SaveTokens = true;
-        options.Events = new OpenIdConnectEvents
-        {
-            OnRedirectToIdentityProvider = async ctxt =>
-            {
-                ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
-                await Task.Yield();
-            }
-        };
+        //options.Events = new OpenIdConnectEvents
+        //{
+        //    OnRedirectToIdentityProvider = async ctxt =>
+        //    {
+        //        ctxt.ProtocolMessage.RedirectUri = builder.Configuration["RuntimeAdRedirectUri"];
+        //        await Task.Yield();
+        //    }
+        //};
     });
 
 builder.Services.AddServerSideBlazor()
