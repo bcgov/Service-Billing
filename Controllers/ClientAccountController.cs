@@ -238,7 +238,10 @@ namespace Service_Billing.Controllers
                 _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
 
-            return View("details", model.Account.Id);
+            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
+            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+            return View("details", detailsModel);
         }
 
         private short GetNextClientNumber()
