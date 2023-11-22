@@ -163,7 +163,8 @@ namespace Service_Billing.Models.Repositories
 
             await _billingContext.Bills.Where(b => b.ServiceCategoryId != null 
             && fixedServiceIds.Contains((int)b.ServiceCategoryId)
-            && (b.EndDate == null || b.EndDate > quarterStart))
+            && (b.EndDate == null || b.EndDate > quarterStart) 
+            && b.IsActive)
                 .ExecuteUpdateAsync(b => b.SetProperty(x => x.FiscalPeriod, newQuarter));
 
             await _billingContext.SaveChangesAsync();

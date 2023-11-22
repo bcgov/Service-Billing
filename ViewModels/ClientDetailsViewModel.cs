@@ -7,6 +7,8 @@ namespace Service_Billing.ViewModels
         public ClientAccount Account { get; set; }
         public ClientTeam? Team { get; set; }
         public IEnumerable<Bill> Charges { get; set; }
+
+        public IEnumerable<Bill> InactiveCharges { get; set; }
         public IEnumerable<ServiceCategory> Categories { get; set; }
 
         public Dictionary<int, string> CategoryNames { get; set; }
@@ -18,6 +20,7 @@ namespace Service_Billing.ViewModels
             Categories = categories;
             CategoryNames = new Dictionary<int, string>();
             BuildCategoriesDict();
+            InactiveCharges = Charges.Where(x => x.IsActive == false).ToList();
         }
 
         private void BuildCategoriesDict()

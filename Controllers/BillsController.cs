@@ -519,7 +519,22 @@ new { Id = "Grand Total", Name = total },
 
             return Ok(200);
         }
-
+        [HttpPost]
+        public async Task<IActionResult> SetIsActiveForCharge(int id, bool active)
+        {
+            Bill? charge = _billRepository.GetBill(id);
+            if (charge != null)
+            {
+                charge.IsActive = active;
+                await _billRepository.Update(charge);
+            }
+            else
+            {
+                _logger.LogError($"Admin user tried to deactivate bill with id {id}, but it was not found in database");
+                return BadRequest();
+            }
+            return Ok(200);
+        }
         private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
         {
             SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();

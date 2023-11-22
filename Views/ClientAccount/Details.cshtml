@@ -8,6 +8,8 @@
                 { "clientNumber", Model.Account.ClientNumber.ToString() }
             };
 }
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 
 <h1>Client Account Information</h1>
 
@@ -97,27 +99,150 @@
         <tbody>
             @foreach (Bill charge in Model.Charges)
             {
-                <tr>
-                    <td>@charge.Title</td>
-                    <td>@Model.CategoryNames[charge.Id]</td>
-                    <td>@charge.Amount</td>
-                    <td>@charge.StartDate</td>
-                    @if(charge.EndDate == null)
-                    {
-                        <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
-                    }
-                    else
-                    {
-                        <td>@charge.EndDate</td>
-                    }
-                    <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                @if (charge.IsActive)
+                {
+
+
+                    <tr>
+                        <td>@charge.Title</td>
+                        <td>@Model.CategoryNames[charge.Id]</td>
+                        <td>@charge.Amount</td>
+                        <td>@charge.StartDate</td>
+                        @if (charge.EndDate == null)
+                        {
+                            <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                        }
+                        else
+                        {
+                            <td>@charge.EndDate</td>
+                        }
+                        <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                        {
+                            <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
+                        }
                 </tr>
+                }
             }
         </tbody>
     </table>
+    @if(Model.InactiveCharges.Any())
+    {
+        <h4>Inactive Charges</h4>
+        <p>These are old or cancelled charges, and are not factored into quarterly reporting.</p>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Service Category</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col">End Date</th>
+                    <th scope="col">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+        @foreach (Bill charge in Model.InactiveCharges)
+            {
+
+                    <tr>
+                        <td>@charge.Title</td>
+                        <td>@Model.CategoryNames[charge.Id]</td>
+                        <td>@charge.Amount</td>
+                        <td>@charge.StartDate</td>
+                        @if (charge.EndDate == null)
+                        {
+                            <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                        }
+                        else
+                        {
+                            <td>@charge.EndDate</td>
+                        }
+                        <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                        {
+                            <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivate(@charge.Id)" /></td>
+                        }
+                </tr>
+                
+            }
+        </tbody>
+    </table>
+    }
 </div>
 <div>
     <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
     <a asp-action="Create" asp-controller="Bills">Order a Service</a> |
     <a asp-action="Index">Back to List</a>
 </div>
+
+<div id="dialog" title="Set this charge to Inactive?">
+    <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>
+</div>
+<div id="reactivate-dialog" title="Reactivate this charge?">
+    <p>This charge will be made active. It will be counted in quarterly reporting, and included in future billing cycles if appropriate.</p>
+</div>
+
+@section Scripts
+{
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+
+    <script>
+        $(function () {
+            $("#dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Set Inactive": function () {
+                        $(this).dialog("close");
+                        setIsActiveForCharge($(this).dialog("option", "id"), false);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        const confirmInactive = ((val) => {
+            $("#dialog").dialog("option", "id", val);
+            $("#dialog").dialog("open");
+        });
+
+        const setIsActiveForCharge = ((id, active) => {
+            var url = "../../Bills/SetIsActiveForCharge?id=" + id + "&active=" + active;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    
+                    window.location.reload();
+                }
+            };
+            xhr.open('post', url);
+            xhr.send();
+        });
+
+        $(function () {
+            $("#reactivate-dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Reactivate": function () {
+                        $(this).dialog("close");
+                        setIsActiveForCharge($(this).dialog("option", "id"), true);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        const confirmReactivate = ((val) => {
+            $("#reactivate-dialog").dialog("option", "id", val);
+            $("#reactivate-dialog").dialog("open");
+        });
+    </script>
+}

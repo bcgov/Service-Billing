@@ -16,7 +16,7 @@ using MimeKit;
 using MailKit.Net.Smtp;
 using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
-
+using Microsoft.AspNetCore.Authorization;
 
 namespace Service_Billing.Controllers
 {
@@ -33,6 +33,7 @@ namespace Service_Billing.Controllers
         private readonly string[] _graphScopes;
         private readonly IEmailService _emailService;
 
+        
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
@@ -58,6 +59,8 @@ namespace Service_Billing.Controllers
         }
 
         // GET: ClientAccountController
+        [Authorize]
+        [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
         public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             // TODO: Add filtering options or Services Enabled and Notes
@@ -76,6 +79,7 @@ namespace Service_Billing.Controllers
         }
 
         // GET: ClientAccountController/Details/5
+        [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
         public ActionResult Details(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
