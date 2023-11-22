@@ -50,7 +50,8 @@ namespace Service_Billing.Controllers
             int categoryFilter,
             string authorityFilter,
             int clientNumber,
-            string keyword)
+            string keyword,
+            bool inactive)
         {
 
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
@@ -71,8 +72,9 @@ namespace Service_Billing.Controllers
             ViewData["AuthorityFilter"] = authorityFilter;
             ViewData["ClientNumber"] = clientNumber;
             ViewData["Keyword"] = keyword;
+            ViewData["Inactive"] = inactive;
 
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
+            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword, inactive);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
 
@@ -296,7 +298,8 @@ namespace Service_Billing.Controllers
         int categoryFilter,
         string authorityFilter,
         int clientNumber,
-        string keyword)
+        string keyword,
+        bool inactive = false)
         {
             IEnumerable<Bill> bills;
             switch (quarterFilter)
@@ -320,6 +323,11 @@ namespace Service_Billing.Controllers
                     break;
             }
             // now filter the results
+            if (!inactive)
+            {
+                bills = bills.Where(b => b.IsActive);
+            }
+           
             if (!string.IsNullOrEmpty(ministryFilter))
                 bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
             if (!string.IsNullOrEmpty(titleFilter))

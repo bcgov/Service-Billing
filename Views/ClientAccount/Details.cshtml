@@ -81,8 +81,15 @@
         @* <dd>
             <partial name="_ClientCharges" model="@Model.Charges" />
         </dd> *@
-
     </dl>
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive)
+    {
+        <input type="submit" value="Deactivate This Client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Account.Id)" />
+    }
+    else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+    {
+        <input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateClient(@Model.Account.Id)" />
+    }
     <table class="table table-striped">
         <thead>
             <tr>
@@ -159,9 +166,9 @@
                             <td>@charge.EndDate</td>
                         }
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive)
                         {
-                            <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivate(@charge.Id)" /></td>
+                            <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
                         }
                 </tr>
                 
@@ -170,19 +177,29 @@
     </table>
     }
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
-    <a asp-action="Create" asp-controller="Bills">Order a Service</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+@if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+{
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
+        <a asp-action="Create" asp-controller="Bills">Order a Service</a> |
+        <a asp-action="Index">Back to List</a>
+    </div>
 
-<div id="dialog" title="Set this charge to Inactive?">
-    <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>
-</div>
-<div id="reactivate-dialog" title="Reactivate this charge?">
-    <p>This charge will be made active. It will be counted in quarterly reporting, and included in future billing cycles if appropriate.</p>
-</div>
+    <div id="dialog" title="Set this charge to Inactive?">
+        <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>
+    </div>
+    <div id="reactivate-charge-dialog" title="Reactivate this charge?">
+        <p>This charge will be made active. It will be counted in quarterly reporting, and included in future billing cycles if appropriate.</p>
+    </div>
 
+    <div id="deactivate-client-dialog" title="Whoa, Really?">
+        <p>This client will be set to inactive, and as well all it's associated charges.</p>
+    </div>
+    <div id="reactivate-client-dialog" title="Reactivate Client?">
+        <p>This client will be set to active, and can be billed for new charges.</p>
+        <p>Any charges associated with this client that were set to inactive can be reactivated from the list of inactive charges below.</p>
+    </div>
+}
 @section Scripts
 {
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
@@ -224,7 +241,7 @@
         });
 
         $(function () {
-            $("#reactivate-dialog").dialog({
+            $("#reactivate-charge-dialog").dialog({
                 resizable: false,
                 height: "auto",
                 width: 400,
@@ -240,9 +257,65 @@
                 }
             });
         });
-        const confirmReactivate = ((val) => {
-            $("#reactivate-dialog").dialog("option", "id", val);
-            $("#reactivate-dialog").dialog("open");
+        const confirmReactivateCharge = ((val) => {
+            $("#reactivate-charge-dialog").dialog("option", "id", val);
+            $("#reactivate-charge-dialog").dialog("open");
+        });
+        $(function () {
+            $("#reactivate-client-dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Reactivate": function () {
+                        $(this).dialog("close");
+                        setIsActiveForClient($(this).dialog("option", "id"), true);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        $(function () {
+            $("#deactivate-client-dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Deactivate Client": function () {
+                        $(this).dialog("close");
+                        setIsActiveForClient($(this).dialog("option", "id"), false);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+
+        const confirmReactivateClient = ((val) => {
+            $("#reactivate-client-dialog").dialog("option", "id", val);
+            $("#reactivate-client-dialog").dialog("open");
+        });
+        const confirmDeactivateClient = ((val) => {
+            $("#deactivate-client-dialog").dialog("option", "id", val);
+            $("#deactivate-client-dialog").dialog("open");
+        });
+
+        const setIsActiveForClient = ((id, active) => {
+            var url = "../../ClientAccount/SetIsActiveForClient?id=" + id + "&active=" + active;
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+
+                    window.location.reload();
+                }
+            };
+            xhr.open('post', url);
+            xhr.send();
         });
     </script>
 }

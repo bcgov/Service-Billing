@@ -17,6 +17,7 @@ using MailKit.Net.Smtp;
 using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Principal;
 
 namespace Service_Billing.Controllers
 {
@@ -77,6 +78,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
             return View(new ClientAccountViewModel(clients, teams));
         }
+
 
         // GET: ClientAccountController/Details/5
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
@@ -143,7 +145,11 @@ namespace Service_Billing.Controllers
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
-                    return View("Details", model.Account);
+
+                    IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
+                    IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+                    return View("Details", detailsModel);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -387,6 +393,44 @@ namespace Service_Billing.Controllers
                 //we really need an error page
                 return StatusCode(500);
             }
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "GDXBillingService.FinancialOfficer")]
+        public async Task<IActionResult> SetIsActiveForClient(int id, bool active)
+        {
+            try
+            {
+
+
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+                if (account != null)
+                {
+                    account.IsActive = active;
+                    if (!active) //deactivate all charges associates with this client;
+                    {
+                        IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
+                        foreach (Bill charge in charges)
+                        {
+                            charge.IsActive = false;
+                            _billRepository.Update(charge);
+                        }
+                    }
+                    _clientAccountRepository.Update(account);
+                }
+                else
+                {
+                    _logger.LogError($"Admin user tried to deactivate bill with id {id}, but it was not found in database");
+                    return BadRequest();
+                }
+                return Ok(200);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return StatusCode(500);
+            }
+
         }
     }
 }

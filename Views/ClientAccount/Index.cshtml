@@ -85,6 +85,7 @@
                 <th scope="col">Expense Authority</th>
                 <th scope="col">Primary Contact</th>
                 <th scope="col">Client Team</th>
+                <th scope="col">Active?</th>
             </tr>
         </thead>
         <tbody>
@@ -112,6 +113,7 @@
                     <td>@account.ExpenseAuthorityName</td>
                     <td>@Model.PrimaryContacts[account.Id]</td>
                     <td>@account.ClientTeam</td>
+                    <td>@account.IsActive</td>
                     
                 </tr>
             }
