@@ -70,7 +70,7 @@ namespace Service_Billing.Controllers
             ViewData["TitleFilter"] = titleFilter;
             ViewData["CategoryFilter"] = categoryFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
-            ViewData["ClientNumber"] = clientNumber;
+            ViewData["ClientNumber"] = clientNumber;  //Client ID!
             ViewData["Keyword"] = keyword;
             ViewData["Inactive"] = inactive;
 
@@ -201,7 +201,13 @@ namespace Service_Billing.Controllers
                     throw new Exception($"Service category with id: {serviceId} not found!");
                 }
                 decimal newAmount;
-                if (!decimal.TryParse(category.Costs, out newAmount))
+                string cost = category.Costs;
+                if(!string.IsNullOrEmpty(cost) && cost.Contains('$'))
+                {
+                    cost = cost.Replace('$', ' ');
+                    cost = cost.Trim();
+                }
+                if (!decimal.TryParse(cost, out newAmount))
                 {
                     newAmount = 0;
                 }
@@ -355,8 +361,8 @@ namespace Service_Billing.Controllers
             }
             if (clientNumber > 0)
             {
-                int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
-                bills = bills.Where(x => x.ClientAccountId == clientId);
+               // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
+                bills = bills.Where(x => x.Id == clientNumber);
             }
 
             return bills;

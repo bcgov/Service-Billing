@@ -6,7 +6,7 @@
 <div class="form-group">
     <label for="categorySelect">Service Category</label>
     <select class="form-control" id="categorySelect">
-        @if(id != null && id > 0)
+        @if(id > 0)
         {
             @foreach (ServiceCategory category in Model)
             {
