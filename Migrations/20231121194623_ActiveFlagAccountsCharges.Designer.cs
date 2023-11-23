@@ -12,8 +12,8 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    [Migration("20231123184651_aggregateCodingAndActiveFlags")]
-    partial class aggregateCodingAndActiveFlags
+    [Migration("20231121194623_ActiveFlagAccountsCharges")]
+    partial class ActiveFlagAccountsCharges
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -72,7 +72,7 @@ namespace Service_Billing.Migrations
                     b.Property<decimal?>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("ServiceCategoryId")
+                    b.Property<int?>("ServiceCategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("StartDate")
