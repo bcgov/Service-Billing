@@ -12,8 +12,8 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    [Migration("20231123184651_aggregateCodingAndActiveFlags")]
-    partial class aggregateCodingAndActiveFlags
+    [Migration("20231123191137_IsActiveAndGLCode")]
+    partial class IsActiveAndGLCode
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
