@@ -170,7 +170,7 @@ namespace Service_Billing.Controllers
                         aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
                             $"{account.ServiceLine}.{account.STOB}.{account.Project}";
                     }
-                    bill.AggregateGLCoding = aggregateCode;
+                    bill.AggregateGLCode = aggregateCode;
 
                     await _billRepository.CreateBill(bill);
                 }
@@ -405,7 +405,7 @@ namespace Service_Billing.Controllers
                         row.Start = bill.StartDate;
                         row.End = bill.EndDate;
                         row.CreatedBy = bill.CreatedBy;
-                        row.AggregateGLCode = bill.AggregateGLCoding;
+                        row.AggregateGLCode = bill.AggregateGLCode;
                         if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
                             row.ExpenseAuthority = account.ExpenseAuthorityName;
 

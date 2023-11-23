@@ -30,7 +30,7 @@ namespace Service_Billing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AggregateGLCoding")
+                    b.Property<string>("AggregateGLCode")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Amount")

@@ -12,8 +12,8 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    [Migration("20230907214549_initial")]
-    partial class initial
+    [Migration("20231123202128_Initial")]
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,9 @@ namespace Service_Billing.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AggregateGLCode")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Amount")
                         .HasColumnType("decimal(18,2)");
@@ -54,17 +57,26 @@ namespace Service_Billing.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FiscalPeriod")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdirOrUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<decimal?>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int?>("ServiceCategoryId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("TicketNumberAndRequester")
                         .HasColumnType("nvarchar(max)")
@@ -87,14 +99,17 @@ namespace Service_Billing.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<short?>("ClientNumber")
-                        .HasMaxLength(3)
                         .HasColumnType("smallint");
 
                     b.Property<string>("ClientTeam")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ExpenseAuthorityName")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsApprovedByEA")
                         .HasColumnType("bit");
@@ -103,19 +118,17 @@ namespace Service_Billing.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Project")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<string>("ResponsibilityCentre")
                         .HasMaxLength(5)
                         .HasColumnType("nvarchar(5)");
 
                     b.Property<short?>("STOB")
-                        .HasMaxLength(4)
                         .HasColumnType("smallint");
 
                     b.Property<int?>("ServiceLine")
-                        .HasMaxLength(5)
                         .HasColumnType("int");
 
                     b.Property<string>("ServicesEnabled")
@@ -138,18 +151,15 @@ namespace Service_Billing.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Approver")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FinancialContact")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PrimaryContact")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -191,12 +201,14 @@ namespace Service_Billing.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("GDXBusArea")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ServiceOwner")
@@ -208,52 +220,6 @@ namespace Service_Billing.Migrations
                     b.HasKey("ServiceId");
 
                     b.ToTable("ServiceCategories");
-                });
-
-            modelBuilder.Entity("Service_Billing.ViewModels.ClientIntakeViewModel", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("AccountId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("DivisionOrBranch")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("MinistryAcronym")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("TeamId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("ClientIntakeViewModel");
-                });
-
-            modelBuilder.Entity("Service_Billing.ViewModels.ClientIntakeViewModel", b =>
-                {
-                    b.HasOne("Service_Billing.Models.ClientAccount", "Account")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Service_Billing.Models.ClientTeam", "Team")
-                        .WithMany()
-                        .HasForeignKey("TeamId");
-
-                    b.Navigation("Account");
-
-                    b.Navigation("Team");
                 });
 #pragma warning restore 612, 618
         }

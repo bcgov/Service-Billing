@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Service_Billing.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -28,8 +28,12 @@ namespace Service_Billing.Migrations
                     ticketNumberAndRequesterName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    EndDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "datetime2", nullable: true),
                     BillingCycle = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    CreatedBy = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    AggregateGLCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -43,16 +47,17 @@ namespace Service_Billing.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ClientNumber = table.Column<short>(type: "smallint", maxLength: 3, nullable: true),
+                    ClientNumber = table.Column<short>(type: "smallint", nullable: true),
                     ResponsibilityCentre = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: true),
-                    ServiceLine = table.Column<int>(type: "int", maxLength: 5, nullable: true),
-                    STOB = table.Column<short>(type: "smallint", maxLength: 4, nullable: true),
-                    Project = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: true),
-                    ExpenseAuthorityName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ServiceLine = table.Column<int>(type: "int", nullable: true),
+                    STOB = table.Column<short>(type: "smallint", nullable: true),
+                    Project = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: true),
+                    ExpenseAuthorityName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ServicesEnabled = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClientTeam = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     TeamId = table.Column<int>(type: "int", nullable: true),
-                    IsApprovedByEA = table.Column<bool>(type: "bit", nullable: false)
+                    IsApprovedByEA = table.Column<bool>(type: "bit", nullable: false),
+                    IsActive = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -66,9 +71,9 @@ namespace Service_Billing.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PrimaryContact = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Approver = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    FinancialContact = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    PrimaryContact = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Approver = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    FinancialContact = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -95,8 +100,8 @@ namespace Service_Billing.Migrations
                 {
                     ServiceId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    GDXBusArea = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    GDXBusArea = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Costs = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
@@ -107,43 +112,6 @@ namespace Service_Billing.Migrations
                 {
                     table.PrimaryKey("PK_ServiceCategories", x => x.ServiceId);
                 });
-
-            migrationBuilder.CreateTable(
-                name: "ClientIntakeViewModel",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    TeamId = table.Column<int>(type: "int", nullable: true),
-                    AccountId = table.Column<int>(type: "int", nullable: false),
-                    MinistryAcronym = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DivisionOrBranch = table.Column<string>(type: "nvarchar(max)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ClientIntakeViewModel", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_ClientIntakeViewModel_ClientAccounts_AccountId",
-                        column: x => x.AccountId,
-                        principalTable: "ClientAccounts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ClientIntakeViewModel_ClientTeams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "ClientTeams",
-                        principalColumn: "Id");
-                });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientIntakeViewModel_AccountId",
-                table: "ClientIntakeViewModel",
-                column: "AccountId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ClientIntakeViewModel_TeamId",
-                table: "ClientIntakeViewModel",
-                column: "TeamId");
         }
 
         /// <inheritdoc />
@@ -153,19 +121,16 @@ namespace Service_Billing.Migrations
                 name: "Bills");
 
             migrationBuilder.DropTable(
-                name: "ClientIntakeViewModel");
+                name: "ClientAccounts");
+
+            migrationBuilder.DropTable(
+                name: "ClientTeams");
 
             migrationBuilder.DropTable(
                 name: "Ministries");
 
             migrationBuilder.DropTable(
                 name: "ServiceCategories");
-
-            migrationBuilder.DropTable(
-                name: "ClientAccounts");
-
-            migrationBuilder.DropTable(
-                name: "ClientTeams");
         }
     }
 }

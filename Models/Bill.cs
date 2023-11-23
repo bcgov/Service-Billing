@@ -39,7 +39,7 @@ namespace Service_Billing.Models
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
 
-        public string? AggregateGLCoding { get; set; }
+        public string? AggregateGLCode { get; set; }
 
         public bool IsActive { get; set; } = true;
 
