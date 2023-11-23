@@ -54,11 +54,6 @@
                 <input asp-for="Account.ServicesEnabled" class="form-control" value="@Model.Account.ServicesEnabled" />
                 <span asp-validation-for="Account.ServicesEnabled" class="text-danger"></span>
             </div>
-@*             <div class="form-group">
-                <label asp-for="Account.CasClientNumber" class="control-label"></label>
-                <input asp-for="Account.CasClientNumber" class="form-control" value="@String.Format("{0:000}", Model.Account.CasClientNumber)" maxlength="3" />
-                <span asp-validation-for="Account.CasClientNumber" class="text-danger"></span>
-            </div> *@
             <div>
                 @if(!String.IsNullOrEmpty(Model.Team.Name))
                 {

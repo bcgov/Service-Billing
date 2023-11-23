@@ -69,7 +69,7 @@ namespace Service_Billing.Migrations
                     b.Property<decimal?>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int?>("ServiceCategoryId")
+                    b.Property<int>("ServiceCategoryId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("StartDate")
