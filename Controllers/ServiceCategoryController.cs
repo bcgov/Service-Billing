@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
+using Service_Billing.Filters;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
@@ -12,7 +13,7 @@ using System.Globalization;
 
 namespace Service_Billing.Controllers
 {
-    public class ServiceCategoryController: Controller
+    public class ServiceCategoryController : Controller
     {
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly ILogger<ServiceCategoryController> _logger;
@@ -23,6 +24,7 @@ namespace Service_Billing.Controllers
             _logger = logger;
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         public IActionResult Index(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             ViewData["AreaFilter"] = areaFilter;
@@ -32,11 +34,11 @@ namespace Service_Billing.Controllers
             ViewData["OwnerFilter"] = ownerFilter;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             List<string> busAreas = new List<string>();
-            if(categories != null && categories.Any())
+            if (categories != null && categories.Any())
             {
-                foreach(ServiceCategory category in categories)
+                foreach (ServiceCategory category in categories)
                 {
-                    if(!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
+                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
                         busAreas.Add(category.GDXBusArea);
                 }
             }
@@ -48,7 +50,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int id) 
+        public IActionResult Edit(int id)
         {
             ServiceCategory? serviceCategory = _categoryRepository.GetById(id);
             if (serviceCategory == null)
@@ -64,7 +66,7 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                _categoryRepository.Update(serviceCategory);  
+                _categoryRepository.Update(serviceCategory);
             }
             catch (DbUpdateException ex)
             {
@@ -74,6 +76,7 @@ namespace Service_Billing.Controllers
             return View("index", categories);
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
         public IActionResult Create()
         {
@@ -90,20 +93,21 @@ namespace Service_Billing.Controllers
             CreateServiceViewModel model = new CreateServiceViewModel();
             model.BusArea = busAreas;
 
-            return View(model); 
+            return View(model);
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         public IActionResult Create(CreateServiceViewModel model)
         {
             try
             {
-               int id = _categoryRepository.Add(model.Service);
+                int id = _categoryRepository.Add(model.Service);
             }
             catch (DbUpdateException ex)
             {
                 _logger.LogError($"A database update exception occurred: {ex.Message}");
-                
+
             }
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
 
@@ -153,7 +157,7 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<ServiceCategory> GetFilteredCategories(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter) 
+        private IEnumerable<ServiceCategory> GetFilteredCategories(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             if (!String.IsNullOrEmpty(areaFilter))

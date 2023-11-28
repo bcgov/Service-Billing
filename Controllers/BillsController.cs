@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -12,6 +13,7 @@ using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
+using System.Security.Claims;
 
 namespace Service_Billing.Controllers
 {
@@ -77,7 +79,6 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword, inactive);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
-
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }
@@ -365,7 +366,19 @@ namespace Service_Billing.Controllers
                 bills = bills.Where(x => x.Id == clientNumber);
             }
 
+            // IsMinistryClient("GDXBCT@Victoria1.gov.bc.ca");
+            ViewData["IsMinistryClient"] = IsMinistryClient("");
+
             return bills;
+        }
+
+        private bool IsMinistryClient(string groupName)
+        {
+            // TODO(al): find out how to retrive group membership from claims
+            var user = User as ClaimsPrincipal;
+            var groupClaim = user?.Claims.FirstOrDefault(c => c.Type == "groups");
+            // return groupClaim != null && groupClaim.Value.Contains(groupName);
+            return true;
         }
 
         [HttpGet]

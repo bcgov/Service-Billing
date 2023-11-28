@@ -2,8 +2,11 @@
     For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 *@
 @{
+    var user = User as ClaimsPrincipal;
+    var isMinistryClient = user?.IsMemberOfGroup("e5ca6c0e-163f-4a64-82fc-e1836beaf26e") ?? false;
 }
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
 @inject IAuthorizationService AuthorizationService
 <header>
     <div class="banner">
@@ -27,21 +30,27 @@
     <div class="nav-container">
         <ul>
             <li>@Html.ActionLink("Home", "Index", "Home")</li>
-            <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
+            @if (!isMinistryClient)
+            {
+                <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
+            }
             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
             {
                 <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
             }
             else
             {
-            <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
+                <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
             }
             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
             {
                 <li>@Html.ActionLink("View Quarterly Reports", "Index", "Bills")</li>
             }
             <li>@Html.ActionLink("Order a Service", "Create", "Bills")</li>
-            <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
+            @if (!isMinistryClient)
+            {
+                <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
+            }
         </ul>
     </div>
 </nav>

@@ -18,6 +18,9 @@ using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Principal;
+using System.Security.Claims;
+using Service_Billing.Extensions;
+using Service_Billing.Filters;
 
 namespace Service_Billing.Controllers
 {
@@ -181,6 +184,7 @@ namespace Service_Billing.Controllers
             }
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
         public ActionResult Intake()
         {
@@ -398,6 +402,7 @@ namespace Service_Billing.Controllers
             }
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer")]
         public async Task<IActionResult> SetIsActiveForClient(int id, bool active)
