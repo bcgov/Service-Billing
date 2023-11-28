@@ -8,7 +8,12 @@
                 { "clientNumber", Model.Account.ClientNumber.ToString() }
             };
 }
+@{
+    var user = User as ClaimsPrincipal;
+    var isMinistryClient = user?.IsMemberOfGroup("e5ca6c0e-163f-4a64-82fc-e1836beaf26e") ?? false;
+}
 @using Microsoft.AspNetCore.Authorization
+@using System.Security.Claims
 @inject IAuthorizationService AuthorizationService
 
 <h1>Client Account Information</h1>
@@ -17,58 +22,58 @@
     <h4>@Model.Account.Id-@Model.Account.Name</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.Name)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Account.Name)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.ClientNumber)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             <a asp-controller="Bills"
                asp-action="Index"
                asp-all-route-data="parms"
-            title="See charges associated with this account">@Model.Account.ClientNumber</a>
+               title="See charges associated with this account">@Model.Account.ClientNumber</a>
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.ResponsibilityCentre)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Account.ResponsibilityCentre)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.ServiceLine)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @String.Format("{0:00000}", Model.Account.ServiceLine)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.STOB)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @String.Format("{0:0000}", Model.Account.STOB)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.Project)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Account.Project)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.ExpenseAuthorityName)
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Account.ExpenseAuthorityName)
         </dd>
-        <dt class = "col-sm-2">
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.Account.ServicesEnabled)
         </dt>
-        <dd class = "col-sm-10">
-            @if(String.IsNullOrEmpty(Model.Account.ServicesEnabled))
+        <dd class="col-sm-10">
+            @if (String.IsNullOrEmpty(Model.Account.ServicesEnabled))
             {
-                <br/>
+                <br />
             }
             else
             {
@@ -79,10 +84,10 @@
             <partial name="_ClientTeam" model="@Model.Team" />
         </dd>
         @* <dd>
-            <partial name="_ClientCharges" model="@Model.Charges" />
+        <partial name="_ClientCharges" model="@Model.Charges" />
         </dd> *@
     </dl>
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive)
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive && !isMinistryClient)
     {
         <input type="submit" value="Deactivate This Client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Account.Id)" />
     }
@@ -96,7 +101,7 @@
                 <th scope="col">Title</th>
                 <th scope="col">Service Category</th>
                 <th scope="col">Amount</th>
-              @*   <th scope="col">UOM</th>
+                @*   <th scope="col">UOM</th>
                 <th scope="col">Quantity</th> *@
                 <th scope="col">Start Date</th>
                 <th scope="col">End Date</th>
@@ -124,16 +129,16 @@
                             <td>@charge.EndDate</td>
                         }
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
                         {
                             <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
                         }
-                </tr>
+                    </tr>
                 }
             }
         </tbody>
     </table>
-    @if(Model.InactiveCharges.Any())
+    @if (Model.InactiveCharges.Any())
     {
         <h4>Inactive Charges</h4>
         <p>These are old or cancelled charges, and are not factored into quarterly reporting.</p>
@@ -149,8 +154,8 @@
                 </tr>
             </thead>
             <tbody>
-        @foreach (Bill charge in Model.InactiveCharges)
-            {
+                @foreach (Bill charge in Model.InactiveCharges)
+                {
 
                     <tr>
                         <td>@charge.Title</td>
@@ -170,18 +175,21 @@
                         {
                             <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
                         }
-                </tr>
-                
-            }
-        </tbody>
-    </table>
+                    </tr>
+
+                }
+            </tbody>
+        </table>
     }
 </div>
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
 {
     <div>
         <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
-        <a asp-action="Create" asp-controller="Bills">Order a Service</a> |
+        @if (!isMinistryClient)
+        {
+            <a asp-action="Create" asp-controller="Bills">Order a Service</a><text> | </text>
+        }
         <a asp-action="Index">Back to List</a>
     </div>
 
@@ -232,7 +240,7 @@
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    
+
                     window.location.reload();
                 }
             };

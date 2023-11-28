@@ -19,6 +19,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using System.Net;
 using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
+using Service_Billing.Filters;
+using Microsoft.AspNetCore.Mvc.Filters;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -43,7 +45,8 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                 .GetRequiredService<ITokenAcquisition>();
             string[] scopes = { "user.read", "user.readbasic.all" };
             var graphClient = new GraphServiceClient(
-                new DelegateAuthenticationProvider(async (request) => {
+                new DelegateAuthenticationProvider(async (request) =>
+                {
                     var token = await tokenAcquisition
                         .GetAccessTokenForUserAsync(scopes, user: context.Principal);
                     request.Headers.Authorization =
@@ -114,6 +117,12 @@ builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
+
+builder.Services.AddScoped(provider =>
+{
+    var groupName = "e5ca6c0e-163f-4a64-82fc-e1836beaf26e";
+    return new GroupAuthorizeActionFilter(groupName);
+});
 
 builder.Services.AddMvc();
 

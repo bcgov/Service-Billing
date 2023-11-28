@@ -2,6 +2,7 @@
 @inject IAuthorizationService AuthorizationService
 
 @using Service_Billing.ViewModels;
+@using System.Security.Claims
 @model AllBillsViewModel;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
@@ -9,6 +10,10 @@
     bool previous = ViewData["Quarter"] == "Previous Quarter";
     bool next = ViewData["Quarter"] == "Next Quarter";
     bool all = ViewData["Quarter"] == "All Quarters";
+}
+@{
+    var user = User as ClaimsPrincipal;
+    var isMinistryClient = user?.IsMemberOfGroup("e5ca6c0e-163f-4a64-82fc-e1836beaf26e") ?? false;
 }
 
 <h1>Service Billing Charges</h1>
@@ -41,9 +46,12 @@
                             <label for="quarterFilter">Select Quarter</label>
                             <select name="quarterFilter">
                                 <option value="current" selected="@current">Current</option>
-                                <option value="previous" selected="@previous">Previous</option>
-                                <option value="next" selected="@next">Next</option>
-                                <option value="all" selected="@all">All</option>
+                                @if (!isMinistryClient)
+                                {
+                                    <option value="previous" selected="@previous">Previous</option>
+                                    <option value="next" selected="@next">Next</option>
+                                    <option value="all" selected="@all">All</option>
+                                }
                             </select>
                         </div>
                         <label for="ministryFilter">Organization</label>
