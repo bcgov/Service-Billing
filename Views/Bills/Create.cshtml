@@ -36,10 +36,11 @@
                 <input asp-for="IdirOrUrl" class="form-control" />
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
-            <div class="form-group">
+            @* <input asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" readonly="true" /> *@
                 <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
-            </div>
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
+   
+            
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
                 <input asp-for="Amount" class="form-control" id="amount" />
@@ -117,6 +118,7 @@
                 calculateAmount();
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
+                    console.log($('#categorySelect').val());
                     $("#categoryIdInput").val($("#categorySelect").val());
                 }
             });

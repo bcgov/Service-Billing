@@ -58,7 +58,7 @@ o	Note: not all naming convention components are required. The naming convention
         //public DateTime? DateCreated { get; set; }
 
         public int? TeamId { get; set; }
-
+        [Display(Name = "EA Approved")]
         public bool IsApprovedByEA { get; set; } = false;
 
         public bool IsActive { get; set; } = true;

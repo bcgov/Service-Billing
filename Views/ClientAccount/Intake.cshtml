@@ -90,7 +90,7 @@
                 <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Account.IsApprovedByEA">Active</label>
+                <label asp-for="@Model.Account.IsApprovedByEA">EA Approved?</label>
               
                 <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" checked="@Model.Account.IsApprovedByEA" />
                 <span asp-validation-for="@Model.Account.IsApprovedByEA" class="text-danger"></span>
