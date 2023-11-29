@@ -13,7 +13,8 @@
 }
 @{
     var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMemberOfGroup("e5ca6c0e-163f-4a64-82fc-e1836beaf26e") ?? false;
+    var isMinistryClient = user?.IsMinistryClient() ?? false;
+    var nameClaim = ViewData["NameClaim"] as string ?? "";
 }
 
 <h1>Service Billing Charges</h1>
@@ -160,7 +161,11 @@
             {
                 var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
                 var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
-                <tr>
+
+                var hideRow = isMinistryClient
+                    && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
+
+                <tr style="@(hideRow ? "display:none;" : "")">
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"

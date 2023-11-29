@@ -3,7 +3,7 @@
 *@
 @{
     var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMemberOfGroup("e5ca6c0e-163f-4a64-82fc-e1836beaf26e") ?? false;
+    var isMinistryClient = user?.IsMinistryClient() ?? false;
 }
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
