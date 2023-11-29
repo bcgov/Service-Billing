@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
+using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
@@ -79,6 +80,13 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword, inactive);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
+
+            var authUser = User;
+            if (authUser.IsMinistryClient())
+            {
+                var name = authUser?.FindFirst("name");
+                if (name is not null) ViewData["NameClaim"] = name.Value;
+            }
 
             return View(new AllBillsViewModel(bills, categories, clients));
         }
@@ -375,19 +383,7 @@ namespace Service_Billing.Controllers
                 bills = bills.Where(x => x.Id == clientNumber);
             }
 
-            // IsMinistryClient("GDXBCT@Victoria1.gov.bc.ca");
-            ViewData["IsMinistryClient"] = IsMinistryClient("");
-
             return bills;
-        }
-
-        private bool IsMinistryClient(string groupName)
-        {
-            // TODO(al): find out how to retrive group membership from claims
-            var user = User as ClaimsPrincipal;
-            var groupClaim = user?.Claims.FirstOrDefault(c => c.Type == "groups");
-            // return groupClaim != null && groupClaim.Value.Contains(groupName);
-            return true;
         }
 
         [HttpGet]

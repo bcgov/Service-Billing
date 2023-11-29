@@ -79,6 +79,14 @@ namespace Service_Billing.Controllers
             ViewData["Keyword"] = keyword;
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
+
+            var authUser = User;
+            if (authUser.IsMinistryClient())
+            {
+                var name = authUser?.FindFirst("name");
+                if (name is not null) ViewData["NameClaim"] = name.Value;
+            }
+
             return View(new ClientAccountViewModel(clients, teams));
         }
 
@@ -196,6 +204,7 @@ namespace Service_Billing.Controllers
             return View(model);
         }
 
+        [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Intake(ClientIntakeViewModel model)
