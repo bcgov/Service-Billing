@@ -195,7 +195,7 @@ namespace Service_Billing.Controllers
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(Details), bill);
         }
 
         [HttpGet]
