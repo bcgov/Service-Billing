@@ -53,11 +53,6 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                         new AuthenticationHeaderValue("Bearer", token);
                 })
             );
-
-
-            // Get the user's photo
-            // If the user doesn't have a photo, this throws
-
         };
 
         options.Events.OnAuthenticationFailed = context =>

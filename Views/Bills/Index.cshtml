@@ -193,13 +193,13 @@
                     <td>
                         @if (bill.Amount != null)
                         {
-                            @String.Format("{0:.##}", bill.Amount)
+                            @String.Format("${0:.##}", bill.Amount)
                         }
                     </td>
                     @if (category != null)
                     {
                         <td>
-                            @category.Costs
+                            $@category.Costs
                         </td>
                         <td>
                             @bill.Quantity

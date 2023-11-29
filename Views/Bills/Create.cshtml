@@ -36,10 +36,11 @@
                 <input asp-for="IdirOrUrl" class="form-control" />
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
-            <div class="form-group">
+            @* <input asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" readonly="true" /> *@
                 <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
-            </div>
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories })
+   
+            
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
                 <input asp-for="Amount" class="form-control" id="amount" />
@@ -102,7 +103,7 @@
                 }
                 var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
                 var xhr = new XMLHttpRequest();
-                xhr.responseType = "JSON";
+
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
@@ -114,11 +115,14 @@
                 xhr.send();
             }
             $("#categorySelect").on("change", (e) => {
-                calculateAmount();
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
-                    $("#categoryIdInput").val($("#categorySelect").val());
                 }
+                var id = $('#categorySelect').val();
+                console.log(id);
+                $("#categoryIdInput").val(id);
+                
+                calculateAmount();
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();

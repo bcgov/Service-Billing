@@ -92,6 +92,12 @@
                 <div id="financialContactSelect">
                 </div>
                 <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
+              
+                <label asp-for="@Model.Account.IsApprovedByEA">EA Approved?</label>
+
+                <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" checked="@Model.Account.IsApprovedByEA" />
+                <span asp-validation-for="@Model.Account.IsApprovedByEA" class="text-danger"></span>
+               
                 <input type="hidden" asp-for="@Model.Team.Id" class="form-control" />
                 <input type="hidden" asp-for="@Model.Team.Name" class="form-control" />
                 <input type="hidden" asp-for="@Model.Account.Id" class="form-control" />
