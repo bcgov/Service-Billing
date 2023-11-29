@@ -47,7 +47,6 @@ namespace Service_Billing.Models
         public Bill()
         {
             this.Quantity = 1;
-            this.ServiceCategoryId = -1;
             this.DateCreated = DateTime.UtcNow;
             this.IsActive = true;
         }

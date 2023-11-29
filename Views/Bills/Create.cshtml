@@ -38,7 +38,7 @@
             </div>
             @* <input asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" readonly="true" /> *@
                 <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories })
    
             
             <div class="form-group">
@@ -115,12 +115,14 @@
                 xhr.send();
             }
             $("#categorySelect").on("change", (e) => {
-                calculateAmount();
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
-                    console.log($('#categorySelect').val());
-                    $("#categoryIdInput").val($("#categorySelect").val());
                 }
+                var id = $('#categorySelect').val();
+                console.log(id);
+                $("#categoryIdInput").val(id);
+                
+                calculateAmount();
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();

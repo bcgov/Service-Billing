@@ -141,7 +141,7 @@ namespace Service_Billing.Controllers
             }
 
         [HttpGet]
-        public async Task<ActionResult> Create(int id)
+        public async Task<ActionResult> Create(int accountId)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ViewData["Categories"] = categories;
@@ -149,12 +149,12 @@ namespace Service_Billing.Controllers
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.DateCreated);
-            if(id > 0)
+            if(accountId > 0)
             {
-                ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(accountId);
                 if(account != null)
                 {
-                    bill.ClientAccountId = id;
+                    bill.ClientAccountId = accountId;
                     bill.ClientName = account.Name;
                 }
             }

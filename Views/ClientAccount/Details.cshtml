@@ -194,8 +194,8 @@
         <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
         @if (!isMinistryClient)
         {
-            <a asp-action="Create" asp-route-id="@Model?.Account.Id"  asp-controller="Bills">Order a Service</a>
-        
+          //  <a asp-action="Create?=accountId=@Model?.Account.Id.ToString()/" asp-controller="Bills">Order a Service</a>
+            <a href="/Bills/Create?accountId=@Model?.Account.Id">Order a Service</a>
             <text> | </text>
         }
         <a asp-action="Index">Back to List</a>
