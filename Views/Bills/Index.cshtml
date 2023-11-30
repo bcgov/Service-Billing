@@ -47,12 +47,9 @@
                             <label for="quarterFilter">Select Quarter</label>
                             <select name="quarterFilter">
                                 <option value="current" selected="@current">Current</option>
-                                @if (!isMinistryClient)
-                                {
-                                    <option value="previous" selected="@previous">Previous</option>
-                                    <option value="next" selected="@next">Next</option>
-                                    <option value="all" selected="@all">All</option>
-                                }
+                                <option value="previous" selected="@previous">Previous</option>
+                                <option value="next" selected="@next">Next</option>
+                                <option value="all" selected="@all">All</option>
                             </select>
                         </div>
                         <label for="ministryFilter">Organization</label>
@@ -163,7 +160,7 @@
                 var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
 
                 var hideRow = isMinistryClient
-                    && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
+                && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
 
                 <tr style="@(hideRow ? "display:none;" : "")">
                     <td>
