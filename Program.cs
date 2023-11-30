@@ -37,23 +37,22 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
         // This causes the signin to prompt the user for which
         // account to use - useful when there are multiple accounts signed
         // into the browser
-       // options.Prompt = "select_account";
-
-        //options.Events.OnTokenValidated = async context =>
-        //{
-        //    var tokenAcquisition = context.HttpContext.RequestServices
-        //        .GetRequiredService<ITokenAcquisition>();
-        //    string[] scopes = { "user.read", "user.readbasic.all" };
-        //    var graphClient = new GraphServiceClient(
-        //        new DelegateAuthenticationProvider(async (request) =>
-        //        {
-        //            var token = await tokenAcquisition
-        //                .GetAccessTokenForUserAsync(scopes, user: context.Principal);
-        //            request.Headers.Authorization =
-        //                new AuthenticationHeaderValue("Bearer", token);
-        //        })
-        //    );
-        //};
+      
+        options.Events.OnTokenValidated = async context =>
+        {
+            var tokenAcquisition = context.HttpContext.RequestServices
+                .GetRequiredService<ITokenAcquisition>();
+            string[] scopes = { "user.read", "user.readbasic.all" };
+            var graphClient = new GraphServiceClient(
+                new DelegateAuthenticationProvider(async (request) =>
+                {
+                    var token = await tokenAcquisition
+                        .GetAccessTokenForUserAsync(scopes, user: context.Principal);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", token);
+                })
+            );
+        };
 
         options.Events.OnAuthenticationFailed = context =>
         {
@@ -108,14 +107,15 @@ builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 
-builder.Services.AddHostedService<ChargePromotionService>();
+//builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 builder.Services.AddScoped(provider =>
 {
-    return new GroupAuthorizeActionFilter();
+    var groupName = "e5ca6c0e-163f-4a64-82fc-e1836beaf26e";
+    return new GroupAuthorizeActionFilter(groupName);
 });
 
 builder.Services.AddMvc();

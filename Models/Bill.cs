@@ -48,6 +48,7 @@ namespace Service_Billing.Models
         {
             this.Quantity = 1;
             this.DateCreated = DateTime.UtcNow;
+            this.StartDate = DateTime.UtcNow;
             this.IsActive = true;
         }
     }

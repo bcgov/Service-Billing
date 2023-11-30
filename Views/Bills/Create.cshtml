@@ -69,6 +69,16 @@
                 <span asp-validation-for="TicketNumberAndRequester" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="StartDate" class="control-label"></label>
+                <input asp-for="StartDate" class="form-control" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="EndDate" class="control-label"></label>
+                <input asp-for="EndDate" class="form-control" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="BillingCycle" class="control-label"></label>
                 <input asp-for="BillingCycle" class="form-control" />
                 <span asp-validation-for="BillingCycle" class="text-danger"></span>
