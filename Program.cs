@@ -114,8 +114,7 @@ builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailS
 
 builder.Services.AddScoped(provider =>
 {
-    var groupName = "e5ca6c0e-163f-4a64-82fc-e1836beaf26e";
-    return new GroupAuthorizeActionFilter(groupName);
+    return new GroupAuthorizeActionFilter();
 });
 
 builder.Services.AddMvc();
