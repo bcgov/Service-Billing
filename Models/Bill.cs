@@ -44,7 +44,7 @@ namespace Service_Billing.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<FiscalPeriod> fiscalPeriods { get; set; }
+        public ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
 
 
         public Bill()
@@ -55,13 +55,5 @@ namespace Service_Billing.Models
             this.IsActive = true;
             fiscalPeriods = new Collection<FiscalPeriod>();
         }
-    }
-
-    public class FiscalPeriod
-    {
-        public int Id { get; set; }
-        public int ChargeId { get; set; }
-        public string Period { get; set; }
-        public Bill Charge { get; set; } = null!; // "Required reference navigation to principal", says EF documentation
     }
 }
