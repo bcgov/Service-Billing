@@ -106,6 +106,7 @@ builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 
 //builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();

@@ -11,9 +11,11 @@ namespace Service_Billing.Models.Repositories
     public class BillRepository : IBillRepository
     {
         private readonly ServiceBillingContext _billingContext;
-        public BillRepository  (ServiceBillingContext billingContext)
+        private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
+        public BillRepository  (ServiceBillingContext billingContext, IFiscalPeriodRepository fiscalPeriodRepository)
         {
             _billingContext = billingContext;
+            _fiscalPeriodRepository = fiscalPeriodRepository;  
         }
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.OrderBy(b => b.Title);
@@ -161,11 +163,17 @@ namespace Service_Billing.Models.Repositories
             List<int> oneTimeServiceIds = GetOneTimeServices();
             string newQuarter = DetermineCurrentQuarter();
 
-            await _billingContext.Bills.Where(b => b.ServiceCategoryId != null 
+            IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
             && fixedServiceIds.Contains((int)b.ServiceCategoryId)
-            && (b.EndDate == null || b.EndDate > quarterStart) 
-            && b.IsActive)
-                .ExecuteUpdateAsync(b => b.SetProperty(x => x.FiscalPeriod, newQuarter));
+            && (b.EndDate == null || b.EndDate > quarterStart)
+            && b.IsActive);
+            
+            foreach (Bill bill in billsToPromote)
+            {
+                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod);
+                bill.FiscalPeriod = newQuarter;
+                _billingContext.Update(bill);
+            }
 
             await _billingContext.SaveChangesAsync();
         }
@@ -176,7 +184,7 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Bills.Where(b => b.FiscalPeriod == fiscalPeriod);
         }
 
-        public IEnumerable<Bill> GetPreviousQuarterBills()
+        public string GetPreviousQuarterString()
         {
             try
             {
@@ -185,12 +193,13 @@ namespace Service_Billing.Models.Repositories
                 if (currentFiscalPeriod.Contains("Quarter 1"))
                 { //Fiscal 23/24 Quarter 1
                     int year;
-                    var x = currentFiscalPeriod.Substring(10, 2);
-                    if (!int.TryParse(currentFiscalPeriod.Substring(10, 2), null, out year))
+                    string yearString = currentFiscalPeriod.Substring(10, 2);
+                    if (!int.TryParse(yearString, null, out year))
                     {
                         throw new Exception("Could not parse year from Fiscal Period string");
-                    }
-                    return _billingContext.Bills.Where(b => b.FiscalPeriod == $"Fiscal {year - 2}/{year -1} Quarter 4");
+                    } //quarter 4 is Jan. 1 - Mar. 31
+
+                    return $"Fiscal {year - 2}/{year - 1} Quarter 4";
                 }
                 else
                 {
@@ -200,9 +209,25 @@ namespace Service_Billing.Models.Repositories
                         throw new Exception("Could not parse Quarter from Fiscal Period string");
                     }
                     currentFiscalPeriod = currentFiscalPeriod.Remove(currentFiscalPeriod.Length - 1);
-                    currentFiscalPeriod += (quarter - 1);
-                    return _billingContext.Bills.Where(b => b.FiscalPeriod == currentFiscalPeriod);
+                    return currentFiscalPeriod += (quarter - 1);
+
                 }
+            
+            }
+            catch(Exception ex)
+            {
+                
+            }
+            return string.Empty;
+        }
+
+        public IEnumerable<Bill> GetPreviousQuarterBills()
+        {
+            try
+            {
+                List<int> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsByFiscalPeriod(GetPreviousQuarterString()).Distinct().ToList();
+                return _billingContext.Bills.Where(b => previousQuarterChargeIds.Contains(b.Id));
+                
             }
             catch(Exception e) 
             {
