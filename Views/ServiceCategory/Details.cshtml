@@ -1,58 +1,72 @@
 ﻿@model Service_Billing.Models.ServiceCategory
-
 @{
     ViewData["Title"] = "Details";
     Layout = "_Layout";
 }
-
 <h1>Details</h1>
-
 <div>
     <h4>ServiceCategory</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.GDXBusArea)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.GDXBusArea)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Costs)
-        </dt>
-        <dd class = "col-sm-10">
-            $@Html.DisplayFor(model => model.Costs)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IsActive)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.IsActive)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.UOM)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.UOM)
-        </dd>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.ServiceOwner)
-        </dd>
-    </dl>
+    <table>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.GDXBusArea)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.GDXBusArea)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Name)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Costs)
+            </td>
+            <td>
+                $@Html.DisplayFor(model => model.Costs)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Description)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.IsActive)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.IsActive)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.UOM)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.UOM)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.ServiceOwner)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.ServiceOwner)
+            </td>
+        </tr>
+    </table>
 </div>
-<div>
+<div class="bottom-nav">
     <a asp-action="Edit" asp-route-id="@Model?.ServiceId">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>
