@@ -302,7 +302,6 @@ namespace Service_Billing.Controllers
         }
 
 
-        [EnableCors("CorsApi")]
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
