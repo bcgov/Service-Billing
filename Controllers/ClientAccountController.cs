@@ -21,6 +21,7 @@ using System.Security.Principal;
 using System.Security.Claims;
 using Service_Billing.Extensions;
 using Service_Billing.Filters;
+using Microsoft.AspNetCore.Cors;
 
 namespace Service_Billing.Controllers
 {
@@ -300,7 +301,8 @@ namespace Service_Billing.Controllers
             }
         }
 
-        [HttpGet]
+
+        [EnableCors("CorsApi")]
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
