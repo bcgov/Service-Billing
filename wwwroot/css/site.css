@@ -371,3 +371,6 @@ legend{
 .bottom-nav{
     padding-top: 6px;
 }
+#categoryFilter{
+    max-width: 33%;
+}

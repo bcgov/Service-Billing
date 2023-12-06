@@ -6,10 +6,13 @@
 @model AllBillsViewModel;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
-    bool current = ViewData["Quarter"] == "Current Quarter";
-    bool previous = ViewData["Quarter"] == "Previous Quarter";
-    bool next = ViewData["Quarter"] == "Next Quarter";
-    bool all = ViewData["Quarter"] == "All Quarters";
+    ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
+    if (string.IsNullOrEmpty(searchModel?.QuarterFilter))
+        searchModel.QuarterFilter = "Current Quarter";
+    bool current = searchModel.QuarterFilter == "Current Quarter";
+    bool previous = searchModel.QuarterFilter == "Previous Quarter";
+    bool next = searchModel.QuarterFilter == "Next Quarter";
+    bool all = searchModel.QuarterFilter == "All Quarters";
 }
 @{
     var user = User as ClaimsPrincipal;
@@ -21,9 +24,9 @@
 
 @if (!Model.Bills.Any())
 {
-    if (!String.IsNullOrEmpty(ViewData["ClientNumber"].ToString()) && int.Parse(ViewData["ClientNumber"].ToString()) > 0)
+    if (searchModel?.ClientNumber > 0)
     {
-        <h3>No charges for client number @ViewData["ClientNumber"] have been found for the selected fiscal period. You can try searching previous or all quarters, or clearing other search filters.</h3>
+        <h3>No charges for client number @searchModel?.ClientNumber have been found for the selected fiscal period. You can try searching previous or all quarters, or clearing other search filters.</h3>
     }
     else
     {
@@ -35,7 +38,7 @@
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    <h2>@ViewData["Quarter"]</h2>
+    <h2>@searchModel?.QuarterFilter</h2>
 
     <div class="table-filter-section">
         <form asp-action="Index" method="get">
@@ -60,8 +63,8 @@
                                 foreach (Ministry ministry in ministries)
                                 {
                                     string selectedMinistry = "";
-                                    if (ViewData["MinistryFilter"] != null)
-                                        selectedMinistry = ViewData["MinistryFilter"].ToString();
+                                    if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
+                                        selectedMinistry = searchModel.MinistryFilter;
 
                                     if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
                                     {
@@ -77,13 +80,13 @@
                     </div>
                     <div>
                         <label for="titleFilter">Program</label>
-                        <input type="text" name="titleFilter" value="@ViewData["TitleFilter"]" />
+                        <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
                         <label for="categoryFilter">Service Category</label>
-                        <select name="categoryFilter" value="@ViewData["CategoryFilter"]">
+                        <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter">
                             <option value="-1"></option>
                             @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                             {
-                                if (ViewData["CategoryFilter"] != null && category.ServiceId == (int)ViewData["CategoryFilter"])
+                                if (searchModel?.CategoryFilter > 0 && category.ServiceId == searchModel?.CategoryFilter)
                                 {
                                     <option value="@category.ServiceId" selected>@category.Name</option>
                                 }
@@ -94,17 +97,17 @@
                             }
                         </select>
                         <label for="authorityFilter">Expense Authority</label>
-                        <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+                        <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
                         <label for="clientNumber">GDX Client No.</label>
-                        <input type="number" name="clientNumber" value="@ViewData["ClientNumber"]" />
+                        <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
 
                         <label for="keyword">Keyword</label>
-                        <input type="text" name="keyword" value="@ViewData["Keyword"]" />
+                        <input type="text" name="keyword" value="@searchModel.Keyword" />
                         @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
                         @ViewData["Inactive"] *@
                     </div>
-                    <input type="text" name="quarterFilter" value="@ViewData["QuarterFilter"]" hidden />
+                    <input type="text" name="quarterFilter" value="@searchModel.QuarterFilter" hidden />
                 </div>
                 <div class="ui-section-buttons">
                     <div class="option-buttons">
@@ -139,7 +142,7 @@
                 <th scope="col">Fiscal Period</th>
                 <th scope="col">URL or IDIR</th>
                 <th scope="col">Service Category</th>
-                @if (ViewData["Quarter"] == "All Quarters")
+                @if (searchModel.QuarterFilter == "All Quarters")
                 {
                     <th>Fiscal Period</th>
                 }
@@ -182,7 +185,7 @@
                             }
                         }
                     </td>
-                    @if (ViewData["Quarter"] == "All Quarters")
+                    @if (searchModel?.QuarterFilter == "All Quarters")
                     {
                         <td>@bill.FiscalPeriod</td>
                     }
