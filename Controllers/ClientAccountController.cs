@@ -14,14 +14,12 @@ using Microsoft.Identity.Abstractions;
 using MailKit.Security;
 using MimeKit;
 using MailKit.Net.Smtp;
-using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Principal;
 using System.Security.Claims;
 using Service_Billing.Extensions;
 using Service_Billing.Filters;
-using Microsoft.AspNetCore.Cors;
 
 namespace Service_Billing.Controllers
 {
@@ -32,10 +30,10 @@ namespace Service_Billing.Controllers
         private readonly IMinistryRepository _ministryRepository;
         private readonly IBillRepository _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
-        private readonly GraphServiceClient _graphServiceClient;
+        private readonly GraphServiceClient? _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<ClientAccountController> _logger;
-        private readonly string[] _graphScopes;
+        private readonly string[]? _graphScopes;
         private readonly IEmailService _emailService;
 
         
@@ -135,7 +133,7 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ClientIntakeViewModel model)
+        public IActionResult Edit(ClientIntakeViewModel model)
         {
             if (ModelState.IsValid)
             {
@@ -307,6 +305,8 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                if (_graphServiceClient == null)
+                    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
                 var queriedUsers = await _graphServiceClient.Users.Request()
                     .Filter($"startswith(displayName, '{term}')")
                     .Top(8)
@@ -342,8 +342,10 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> CurrentUserAccounts()
+        public IActionResult CurrentUserAccounts()
         {
+            if (_graphServiceClient == null)
+                throw new Exception("GraphServiceClient is null in BillsController.CurrentUserAccounts");
             User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
             IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
 
@@ -378,7 +380,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             try
@@ -415,7 +417,7 @@ namespace Service_Billing.Controllers
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer")]
-        public async Task<IActionResult> SetIsActiveForClient(int id, bool active)
+        public IActionResult SetIsActiveForClient(int id, bool active)
         {
             try
             {

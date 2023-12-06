@@ -46,9 +46,6 @@ namespace Service_Billing.Controllers
             _logger = logger;
         }
 
-        //That's a lot of parameters. Maybe we should pass a JSON object instead.
-        public IActionResult Index(string quarterFilter,
-            string ministryFilter,
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
 
@@ -63,8 +60,6 @@ namespace Service_Billing.Controllers
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }
-            ViewData["QuarterFilter"] = quarterFilter;
-            ViewData["MinistryFilter"] = ministryFilter;
             ViewData["searchModel"] = searchModel;
         
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
