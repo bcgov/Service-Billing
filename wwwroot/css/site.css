@@ -358,3 +358,19 @@ legend{
     margin-left: 4px;
     max-width: 40%;
 }
+
+.table-right {
+    font-weight: bold;
+    padding-right: 18px;
+    text-align: right;
+    padding-bottom: 4px;
+}
+#deactivate-client{
+    float: right;
+}
+.bottom-nav{
+    padding-top: 6px;
+}
+#categoryFilter{
+    max-width: 33%;
+}

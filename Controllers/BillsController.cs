@@ -46,15 +46,7 @@ namespace Service_Billing.Controllers
             _logger = logger;
         }
 
-        //That's a lot of parameters. Maybe we should pass a JSON object instead.
-        public IActionResult Index(string quarterFilter,
-            string ministryFilter,
-            string titleFilter,
-            int categoryFilter,
-            string authorityFilter,
-            int clientNumber,
-            string keyword,
-            bool inactive)
+        public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
 
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
@@ -68,16 +60,9 @@ namespace Service_Billing.Controllers
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }
-            ViewData["QuarterFilter"] = quarterFilter;
-            ViewData["MinistryFilter"] = ministryFilter;
-            ViewData["TitleFilter"] = titleFilter;
-            ViewData["CategoryFilter"] = categoryFilter;
-            ViewData["AuthorityFilter"] = authorityFilter;
-            ViewData["ClientNumber"] = clientNumber;  //Client ID!
-            ViewData["Keyword"] = keyword;
-            ViewData["Inactive"] = inactive;
-
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword, inactive);
+            ViewData["searchModel"] = searchModel;
+        
+            IEnumerable<Bill> bills = GetFilteredBills(searchModel);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
 
@@ -316,60 +301,49 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<Bill> GetFilteredBills(string quarterFilter,
-        string ministryFilter,
-        string titleFilter,
-        int categoryFilter,
-        string authorityFilter,
-        int clientNumber,
-        string keyword,
-        bool inactive = false)
+        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel? searchParams)
         {
             IEnumerable<Bill> bills;
-            switch (quarterFilter)
+            switch (searchParams?.QuarterFilter)
             {
                 case "current":
                 default:
-                    ViewData["Quarter"] = "Current Quarter";
                     bills = _billRepository.GetCurrentQuarterBills();
                     break;
                 case "previous":
-                    ViewData["Quarter"] = "Previous Quarter";
                     bills = _billRepository.GetPreviousQuarterBills();
                     break;
                 case "next":
-                    ViewData["Quarter"] = "Next Quarter";
                     bills = _billRepository.GetNextQuarterBills();
                     break;
                 case "all":
-                    ViewData["Quarter"] = "All Quarters";
                     bills = _billRepository.AllBills;
                     break;
             }
             // now filter the results
-            if (!inactive)
+            if (searchParams?.Inactive != null && (bool)(searchParams?.Inactive))
             {
                 bills = bills.Where(b => b.IsActive);
             }
            
-            if (!string.IsNullOrEmpty(ministryFilter))
-                bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(ministryFilter.ToLower()));
-            if (!string.IsNullOrEmpty(titleFilter))
-                bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(titleFilter.ToLower()));
-            if (categoryFilter > 0)
-                bills = bills.Where(x => x.ServiceCategoryId == categoryFilter);
-            if (!string.IsNullOrEmpty(keyword))
-                bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(keyword.ToLower())) ||
-                   (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(keyword.ToLower())) ||
-                    (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(keyword.ToLower())) ||
-                    (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(keyword.ToLower())));
-            if (!string.IsNullOrEmpty(authorityFilter))
+            if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
+                bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
+            if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
+                bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+            if (searchParams?.CategoryFilter > 0)
+                bills = bills.Where(x => x.ServiceCategoryId == searchParams?.CategoryFilter);
+            if (!string.IsNullOrEmpty(searchParams?.Keyword))
+                bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                   (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                    (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                    (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
+            if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
             {
                 List<Bill> filteredBills = new List<Bill>();
                 foreach (Bill bill in bills)
                 {
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(authorityFilter))
+                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                     {
                         filteredBills.Append(bill);
                     }
@@ -377,25 +351,19 @@ namespace Service_Billing.Controllers
 
                 bills = filteredBills;
             }
-            if (clientNumber > 0)
+            if (searchParams?.ClientNumber > 0)
             {
                // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
-                bills = bills.Where(x => x.Id == clientNumber);
+                bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
             }
          
             return bills;
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(string quarterFilter,
-        string ministryFilter,
-        string titleFilter,
-        int categoryFilter,
-        string authorityFilter,
-        int clientNumber,
-        string keyword)
+        public async Task<IActionResult> WriteToCSV(ChargeIndexSearchParamsModel? searchParams)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
+            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
             try
             {
                 using var memoryStream = new MemoryStream();
@@ -406,8 +374,8 @@ namespace Service_Billing.Controllers
                     csvWriter.NextRecord();
                     foreach (Bill bill in bills)
                     {
-                        ServiceCategory serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-                        ClientAccount account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                        ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                        ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                         ChargeRow row = new ChargeRow();
                         row.ClientNumber = bill.ClientAccountId;
                         row.ClientName = bill.ClientName;
@@ -435,27 +403,27 @@ namespace Service_Billing.Controllers
                   //  csvWriter.WriteRecords(bills);
                 }
                 string fileName = "Charges";
-                if (!string.IsNullOrEmpty(quarterFilter))
+                if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
                 {
-                    if (quarterFilter == "all")
+                    if (searchParams.QuarterFilter == "all")
                         fileName += "-all-Quarters";
                     if (bills.Any())
                     {
                         fileName += $"={bills.First().BillingCycle}";
                     }
                 }
-                if (!String.IsNullOrEmpty(ministryFilter))
-                    fileName += $"-{ministryFilter}";
-                if (!String.IsNullOrEmpty(titleFilter))
-                    fileName += $"-{titleFilter}";
-                if (categoryFilter > 0)
+                if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
+                    fileName += $"-{searchParams.MinistryFilter}";
+                if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
+                    fileName += $"-{searchParams.TitleFilter}";
+                if (searchParams?.CategoryFilter > 0)
                 {
-                    ServiceCategory category = _categoryRepository.GetById(categoryFilter);
+                    ServiceCategory? category = _categoryRepository.GetById(searchParams.CategoryFilter);
                     if (category != null)
                         fileName += $"-{category.Name}";
                 }
-                if (!String.IsNullOrEmpty(authorityFilter))
-                    fileName += $"-{authorityFilter}";
+                if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
+                    fileName += $"-{searchParams.AuthorityFilter}";
 
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".csv";
@@ -469,31 +437,25 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> ShowReport(string quarterFilter,
-        string ministryFilter,
-        string titleFilter,
-        int categoryFilter,
-        string authorityFilter,
-        int clientNumber,
-        string keyword)
+        public async Task<IActionResult> ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
+            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try
             {
                 GeneratedReportViewModel model = new GeneratedReportViewModel();
-                model.BillingQuarter = quarterFilter;
-                model.Ministry = ministryFilter;
-                model.Title = titleFilter;
-                model.Authority = authorityFilter;
-                model.ClientNumber = clientNumber;
-                if (categoryFilter > 0)
+                model.BillingQuarter = !String.IsNullOrEmpty(searchParams?.QuarterFilter) ? searchParams.QuarterFilter : string.Empty;
+                model.Ministry = !String.IsNullOrEmpty(searchParams?.MinistryFilter) ? searchParams.MinistryFilter : string.Empty;
+                model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
+                model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
+                model.ClientNumber = searchParams?.ClientNumber  > 0 ? (int)searchParams.ClientNumber : -1;
+                if (searchParams?.CategoryFilter > 0)
                 {
-                    ServiceCategory? serviceCategory = _categoryRepository.GetById(categoryFilter);
+                    ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
                     if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
                         model.Service = serviceCategory.Name;
                 }
-                model.ServiceCategoryId = categoryFilter;
+                model.ServiceCategoryId = searchParams?.CategoryFilter > 0 ? (int)searchParams.CategoryFilter : -1;
                 SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
 
 
@@ -510,15 +472,9 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ReportToCSV(string quarterFilter,
-        string ministryFilter,
-        string titleFilter,
-        int categoryFilter,
-        string authorityFilter,
-        int clientNumber,
-        string keyword)
+        public async Task<IActionResult> ReportToCSV(ChargeIndexSearchParamsModel? searchParams)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(quarterFilter, ministryFilter, titleFilter, categoryFilter, authorityFilter, clientNumber, keyword);
+            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
             SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;

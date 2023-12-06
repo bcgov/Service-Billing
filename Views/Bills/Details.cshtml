@@ -1,151 +1,178 @@
 ﻿@model Service_Billing.Models.Bill
-
 @{
     ViewData["Title"] = "Details";
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
 }
-
 <h1>Details</h1>
-
 <div>
     <h4>@Model.Id - @Model.Title</h4>
     <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            Client Account
-        </dt>
-        <dd class = "col-sm-10">
-            @if(clientAccount != null)
-            {
-                <a asp-controller="ClientAccount"
-                   asp-action="Details"
-                   asp-route-id="@clientAccount.Id">@clientAccount.Name</a>
-            }
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.Id)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.IdirOrUrl)
-        </dt>
-        <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.IdirOrUrl) && Model.IdirOrUrl.ToLower().StartsWith("http"))
-            {
-                <a href="@Model.IdirOrUrl" target="blank">@Html.DisplayFor(model => model.IdirOrUrl)</a>
-            }
-            else if (!String.IsNullOrEmpty(Model.IdirOrUrl))
-            {
-                @Model.IdirOrUrl
-            }
-            else
-            {
-                <br/>
-            }
-        </dd>
-        <dt class = "col-sm-2">
-            Service Category
-        </dt>
-        <dd class = "col-sm-10">
-            @if(serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
-            {
-                @serviceCategory.Name
-            }
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FiscalPeriod)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FiscalPeriod)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Quantity)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Quantity)
-        </dd>
-        <dt class = "col-sm-2">
-            UOM
-        </dt>
-        <dd class = "col-sm-10">
-            @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.UOM))
-            {
-                @serviceCategory.UOM
-            }
-            else
-            {
-                <br />
-            }
-        </dd>
-        <dt class = "col-sm-2">
-            Expense Authority
-        </dt>
-        <dd class = "col-sm-10">
-            @if(clientAccount != null && !String.IsNullOrEmpty(clientAccount.ExpenseAuthorityName))
-            {
-                @clientAccount.ExpenseAuthorityName<br/>
-            }
-            else
-            {
-                <br />
-            }
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.EndDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TicketNumberAndRequester)
-        </dt>
-        <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.TicketNumberAndRequester))
-            {
-                @Html.DisplayFor(model => model.TicketNumberAndRequester)
-            }
-            else
-            {
-                <br />
-            }
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedBy)
-        </dt>
-        <dd class = "col-sm-10">
-            @if (!String.IsNullOrEmpty(Model.CreatedBy))
-            {
-                @Html.DisplayFor(model => model.CreatedBy)
-            }
-            else
-            {
-                <br />
-            }
-        </dd>
-        <dt class="col-sm-2">
-            @Html.DisplayNameFor(model => model.AggregateGLCode)
-        </dt>
-        <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.AggregateGLCode)
-        </dd>
-    </dl>
+    <table>
+        <tr>
+            <td class="table-right">
+                Client Account
+            </td>
+            <td>
+                @if (clientAccount != null)
+                {
+                    <a asp-controller="ClientAccount"
+                       asp-action="Details"
+                       asp-route-id="@clientAccount.Id">@clientAccount.Name</a>
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Id)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Id)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Title)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Title)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.IdirOrUrl)
+            </td>
+            <td>
+                @if (!String.IsNullOrEmpty(Model.IdirOrUrl) && Model.IdirOrUrl.ToLower().StartsWith("http"))
+                {
+                    <a href="@Model.IdirOrUrl" target="blank">@Html.DisplayFor(model => model.IdirOrUrl)</a>
+                }
+                else if (!String.IsNullOrEmpty(Model.IdirOrUrl))
+                {
+                    @Model.IdirOrUrl
+                }
+                else
+                {
+                    <br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                Service Category
+            </td>
+            <td>
+                @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
+                {
+                    @serviceCategory.Name
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.FiscalPeriod)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.FiscalPeriod)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.Quantity)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Quantity)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                UOM
+            </td>
+            <td>
+                @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.UOM))
+                {
+                    @serviceCategory.UOM
+                }
+                else
+                {
+                    <br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                Expense Authority
+            </td>
+            <td>
+                @if (clientAccount != null && !String.IsNullOrEmpty(clientAccount.ExpenseAuthorityName))
+                {
+                    @clientAccount.ExpenseAuthorityName
+
+                    <br />
+                }
+                else
+                {
+                    <br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.StartDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.StartDate)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.EndDate)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.EndDate)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.TicketNumberAndRequester)
+            </td>
+            <td>
+                @if (!String.IsNullOrEmpty(Model.TicketNumberAndRequester))
+                {
+                    @Html.DisplayFor(model => model.TicketNumberAndRequester)
+                }
+                else
+                {
+                    <br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.CreatedBy)
+            </td>
+            <td>
+                @if (!String.IsNullOrEmpty(Model.CreatedBy))
+                {
+                    @Html.DisplayFor(model => model.CreatedBy)
+                }
+                else
+                {
+                    <br />
+                }
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => model.AggregateGLCode)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.AggregateGLCode)
+            </td>
+        </tr>
+    </table>
 </div>
-<div>
+<div class="bottom-nav">
     <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
     <a asp-action="Index">Back to List</a>
 </div>

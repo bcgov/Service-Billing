@@ -52,19 +52,19 @@
                 </div>
 
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" >Primary Contact</label>
-                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact"  />
                 <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" placeholder="start entering surname to search" />
+                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact"  />
                 <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
 
                 <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact"  />
                 <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" placeholder="start entering surname to search" />
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact"  />
                 <div id="authorityContactSelect"> 
                 </div>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
@@ -112,7 +112,7 @@
 
 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-<script>
+@* <script>
     $(document).ready(function () {
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
@@ -149,8 +149,5 @@
                 }
             });
     });
-
-
-
-</script>
+</script> *@
 }
