@@ -102,12 +102,11 @@
             {
             { "clientNumber",  account.ClientNumber.ToString()}
             };
+                var displayRow = isMinistryClient
+                    && (nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
+                    || nameClaim.IsContainedIgnoringOrderAndCase(@Model.PrimaryContacts[account.Id] ?? ""));
 
-                var hideRow = isMinistryClient 
-                    && (!nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName) 
-                        || !nameClaim.IsContainedIgnoringOrderAndCase(@Model.PrimaryContacts[account.Id]));
-
-                <tr style="@(hideRow ? "display:none;" : "")">
+                <tr style="@(displayRow ? "" : "display:none;")">
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
