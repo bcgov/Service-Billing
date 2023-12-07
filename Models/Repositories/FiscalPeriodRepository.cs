@@ -13,18 +13,19 @@ namespace Service_Billing.Models.Repositories
         }
 
         // note that records are updated here, but changes aren't saved to database. See IBillRepository.PromoteChargesToNewQuarter
-        public async void UpdateRecord(int chargeId, string fiscalPeriod)
+        public async void UpdateRecord(int chargeId, string fiscalPeriod, decimal? amount)
         {
             FiscalPeriod record = new FiscalPeriod();
             record.ChargeId = chargeId;
             record.Period = fiscalPeriod;
+            record.Amount = amount;
        
             await _billingContext.AddAsync(record);
         }
 
-        public List<int> ChargeIdsByFiscalPeriod(string fiscalPeriod)
+        public Dictionary<int, decimal?> ChargeIdsAndCostByFiscalPeriod(string fiscalPeriod)
         {
-            return _billingContext.FiscalPeriod.Where( p => p.Period == fiscalPeriod).Select(p => p.ChargeId).ToList();
+            return _billingContext.FiscalPeriod.Where(p => p.Period == fiscalPeriod).ToDictionary(p => p.ChargeId, p => p.Amount);
         }
 
         public IEnumerable<FiscalPeriod> GetPeriodsByChargeId(int chargeId)

@@ -170,7 +170,7 @@ namespace Service_Billing.Models.Repositories
             
             foreach (Bill bill in billsToPromote)
             {
-                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod);
+                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
                 bill.FiscalPeriod = newQuarter;
                 _billingContext.Update(bill);
             }
@@ -225,8 +225,8 @@ namespace Service_Billing.Models.Repositories
         {
             try
             {
-                List<int> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsByFiscalPeriod(GetPreviousQuarterString()).Distinct().ToList();
-                return _billingContext.Bills.Where(b => previousQuarterChargeIds.Contains(b.Id));
+                Dictionary<int, decimal?> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
+                IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
                 
             }
             catch(Exception e) 
