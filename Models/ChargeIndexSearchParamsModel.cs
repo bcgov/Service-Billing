@@ -10,5 +10,6 @@
         public int? ClientNumber {  get; set; }
         public string? Keyword {  get; set; }
         public bool? Inactive { get; set; }
+        public bool ShouldRestrictToUserOwnedServices { get; set; }
     }
 }
