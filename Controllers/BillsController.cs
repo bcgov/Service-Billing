@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
+using MimeKit;
 using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
@@ -46,9 +48,10 @@ namespace Service_Billing.Controllers
             _logger = logger;
         }
 
+        [Authorize]
+        [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
-
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -60,12 +63,15 @@ namespace Service_Billing.Controllers
             {
                 ViewBag.ServiceCategories = categories.ToList();
             }
+            // restrict items based on user's privileges
+            searchModel.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer") 
+                && User.IsInRole("GDXBillingService.Owner"));
+
             ViewData["searchModel"] = searchModel;
         
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
-
             var authUser = User;
             if (authUser.IsMinistryClient())
             {
@@ -303,61 +309,92 @@ namespace Service_Billing.Controllers
 
         private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel? searchParams)
         {
-            IEnumerable<Bill> bills;
-            switch (searchParams?.QuarterFilter)
+            try
             {
-                case "current":
-                default:
-                    bills = _billRepository.GetCurrentQuarterBills();
-                    break;
-                case "previous":
-                    bills = _billRepository.GetPreviousQuarterBills();
-                    break;
-                case "next":
-                    bills = _billRepository.GetNextQuarterBills();
-                    break;
-                case "all":
-                    bills = _billRepository.AllBills;
-                    break;
-            }
-            // now filter the results
-            if (searchParams?.Inactive != null && (bool)(searchParams?.Inactive))
-            {
-                bills = bills.Where(b => b.IsActive);
-            }
-           
-            if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
-                bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
-            if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
-                bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-            if (searchParams?.CategoryFilter > 0)
-                bills = bills.Where(x => x.ServiceCategoryId == searchParams?.CategoryFilter);
-            if (!string.IsNullOrEmpty(searchParams?.Keyword))
-                bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                   (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                    (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                    (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
-            if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
-            {
-                List<Bill> filteredBills = new List<Bill>();
-                foreach (Bill bill in bills)
+
+                IEnumerable<Bill> bills;
+                switch (searchParams?.QuarterFilter)
                 {
-                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+                    case "current":
+                    default:
+                        bills = _billRepository.GetCurrentQuarterBills();
+                        break;
+                    case "previous":
+                        bills = _billRepository.GetPreviousQuarterBills();
+                        break;
+                    case "next":
+                        bills = _billRepository.GetNextQuarterBills();
+                        break;
+                    case "all":
+                        bills = _billRepository.AllBills;
+                        break;
+                }
+                // now filter the results
+                if (searchParams?.Inactive != null && (bool)(searchParams?.Inactive))
+                {
+                    bills = bills.Where(b => b.IsActive);
+                }
+                if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
+                {
+                    string? userName = User.GetDisplayName(); //Alexander.Carmichael@Gov.bc.ca
+                    if (!string.IsNullOrEmpty(userName))
                     {
-                        filteredBills.Append(bill);
+                        List<int> serviceIds = new List<int>();
+                        string[] nameElements = userName.Split('.');
+                        if (nameElements.Length > 1)
+                        {
+                            nameElements[1] = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                        }
+                        List<int> serviceCategories = _categoryRepository.GetAll()
+                            .Where(c => !string.IsNullOrEmpty(c.ServiceOwner) 
+                            && c.ServiceOwner.ToLower().Contains(nameElements[1].ToLower())).Select(c => c.ServiceId).ToList();
+                        bills = bills.Where(b => serviceCategories.Contains(b.ServiceCategoryId));
+                    }
+                    else
+                    {
+                        throw new Exception("No service owner name could be determined based on User info.");
                     }
                 }
+                if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
+                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
+                if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
+                    bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+                if (searchParams?.CategoryFilter > 0)
+                    bills = bills.Where(x => x.ServiceCategoryId == searchParams?.CategoryFilter);
+                if (!string.IsNullOrEmpty(searchParams?.Keyword))
+                    bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                       (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
+                if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
+                {
+                    List<Bill> filteredBills = new List<Bill>();
+                    foreach (Bill bill in bills)
+                    {
+                        ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+                        {
+                            filteredBills.Append(bill);
+                        }
+                    }
 
-                bills = filteredBills;
+                    bills = filteredBills;
+
+                }
+                if (searchParams?.ClientNumber > 0)
+                {
+                    // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
+                    bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
+                }
+
+                return bills;
             }
-            if (searchParams?.ClientNumber > 0)
+            catch(Exception ex)
             {
-               // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
-                bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
+                _logger.LogError("An error occurred while trying to filter charges in Index view");
+                _logger.LogError(ex.Message);
+                return null;
             }
-         
-            return bills;
         }
 
         [HttpGet]

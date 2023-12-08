@@ -18,5 +18,6 @@ namespace Service_Billing.Models.Repositories
         Task CreateBill(Bill bill);
         Task PromoteChargesToNewQuarter();
         Task Update(Bill bill);
+        Task UpdateAllChargesForServiceCategory(int serviceCategoryId);
     }
 }

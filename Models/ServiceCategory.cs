@@ -27,5 +27,8 @@ namespace Service_Billing.Models
 
         [Display(Name = "Service Owner")]
         public string? ServiceOwner { get; set; }
+
+        [NotMapped]
+        public bool UpdateCharges { get; set; } = false;
     }
 }

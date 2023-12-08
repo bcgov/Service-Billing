@@ -303,5 +303,22 @@ namespace Service_Billing.Models.Repositories
             await _billingContext.SaveChangesAsync();
         }
 
+        public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)
+        {
+            IEnumerable<Bill> charges = _billingContext.Bills.Where(b => b.ServiceCategoryId == serviceCategoryId);
+            ServiceCategory? service = _billingContext.ServiceCategories.FirstOrDefault(s => s.ServiceId == serviceCategoryId);
+            if(service != null)
+            {
+                decimal newCost;
+                if(decimal.TryParse(service.Costs, out newCost))
+                {
+                    foreach (Bill charge in charges)
+                    {
+                        charge.Amount = newCost * charge.Quantity;
+                        await Update(charge);
+                    }
+                }
+            }
+        }
     }
 }
