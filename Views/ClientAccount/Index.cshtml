@@ -103,8 +103,8 @@
             { "clientNumber",  account.ClientNumber.ToString()}
             };
                 var hideRow = isMinistryClient
-                    && (!"anlashle".IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
-                    || !"anlashle".IsContainedIgnoringOrderAndCase(@Model.PrimaryContacts[account.Id] ?? ""));
+                    && (!nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
+                    || !nameClaim.IsContainedIgnoringOrderAndCase(@Model.PrimaryContacts[account.Id] ?? ""));
 
                 <tr style="@(hideRow ? "display:none;" : "")">
                     <td>
