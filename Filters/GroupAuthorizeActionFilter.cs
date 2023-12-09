@@ -1,26 +1,28 @@
 ﻿using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Service_Billing.Extensions;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Service_Billing.Filters
 {
-
-public class GroupAuthorizeActionFilter : IActionFilter
-{
-    public void OnActionExecuting(ActionExecutingContext context)
+    public class GroupAuthorizeActionFilter : IActionFilter
     {
-        var user = context.HttpContext.User;
-        var isNotAuthorized = user.IsMinistryClient();
-
-        if (isNotAuthorized)
+        public void OnActionExecuting(ActionExecutingContext context)
         {
-            context.Result = new UnauthorizedResult();
+            var user = context.HttpContext.User;
+            var authorizationService = context.HttpContext.RequestServices.GetRequiredService<IAuthorizationService>();
+
+            var isNotAuthorized = user.IsMinistryClient(authorizationService);
+
+            if (isNotAuthorized)
+            {
+                context.Result = new UnauthorizedResult();
+            }
+        }
+
+        public void OnActionExecuted(ActionExecutedContext context)
+        {
         }
     }
-
-    public void OnActionExecuted(ActionExecutedContext context)
-    {
-    }
-}
 
 }

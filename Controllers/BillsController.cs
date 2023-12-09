@@ -29,12 +29,14 @@ namespace Service_Billing.Controllers
         private readonly GraphServiceClient _graphServiceClient;
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<BillsController> _logger;
+        private readonly IAuthorizationService _authorizationService;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
             IServiceCategoryRepository categoryRepository,
             IClientAccountRepository clientAccountRepository,
             IMinistryRepository ministryRepository,
+            IAuthorizationService authorizationService,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -46,6 +48,8 @@ namespace Service_Billing.Controllers
             _clientAccountRepository = clientAccountRepository;
             _ministryRepository = ministryRepository;
             _logger = logger;
+            _authorizationService = authorizationService;
+
         }
 
         [Authorize]
@@ -73,7 +77,7 @@ namespace Service_Billing.Controllers
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             var authUser = User;
-            if (authUser.IsMinistryClient())
+            if (authUser.IsMinistryClient(_authorizationService))
             {
                 var name = authUser?.FindFirst("name");
                 if (name is not null) ViewData["NameClaim"] = name.Value;
