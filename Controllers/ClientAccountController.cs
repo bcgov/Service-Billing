@@ -20,6 +20,11 @@ using System.Security.Principal;
 using System.Security.Claims;
 using Service_Billing.Extensions;
 using Service_Billing.Filters;
+using Microsoft.AspNetCore.Authentication;
+using System.Net.Http.Headers;
+using NuGet.Configuration;
+using Azure;
+using System.Text.Json;
 
 namespace Service_Billing.Controllers
 {
@@ -35,13 +40,15 @@ namespace Service_Billing.Controllers
         private readonly ILogger<ClientAccountController> _logger;
         private readonly string[]? _graphScopes;
         private readonly IEmailService _emailService;
+        private readonly IAuthorizationService _authorizationService;
 
-        
+
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
             IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
             IBillRepository billRepository,
+            IAuthorizationService authorizationService,
             IServiceCategoryRepository categoryRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -59,6 +66,7 @@ namespace Service_Billing.Controllers
             _logger = logger;
             _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             _emailService = emailService;
+            _authorizationService = authorizationService;
         }
 
         // GET: ClientAccountController
@@ -80,7 +88,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
             var authUser = User;
-            if (authUser.IsMinistryClient())
+            if (authUser.IsMinistryClient(_authorizationService))
             {
                 var name = authUser?.FindFirst("name");
                 if (name is not null) ViewData["NameClaim"] = name.Value;
@@ -98,12 +106,12 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            if(team == null)
+            if (team == null)
                 team = new ClientTeam();
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
-            
+
             return View(model);
         }
 
@@ -323,11 +331,11 @@ namespace Service_Billing.Controllers
 
                 return new JsonResult(contacts);
             }
-            catch(ServiceException svcex)
+            catch (ServiceException svcex)
             {
                 _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
                 _logger.LogWarning(svcex.Message);
-         
+
                 string[] scopes = { "user.read", "user.readbasic.all" };
                 _consentHandler.ChallengeUser(scopes);
                 return new EmptyResult();
@@ -445,7 +453,7 @@ namespace Service_Billing.Controllers
                 }
                 return Ok(200);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.ToString());
                 return StatusCode(500);
