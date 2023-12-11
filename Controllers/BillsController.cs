@@ -65,11 +65,13 @@ namespace Service_Billing.Controllers
             }
             if (categories != null && categories.Any())
             {
+                if(!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && User.IsInRole("GDXBillingService.Owner"))
+                {
+                    categories = categories.Where(c => GetUserOwnedServiceIds().Contains(c.ServiceId));
+                }
                 ViewBag.ServiceCategories = categories.ToList();
             }
-            // restrict items based on user's privileges
-            searchModel.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
-                && User.IsInRole("GDXBillingService.Owner"));
 
             ViewData["searchModel"] = searchModel;
 
@@ -311,10 +313,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel? searchParams)
+        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams)
         {
             try
             {
+                // restrict items based on user's privileges
+                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && User.IsInRole("GDXBillingService.Owner"));
 
                 IEnumerable<Bill> bills;
                 switch (searchParams?.QuarterFilter)
@@ -340,24 +345,8 @@ namespace Service_Billing.Controllers
                 }
                 if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
                 {
-                    string? userName = User.GetDisplayName(); //Alexander.Carmichael@Gov.bc.ca
-                    if (!string.IsNullOrEmpty(userName))
-                    {
-                        List<int> serviceIds = new List<int>();
-                        string[] nameElements = userName.Split('.');
-                        if (nameElements.Length > 1)
-                        {
-                            nameElements[1] = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
-                        }
-                        List<int> serviceCategories = _categoryRepository.GetAll()
-                            .Where(c => !string.IsNullOrEmpty(c.ServiceOwner)
-                            && c.ServiceOwner.ToLower().Contains(nameElements[1].ToLower())).Select(c => c.ServiceId).ToList();
-                        bills = bills.Where(b => serviceCategories.Contains(b.ServiceCategoryId));
-                    }
-                    else
-                    {
-                        throw new Exception("No service owner name could be determined based on User info.");
-                    }
+                    List<int> serviceIds = GetUserOwnedServiceIds();
+                    bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
@@ -591,6 +580,36 @@ new { Id = "Grand Total", Name = total },
             }
 
             return servicesAndSums;
+        }
+
+        public List<int> GetUserOwnedServiceIds()
+        {
+            try
+            {
+                string? userName = User.GetDisplayName(); //Firstname.Lastname@Gov.bc.ca
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    List<int> serviceIds = new List<int>();
+                    string[] nameElements = userName.Split('.');
+                    if (nameElements.Length > 1)
+                    {
+                        nameElements[1] = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                    }
+                    List<int> serviceCategories = _categoryRepository.GetAll()
+                        .Where(c => !string.IsNullOrEmpty(c.ServiceOwner)
+                        && c.ServiceOwner.ToLower().Contains(nameElements[1].ToLower())).Select(c => c.ServiceId).ToList();
+                    return serviceCategories;
+                }
+                else
+                {
+                    throw new Exception("No service owner name could be determined based on User info.");
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            return new List<int>();
         }
     }
 
