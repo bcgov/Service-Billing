@@ -26,7 +26,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Costs" class="control-label"></label>
-                <input asp-for="Costs" class="form-control" />
+                <input asp-for="Costs" class="form-control" id="costInput"/>
                 <span asp-validation-for="Costs" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -60,7 +60,7 @@
             <input type="hidden" asp-for="UpdateCharges" class="form-control" id="shouldUpdate" />
         </form>
             <div class="form-group">
-                <input type="submit" value="Save" onclick="offerUpdate(@Model.ServiceId)" class="btn btn-primary" />
+            <input type="submit" value="Save" onclick="checkBeforeSubmitting(@Model.ServiceId)" class="btn btn-primary" />
             </div>
         <div id="dialog" title="All Done">
             <p>This service category will be updated.</p>
@@ -82,6 +82,7 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
+        var _isDirty = false;
         $("#dialog").dialog({
             resizable: false,
             height: "auto",
@@ -90,7 +91,7 @@
         });
 
         const offerUpdate = ((val) => {
-            $("#dialog").dialog("option", "id", val);
+            $("#dialog").dialog("option", "id");
             $("#dialog").dialog("open");
         });
 
@@ -101,8 +102,16 @@
             $('#thisForm').submit();
         });
 
+        const checkBeforeSubmitting = ((val) => {
+            if (_isDirty) {
+                offerUpdate(val);
+            } else {
+                $('#thisForm').submit();
+            }
+        });
+
         $(document).ready(function () {
-            var _isDirty = false;
+            
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
             $("#owner").autocomplete({
@@ -110,8 +119,9 @@
                 delay: 500
             });
 
-            $('input').change(function(){
+            $('#costInput').change(function(){
                 _isDirty = true;
+                console.log("cost changed");
             });
         });
 

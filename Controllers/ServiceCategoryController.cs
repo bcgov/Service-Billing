@@ -66,14 +66,14 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(ServiceCategory serviceCategory)
+        public async Task<IActionResult> Edit(ServiceCategory serviceCategory)
         {
             try
             {
                 _categoryRepository.Update(serviceCategory);
                 if(serviceCategory.UpdateCharges)
                 {
-                    _billRepository.UpdateAllChargesForServiceCategory(serviceCategory.ServiceId);
+                    await _billRepository.UpdateAllChargesForServiceCategory(serviceCategory.ServiceId);
                 }
             }
 
