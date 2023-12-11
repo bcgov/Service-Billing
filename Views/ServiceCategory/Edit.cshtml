@@ -11,7 +11,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" id="thisForm">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="ServiceId" />
             <div class="form-group">
@@ -57,10 +57,18 @@
                 </div>
                 <span asp-validation-for="ServiceOwner" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
+            <input type="hidden" asp-for="UpdateCharges" class="form-control" id="shouldUpdate" />
         </form>
+            <div class="form-group">
+                <input type="submit" value="Save" onclick="offerUpdate(@Model.ServiceId)" class="btn btn-primary" />
+            </div>
+        <div id="dialog" title="All Done">
+            <p>This service category will be updated.</p>
+            <p>Would you like to update amounts for all charges associated with this service? This cannot be undone.</p>
+            <p>Prices reflected in previous quarter billings will not change.</p>
+            <input type="submit" value="Just Update Service" onclick="update(false)" class="btn btn-primary" />
+            <input type="submit" value="Update Charges Too" onclick="update(true)" class="btn btn-primary" />
+        </div>
     </div>
 </div>
 
@@ -68,18 +76,44 @@
     <a asp-action="Index">Back to List</a>
 </div>
 
+
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
-
     <script>
+        $("#dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            autoOpen: false
+        });
+
+        const offerUpdate = ((val) => {
+            $("#dialog").dialog("option", "id", val);
+            $("#dialog").dialog("open");
+        });
+
+        const update = ((val) => {
+            if (val) {
+                $("#shouldUpdate").val(true);
+            }
+            $('#thisForm').submit();
+        });
+
         $(document).ready(function () {
+            var _isDirty = false;
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
             $("#owner").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
+
+            $('input').change(function(){
+                _isDirty = true;
+            });
         });
+
     </script>
 }
