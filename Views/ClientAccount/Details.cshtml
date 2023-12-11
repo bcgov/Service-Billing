@@ -7,13 +7,13 @@
 { "clientNumber", Model.Account.ClientNumber.ToString() }
 };
 }
-@{
-    var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient() ?? false;
-}
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
 @inject IAuthorizationService AuthorizationService
+@{
+    var user = User as ClaimsPrincipal;
+    var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
+}
 <h1>Client Account Information</h1>
 <div>
     <h4>@Model.Account.Id-@Model.Account.Name</h4>
