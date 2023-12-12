@@ -380,7 +380,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
-                return bills;
+                return bills.OrderBy(c => c.ClientAccountId);
             }
             catch (Exception ex)
             {
