@@ -3,7 +3,10 @@
 *@
 @{
     var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient() ?? false;
+    //  var isMinistryClient = user?.IsMinistryClient() ?? false;
+    bool isAdmin = user != null && user.IsInRole("GDXBillingService.FinancialOfficer");
+    bool isServiceOwner = user != null && user.IsInRole("GDXBillingService.Owner");
+    bool isMinistryClient = user != null && user.IsInRole("GDXBillingService.User");
 }
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
@@ -34,18 +37,19 @@
             {
                 <li>@Html.ActionLink("Create Client Account", "Intake", "ClientAccount")</li>
             }
-            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+            @if (isAdmin)
             {
                 <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
             }
-            else
-            {
-                <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
-            }
-            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+            @if (isAdmin)
             {
                 <li>@Html.ActionLink("View Quarterly Reports", "Index", "Bills")</li>
             }
+            else if(isServiceOwner)
+            {
+                <li>@Html.ActionLink("View Reports for My Services", "Index","Bills")</li>
+            }
+
             @if (!isMinistryClient)
             {
                 <li>@Html.ActionLink("Order a Service", "Create", "Bills")</li>

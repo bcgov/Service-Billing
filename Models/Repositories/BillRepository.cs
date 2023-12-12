@@ -18,7 +18,7 @@ namespace Service_Billing.Models.Repositories
             _fiscalPeriodRepository = fiscalPeriodRepository;  
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.Bills.OrderBy(b => b.Title);
+        public IEnumerable<Bill> AllBills => _billingContext.Bills;
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {
@@ -170,7 +170,7 @@ namespace Service_Billing.Models.Repositories
             
             foreach (Bill bill in billsToPromote)
             {
-                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod);
+                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
                 bill.FiscalPeriod = newQuarter;
                 _billingContext.Update(bill);
             }
@@ -225,8 +225,8 @@ namespace Service_Billing.Models.Repositories
         {
             try
             {
-                List<int> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsByFiscalPeriod(GetPreviousQuarterString()).Distinct().ToList();
-                return _billingContext.Bills.Where(b => previousQuarterChargeIds.Contains(b.Id));
+                Dictionary<int, decimal?> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
+                IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
                 
             }
             catch(Exception e) 
@@ -303,5 +303,22 @@ namespace Service_Billing.Models.Repositories
             await _billingContext.SaveChangesAsync();
         }
 
+        public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)
+        {
+            IEnumerable<Bill> charges = _billingContext.Bills.Where(b => b.ServiceCategoryId == serviceCategoryId);
+            ServiceCategory? service = _billingContext.ServiceCategories.FirstOrDefault(s => s.ServiceId == serviceCategoryId);
+            if(service != null)
+            {
+                decimal newCost;
+                if(decimal.TryParse(service.Costs, out newCost))
+                {
+                    foreach (Bill charge in charges)
+                    {
+                        charge.Amount = newCost * charge.Quantity;
+                        await Update(charge);
+                    }
+                }
+            }
+        }
     }
 }

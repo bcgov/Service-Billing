@@ -16,11 +16,15 @@ namespace Service_Billing.Controllers
     public class ServiceCategoryController : Controller
     {
         private readonly IServiceCategoryRepository _categoryRepository;
+        private readonly IBillRepository _billRepository;
         private readonly ILogger<ServiceCategoryController> _logger;
 
-        public ServiceCategoryController(ILogger<ServiceCategoryController> logger, IServiceCategoryRepository categoryRepository)
+        public ServiceCategoryController(ILogger<ServiceCategoryController> logger, 
+            IServiceCategoryRepository categoryRepository,
+            IBillRepository billRepository)
         {
             _categoryRepository = categoryRepository;
+            _billRepository = billRepository;
             _logger = logger;
         }
 
@@ -62,15 +66,20 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(ServiceCategory serviceCategory)
+        public async Task<IActionResult> Edit(ServiceCategory serviceCategory)
         {
             try
             {
                 _categoryRepository.Update(serviceCategory);
+                if(serviceCategory.UpdateCharges)
+                {
+                    await _billRepository.UpdateAllChargesForServiceCategory(serviceCategory.ServiceId);
+                }
             }
+
             catch (DbUpdateException ex)
             {
-
+                _logger.LogError(ex.Message);
             }
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             return View("index", categories);

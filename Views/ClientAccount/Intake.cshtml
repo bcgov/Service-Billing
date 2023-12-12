@@ -44,12 +44,12 @@
             </div>
             <div class="form-group" id="intake-contacts">
                 <h3>Contacts</h3> 
-                <div id="intake-contacts-instructions">
+                @* <div id="intake-contacts-instructions">
                     To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
                     For example: "Smith, Jane CITZ:EX".
                     <br/>
                     Contacts matching your input will display in a dropdown menu for you to pick. 
-                </div>
+                </div> *@
 
                 <label asp-for="@Model.Team.PrimaryContact" class="control-label" >Primary Contact</label>
                 <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact"  />
