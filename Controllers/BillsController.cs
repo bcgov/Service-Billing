@@ -419,9 +419,13 @@ namespace Service_Billing.Controllers
                         row.Amount = @String.Format("${0:.##}", bill.Amount);
                         row.Quantity = bill.Quantity;
                         row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
-                        row.Created = bill.DateCreated?.Date;
-                        row.Start = bill.StartDate;
-                        row.End = bill.EndDate;
+                        if(bill.DateCreated != null)
+                            row.Created = bill.DateCreated.Value.ToShortDateString();
+                        if (bill.StartDate != null)
+                            row.Start = bill.StartDate.Value.ToShortDateString();
+                        if (bill.EndDate != null)
+                            row.End = bill.EndDate.Value.ToShortDateString();
+
                         row.CreatedBy = bill.CreatedBy;
                         row.AggregateGLCode = bill.AggregateGLCode;
                         row.FiscalPeriod = bill.FiscalPeriod;
@@ -627,9 +631,9 @@ new { Id = "Grand Total", Name = total },
         public Decimal? Quantity { get; set; }
         public string? UnitPrice { get; set; }
         public string? TicketNumber { get; set; }
-        public DateTime? Created { get; set; }
-        public DateTime? Start { get; set; }
-        public DateTime? End { get; set; }
+        public string? Created { get; set; }
+        public string? Start { get; set; }
+        public string? End { get; set; }
         public string? AggregateGLCode { get; set; }
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
