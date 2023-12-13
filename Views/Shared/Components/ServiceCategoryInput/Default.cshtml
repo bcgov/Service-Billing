@@ -1,16 +1,16 @@
-﻿@model IEnumerable<ServiceCategory>
+﻿@model Bill
 @{
     bool mustChangeServiceCategory = true;
-    int id = (int)ViewData["id"] != null ? (int)ViewData["id"] : -1;
+    IEnumerable<ServiceCategory> categories = ViewData["categories"] as IEnumerable<ServiceCategory>;
 }
 <div class="form-group">
     <label for="categorySelect">Service Category</label>
-    <select class="form-control" id="categorySelect">
-        @if(id > 0)
+    <select asp-for="@Model.ServiceCategoryId" class="form-control" id="categorySelect">
+        @if(Model != null && Model.ServiceCategoryId > 0)
         {
-            @foreach (ServiceCategory category in Model)
+            @foreach (ServiceCategory category in categories)
             {
-                if (category.ServiceId == id)
+                if (category.ServiceId == Model.ServiceCategoryId)
                 {
                     if (!category.IsActive)
                     {
@@ -33,7 +33,7 @@
         else
         {
             <option value="" disabled selected hidden>Select a service category</option>
-            @foreach (ServiceCategory category in Model)
+            @foreach (ServiceCategory category in categories)
             {
                 if (category.IsActive)
                 {
