@@ -85,7 +85,7 @@ namespace Service_Billing.Controllers
                 if (name is not null) ViewData["NameClaim"] = name.Value;
             }
 
-            return View(new AllBillsViewModel(bills, categories, clients));
+            return View(new AllBillsViewModel(bills));
         }
 
         public ActionResult Details(int id)

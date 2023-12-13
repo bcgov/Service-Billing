@@ -162,8 +162,8 @@
         <tbody>
             @foreach (var bill in Model.Bills)
             {
-                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
-                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
+                var category = bill.ServiceCategory;
+                var client = bill.ClientAccount;
 
                 var hideRow = isMinistryClient
                 && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
