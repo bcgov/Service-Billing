@@ -5,10 +5,10 @@ namespace Service_Billing.Components
 {
     public class ServiceCategoryInput : ViewComponent
     {
-        public IViewComponentResult Invoke(IEnumerable<ServiceCategory> categories, int id = -1)
+        public IViewComponentResult Invoke(IEnumerable<ServiceCategory> categories, Bill bill)
         {
-            ViewData["id"] = id;
-            return View(categories);
+            ViewData["categories"] = categories;
+            return View(bill);
         }
     }
 }

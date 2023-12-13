@@ -37,7 +37,7 @@
                 <input asp-for="@Model.IdirOrUrl" class="form-control" />
                 <span asp-validation-for="@Model.IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, id = Model.ServiceCategoryId })
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, bill = Model })
             <span asp-validation-for="@Model.ServiceCategoryId" class="text-danger"></span>
             <div class="form-group">
                 <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
