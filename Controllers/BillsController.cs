@@ -150,7 +150,7 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ViewData["Categories"] = categories;
-            ViewData["CurrentUser"] = await GetMyName();
+            ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.DateCreated);
