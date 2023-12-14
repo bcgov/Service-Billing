@@ -7,24 +7,15 @@ using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
 using CsvHelper;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Identity.Client;
-using Microsoft.Graph.TermStore;
-using Microsoft.Identity.Abstractions;
-using MailKit.Security;
-using MimeKit;
-using MailKit.Net.Smtp;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Principal;
-using System.Security.Claims;
 using Service_Billing.Extensions;
 using Service_Billing.Filters;
-using Microsoft.AspNetCore.Authentication;
 using System.Net.Http.Headers;
-using NuGet.Configuration;
-using Azure;
 using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using Service_Billing.Services.GraphApi;
 
 namespace Service_Billing.Controllers
 {
@@ -40,7 +31,9 @@ namespace Service_Billing.Controllers
         private readonly ILogger<ClientAccountController> _logger;
         private readonly string[]? _graphScopes;
         private readonly IEmailService _emailService;
+        private readonly IGraphApiService _graphApiService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IConfiguration _configuration;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -53,7 +46,8 @@ namespace Service_Billing.Controllers
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
-                            IEmailService emailService)
+                            IEmailService emailService,
+                            IGraphApiService graphApiService)
         {
             _graphServiceClient = graphServiceClient;
             _consentHandler = consentHandler;
@@ -66,13 +60,15 @@ namespace Service_Billing.Controllers
             _logger = logger;
             _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             _emailService = emailService;
+            _graphApiService = graphApiService;
             _authorizationService = authorizationService;
+            _configuration = configuration;
         }
 
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -313,18 +309,26 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if (_graphServiceClient == null)
-                    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
-                var queriedUsers = await _graphServiceClient.Users.Request()
-                    .Filter($"startswith(displayName, '{term}')")
-                    .Top(8)
-                    .Select("displayName, id")
-                    .GetAsync();
+                //if (_graphServiceClient == null)
+                //    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
+                //var queriedUsers = await _graphServiceClient.Users.Request()
+                //    .Filter($"startswith(displayName, '{term}')")
+                //    .Top(8)
+                //    .Select("displayName, id")
+                //    .GetAsync();
+
+                var cca = ConfidentialClientApplicationBuilder
+                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
+
+                var queriedUsers = await _graphApiService.GetUsersByDisplayName(term, cca);
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
 
-                foreach (var user in queriedUsers)
+                foreach (var user in queriedUsers.Value)
                 {
                     contacts.Add(user.DisplayName);
                 }

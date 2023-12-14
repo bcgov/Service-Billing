@@ -21,6 +21,7 @@ using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
 using Service_Billing.Filters;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Service_Billing.Services.GraphApi;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -106,6 +107,7 @@ builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 
 //builder.Services.AddHostedService<ChargePromotionService>();
@@ -162,6 +164,7 @@ builder.Services.AddAuthorization(options =>
 
 //track session data
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddHttpClient();
 
 builder.Services.AddSession(options =>
 {
