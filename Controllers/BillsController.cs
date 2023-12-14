@@ -339,7 +339,7 @@ namespace Service_Billing.Controllers
                         break;
                 }
                 // now filter the results
-                if (searchParams?.Inactive != null && (bool)(searchParams?.Inactive))
+                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
                 {
                     bills = bills.Where(b => b.IsActive);
                 }
