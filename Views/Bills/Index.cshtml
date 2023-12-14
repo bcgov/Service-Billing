@@ -86,13 +86,16 @@
                             <option value="-1"></option>
                             @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                             {
-                                if (searchModel?.CategoryFilter > 0 && category.ServiceId == searchModel?.CategoryFilter)
+                                if (category.IsActive)
                                 {
-                                    <option value="@category.ServiceId" selected>@category.Name</option>
-                                }
-                                else
-                                {
-                                    <option value="@category.ServiceId">@category.Name</option>
+                                    if (searchModel?.CategoryFilter > 0 && category.ServiceId == searchModel?.CategoryFilter)
+                                    {
+                                        <option value="@category.ServiceId" selected>@category.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@category.ServiceId">@category.Name</option>
+                                    }
                                 }
                             }
                         </select>
@@ -159,8 +162,8 @@
         <tbody>
             @foreach (var bill in Model.Bills)
             {
-                var category = Model.ServiceCategories.FirstOrDefault(s => s.ServiceId == bill.ServiceCategoryId);
-                var client = Model.ClientAccounts.FirstOrDefault(c => c.Id == bill.ClientAccountId);
+                var category = bill.ServiceCategory;
+                var client = bill.ClientAccount;
 
                 var hideRow = isMinistryClient
                 && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));

@@ -18,7 +18,7 @@ namespace Service_Billing.Models.Repositories
             _fiscalPeriodRepository = fiscalPeriodRepository;  
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.Bills.OrderBy(b => b.Title);
+        public IEnumerable<Bill> AllBills => _billingContext.Bills;
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {

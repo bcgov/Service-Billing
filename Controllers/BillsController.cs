@@ -65,14 +65,16 @@ namespace Service_Billing.Controllers
             }
             if (categories != null && categories.Any())
             {
+                if(!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && User.IsInRole("GDXBillingService.Owner"))
+                {
+                    categories = categories.Where(c => GetUserOwnedServiceIds().Contains(c.ServiceId));
+                }
                 ViewBag.ServiceCategories = categories.ToList();
             }
-            // restrict items based on user's privileges
-            searchModel.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer") 
-                && User.IsInRole("GDXBillingService.Owner"));
 
             ViewData["searchModel"] = searchModel;
-        
+
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
@@ -83,7 +85,7 @@ namespace Service_Billing.Controllers
                 if (name is not null) ViewData["NameClaim"] = name.Value;
             }
 
-            return View(new AllBillsViewModel(bills, categories, clients));
+            return View(new AllBillsViewModel(bills));
         }
 
         public ActionResult Details(int id)
@@ -126,22 +128,22 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Bill bill)
         {
-            
-                try
-                {
-                    await _billRepository.Update(bill);
-                    return View("details", bill);
-                }
-                catch (DbUpdateException ex)
-                {
-                    _logger.LogError($"Bill failed to update. Exception: {ex.InnerException}");
-                    ModelState.AddModelError("", "Unable to save changes. " +
-                        "Try again, and if the problem persists, " +
-                        "see your system administrator.");
-                }
 
-                return RedirectToAction(nameof(Index));
+            try
+            {
+                await _billRepository.Update(bill);
+                return View("details", bill);
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError($"Bill failed to update. Exception: {ex.InnerException}");
+                ModelState.AddModelError("", "Unable to save changes. " +
+                    "Try again, and if the problem persists, " +
+                    "see your system administrator.");
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
 
         [HttpGet]
         public async Task<ActionResult> Create(int accountId)
@@ -152,10 +154,10 @@ namespace Service_Billing.Controllers
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
             DetermineCurrentQuarter(bill, bill.DateCreated);
-            if(accountId > 0)
+            if (accountId > 0)
             {
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(accountId);
-                if(account != null)
+                if (account != null)
                 {
                     bill.ClientAccountId = accountId;
                     bill.ClientName = account.Name;
@@ -178,7 +180,7 @@ namespace Service_Billing.Controllers
                     // Add aggregate gl code. 
                     string aggregateCode = string.Empty;
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    if(account != null)
+                    if (account != null)
                     {
                         aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
                             $"{account.ServiceLine}.{account.STOB}.{account.Project}";
@@ -215,7 +217,7 @@ namespace Service_Billing.Controllers
                 }
                 decimal newAmount;
                 string cost = category.Costs;
-                if(!string.IsNullOrEmpty(cost) && cost.Contains('$'))
+                if (!string.IsNullOrEmpty(cost) && cost.Contains('$'))
                 {
                     cost = cost.Replace('$', ' ');
                     cost = cost.Trim();
@@ -311,10 +313,13 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel? searchParams)
+        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams)
         {
             try
             {
+                // restrict items based on user's privileges
+                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && User.IsInRole("GDXBillingService.Owner"));
 
                 IEnumerable<Bill> bills;
                 switch (searchParams?.QuarterFilter)
@@ -340,24 +345,8 @@ namespace Service_Billing.Controllers
                 }
                 if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
                 {
-                    string? userName = User.GetDisplayName(); //Alexander.Carmichael@Gov.bc.ca
-                    if (!string.IsNullOrEmpty(userName))
-                    {
-                        List<int> serviceIds = new List<int>();
-                        string[] nameElements = userName.Split('.');
-                        if (nameElements.Length > 1)
-                        {
-                            nameElements[1] = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
-                        }
-                        List<int> serviceCategories = _categoryRepository.GetAll()
-                            .Where(c => !string.IsNullOrEmpty(c.ServiceOwner) 
-                            && c.ServiceOwner.ToLower().Contains(nameElements[1].ToLower())).Select(c => c.ServiceId).ToList();
-                        bills = bills.Where(b => serviceCategories.Contains(b.ServiceCategoryId));
-                    }
-                    else
-                    {
-                        throw new Exception("No service owner name could be determined based on User info.");
-                    }
+                    List<int> serviceIds = GetUserOwnedServiceIds();
+                    bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
@@ -391,9 +380,9 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
-                return bills;
+                return bills.OrderBy(c => c.ClientAccountId);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError("An error occurred while trying to filter charges in Index view");
                 _logger.LogError(ex.Message);
@@ -421,27 +410,34 @@ namespace Service_Billing.Controllers
                         row.ClientNumber = bill.ClientAccountId;
                         row.ClientName = bill.ClientName;
                         row.Program = bill.Title;
-                        if(serviceCategory != null)
+                        if (serviceCategory != null)
                         {
                             row.GDXBusArea = serviceCategory.GDXBusArea;
                             row.ServiceCategory = serviceCategory.Name;
                         }
                         row.TicketNumber = bill.TicketNumberAndRequester;
-                        row.Amount = bill.Amount;
+                        row.Amount = @String.Format("${0:.##}", bill.Amount);
                         row.Quantity = bill.Quantity;
-                        row.Created = bill.DateCreated;
-                        row.Start = bill.StartDate;
-                        row.End = bill.EndDate;
+                        row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                        if(bill.DateCreated != null)
+                            row.Created = bill.DateCreated.Value.ToShortDateString();
+                        if (bill.StartDate != null)
+                            row.Start = bill.StartDate.Value.ToShortDateString();
+                        if (bill.EndDate != null)
+                            row.End = bill.EndDate.Value.ToShortDateString();
+
                         row.CreatedBy = bill.CreatedBy;
                         row.AggregateGLCode = bill.AggregateGLCode;
+                        row.FiscalPeriod = bill.FiscalPeriod;
+                        row.IdirOrURL = bill.IdirOrUrl;
                         if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
                             row.ExpenseAuthority = account.ExpenseAuthorityName;
 
                         csvWriter.WriteRecord(row);
                         csvWriter.NextRecord();
                     }
-                
-                  //  csvWriter.WriteRecords(bills);
+
+                    //  csvWriter.WriteRecords(bills);
                 }
                 string fileName = "Charges";
                 if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
@@ -489,7 +485,7 @@ namespace Service_Billing.Controllers
                 model.Ministry = !String.IsNullOrEmpty(searchParams?.MinistryFilter) ? searchParams.MinistryFilter : string.Empty;
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
-                model.ClientNumber = searchParams?.ClientNumber  > 0 ? (int)searchParams.ClientNumber : -1;
+                model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
                 if (searchParams?.CategoryFilter > 0)
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
@@ -501,6 +497,7 @@ namespace Service_Billing.Controllers
 
 
                 model.ServicesAndSums = servicesAndSums;
+
 
                 return View("Report", model);
             }
@@ -588,6 +585,36 @@ new { Id = "Grand Total", Name = total },
 
             return servicesAndSums;
         }
+
+        public List<int> GetUserOwnedServiceIds()
+        {
+            try
+            {
+                string? userName = User.GetDisplayName(); //Firstname.Lastname@Gov.bc.ca
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    List<int> serviceIds = new List<int>();
+                    string[] nameElements = userName.Split('.');
+                    if (nameElements.Length > 1)
+                    {
+                        nameElements[1] = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                    }
+                    List<int> serviceCategories = _categoryRepository.GetAll()
+                        .Where(c => !string.IsNullOrEmpty(c.ServiceOwner)
+                        && c.ServiceOwner.ToLower().Contains(nameElements[1].ToLower())).Select(c => c.ServiceId).ToList();
+                    return serviceCategories;
+                }
+                else
+                {
+                    throw new Exception("No service owner name could be determined based on User info.");
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+            return new List<int>();
+        }
     }
 
     // For exporting (filtered) charges from the Index view
@@ -599,14 +626,14 @@ new { Id = "Grand Total", Name = total },
         public string? IdirOrURL { get; set; }
         public string? GDXBusArea { get; set; }
         public string? ServiceCategory { get; set; }
-        public Decimal? Amount { get; set; }
+        public string? Amount { get; set; }
         public string? FiscalPeriod { get; set; }
         public Decimal? Quantity { get; set; }
+        public string? UnitPrice { get; set; }
         public string? TicketNumber { get; set; }
-        public DateTime? Created { get; set; }
-        public DateTime? Start { get; set; }
-        public DateTime? End { get; set; }
-        public DateTime? Cycle { get; set; }
+        public string? Created { get; set; }
+        public string? Start { get; set; }
+        public string? End { get; set; }
         public string? AggregateGLCode { get; set; }
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
