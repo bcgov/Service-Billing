@@ -127,5 +127,38 @@ namespace Service_Billing.Services.GraphApi
                 return emptyResponse;
             }
         }
+
+        public async Task<GraphUser> GetUserByDisplayName(string displayName, IConfidentialClientApplication cca)
+        {
+            var emptyResponse = new GraphUser();
+
+            try
+            {
+                var result = await cca.AcquireTokenForClient(new[] { "https://graph.microsoft.com/.default" })
+                                      .ExecuteAsync();
+                _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+
+                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(displayName)}')&$top=1&$select=id";
+
+                var response = await _httpClient.GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                    return emptyResponse;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var user = await response.Content.ReadFromJsonAsync<GraphUser>(
+                    new JsonSerializerOptions(defaults: JsonSerializerDefaults.Web)
+                );
+
+                return user ?? emptyResponse;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception in GetUserByDisplayName method: {ex.Message}");
+                return emptyResponse;
+            }
+        }
     }
 }

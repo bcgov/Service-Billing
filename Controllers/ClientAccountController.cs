@@ -16,6 +16,7 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Service_Billing.Services.GraphApi;
+using System.Security.Principal;
 
 namespace Service_Billing.Controllers
 {
@@ -197,7 +198,7 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public ActionResult Intake()
+        public async Task<ActionResult> Intake()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -234,10 +235,25 @@ namespace Service_Billing.Controllers
                     _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
 
                     int accountId = _clientAccountRepository.AddClientAccount(account);
-                    var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
-                    await _emailService.SendEmail("waino.steuber35@ethereal.email",
-                        "New account created",
-                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
+
+
+                    var cca = ConfidentialClientApplicationBuilder
+                       .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                       .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                       .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                        .Build();
+
+                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                    if (expenseAuthority is not null)
+                    {
+                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                        await _emailService.SendEmail(eaEmail,
+                            "New account created",
+                            $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
+                    }
                 }
                 else
                 {
