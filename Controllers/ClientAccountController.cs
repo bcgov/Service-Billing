@@ -104,9 +104,30 @@ namespace Service_Billing.Controllers
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             if (team == null)
                 team = new ClientTeam();
+            // check if user ought to be able to view this record
+            if(!User.IsInRole("GDXBillingService.Owner"))
+            {
+                string userLastName = GetUserLastName();
+                if(!String.IsNullOrEmpty(userLastName))
+                {
+                    if(!IsUserAccountContact(team, userLastName))
+                    {
+                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
+                        {
+
+                            return View("Unauthorized");
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning($"User tried to view Account details for client account with id: {id}, but user's name could not be discerned");
+                    return View("Unauthorized");
+                }
+            }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
+            ClientDetailsViewModel model = new ClientDetailsViewModel(account, charges, categories);
 
             return View(model);
         }
@@ -121,16 +142,7 @@ namespace Service_Billing.Controllers
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ClientIntakeViewModel model = new ClientIntakeViewModel();
             model.Account = account;
-            if (team != null)
-            {
-                model.Team = team;
-            }
-            else
-            {
-                _logger.LogWarning($"No client team was found for client account with ID {account.Id}.");
-                model.Team = new ClientTeam();
-            }
-
+        
             return View(model);
         }
 
@@ -143,26 +155,25 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    if (model.Team != null)
+                    if (model.Account.Team != null)
                     {
-                        if (model.Team.Id == 0)
+                        if (model.Account.Team.Id == 0)
                         {
-                            model.Team.Name = $"{model.Account.Name} Team";
-                            model.Account.TeamId = _clientTeamRepository.Add(model.Team);
-                            model.Account.ClientTeam = model.Team.Name;
+                            model.Account.Team.Name = $"{model.Account.Name} Team";
+                            model.Account.TeamId = _clientTeamRepository.Add(model.Account.Team); // we should probably do away with client teams being a separate table
                         }
                         else
                         {
-                            _clientTeamRepository.Update(model.Team);
-                            model.Account.TeamId = model.Team.Id;
-                            model.Account.ClientTeam = model.Team.Name;
+                            _clientTeamRepository.Update(model.Account.Team);
+                            model.Account.TeamId = model.Account.Team.Id;
+                            model.Account.Team.Name = model.Account.Team.Name;
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
 
                     IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
                     IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, charges, categories);
                     return View("Details", detailsModel);
                 }
                 catch (DbUpdateException ex)
@@ -228,10 +239,8 @@ namespace Service_Billing.Controllers
                         team.Name = $"{model.Account.Name} Team";
                         int teamId = _clientTeamRepository.Add(team);
                         account.TeamId = teamId;
-                        account.ClientTeam = team.Name;
-                        account.IsApprovedByEA = false;
                     }
-                    _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
+                    _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                     var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
@@ -256,7 +265,7 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, charges, categories);
             return View("details", detailsModel);
         }
 
@@ -375,16 +384,16 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
             if (!String.IsNullOrEmpty(authorityFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
-            if (!String.IsNullOrEmpty(teamFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
+            //if (!String.IsNullOrEmpty(teamFilter))
+            //    clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
             if (!String.IsNullOrEmpty(keyword))
             {
                 clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower()))) 
+               // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
@@ -463,6 +472,42 @@ namespace Service_Billing.Controllers
                 return StatusCode(500);
             }
 
+        }
+
+
+        // Right now this just checks if the current user has a last name that matches a contact. 
+        // It could certainly be improved by having all contact entries match their Azure AD display name,
+        // like "Alexander.Carmichael@gov.bc.ca
+        public bool IsUserAccountContact(ClientTeam team, string lastName)
+        {
+            if (!String.IsNullOrEmpty(lastName))
+            {
+                if (!String.IsNullOrEmpty(lastName) &&
+                    (!String.IsNullOrEmpty(team.PrimaryContact) && team.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(team.FinancialContact) && team.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(team.Approver) && team.Approver.ToLower().Contains(lastName.ToLower())))
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        public string GetUserLastName()
+        {
+            string? userName = User.GetDisplayName();
+            string lastName = string.Empty;
+            if (!String.IsNullOrEmpty(userName))
+            {
+                string[] nameElements = userName.Split('.');
+                if (nameElements.Length > 1)
+                {
+                    lastName = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                    lastName = lastName.Trim();
+                }
+            }
+            return lastName;
         }
     }
 }
