@@ -77,7 +77,8 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
-            bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
+            if(bills != null && bills.Any())
+                bills = bills.Where(b => b.ServiceCategory.IsActive);
             var authUser = User;
             if (authUser.IsMinistryClient(_authorizationService))
             {
@@ -160,7 +161,7 @@ namespace Service_Billing.Controllers
                 if (account != null)
                 {
                     bill.ClientAccountId = accountId;
-                    bill.ClientName = account.Name;
+                    bill.ClientAccount.Name = account.Name;
                 }
             }
 
@@ -349,7 +350,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
+                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if (searchParams?.CategoryFilter > 0)
@@ -357,7 +358,7 @@ namespace Service_Billing.Controllers
                 if (!string.IsNullOrEmpty(searchParams?.Keyword))
                     bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.ClientName) && x.ClientName.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
@@ -408,7 +409,7 @@ namespace Service_Billing.Controllers
                         ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                         ChargeRow row = new ChargeRow();
                         row.ClientNumber = bill.ClientAccountId;
-                        row.ClientName = bill.ClientName;
+                        row.ClientName = bill.ClientAccount.Name;
                         row.Program = bill.Title;
                         if (serviceCategory != null)
                         {
@@ -546,6 +547,12 @@ new { Id = "Grand Total", Name = total },
 
             return Ok(200);
         }
+        [HttpGet]
+        public IActionResult PromoteCharges()
+        { 
+            return View(); 
+        }
+
         [HttpPost]
         public async Task<IActionResult> SetIsActiveForCharge(int id, bool active)
         {
