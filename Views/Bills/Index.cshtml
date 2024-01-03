@@ -183,7 +183,14 @@
                     </td>
                     <td>@bill.ClientAccount?.Name</td>
                     <td>@bill.Title</td>
-                    <td>@bill.FiscalPeriod</td>
+                    @if(searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterString))
+                    {
+                        <td>@searchModel.QuarterString</td>   
+                    }
+                    else
+                    {
+                        <td>@bill.FiscalPeriod</td>
+                    }
                     <td>@bill.IdirOrUrl</td>
                     <td>
                         @{

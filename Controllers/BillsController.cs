@@ -59,6 +59,12 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            if (searchModel != null && searchModel.QuarterFilter == "previous")
+                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+            else if(searchModel != null)
+            {
+                searchModel.QuarterString = string.Empty;
+            }
             if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
