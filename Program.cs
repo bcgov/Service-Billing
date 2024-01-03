@@ -165,6 +165,7 @@ builder.Services.AddAuthorization(options =>
 //track session data
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddHttpClient();
+builder.Services.AddHostedService<ChargePromotionService>();
 
 builder.Services.AddSession(options =>
 {
