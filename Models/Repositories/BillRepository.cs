@@ -236,6 +236,7 @@ namespace Service_Billing.Models.Repositories
                 {
                     bills.Add(GetBill(key));
                 }
+
                 return bills;
                 //IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
                 
