@@ -16,6 +16,8 @@ using System.Net.Http.Headers;
 using System.Text.Json;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using Service_Billing.Services.GraphApi;
+using Microsoft.Graph.TermStore;
+using System.Security.Principal;
 
 namespace Service_Billing.Controllers
 {
@@ -127,7 +129,7 @@ namespace Service_Billing.Controllers
             }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel model = new ClientDetailsViewModel(account, charges, categories);
+            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
 
             return View(model);
         }
@@ -155,26 +157,26 @@ namespace Service_Billing.Controllers
             {
                 try
                 {
-                    if (model.Account.Team != null)
+                    if (model.Team != null)
                     {
-                        if (model.Account.Team.Id == 0)
+                        if (model.Team.Id == 0)
                         {
-                            model.Account.Team.Name = $"{model.Account.Name} Team";
-                            model.Account.TeamId = _clientTeamRepository.Add(model.Account.Team); // we should probably do away with client teams being a separate table
+                            model.Team.Name = $"{model.Account.Name} Team";
+                            model.Account.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
                         }
                         else
                         {
-                            _clientTeamRepository.Update(model.Account.Team);
-                            model.Account.TeamId = model.Account.Team.Id;
-                            model.Account.Team.Name = model.Account.Team.Name;
+                            _clientTeamRepository.Update(model.Team);
+                            model.Account.TeamId = model.Team.Id;
+                            model.Team.Name = model.Team.Name;
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
 
                     IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
                     IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, charges, categories);
-                    return View("Details", detailsModel);
+                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+                    return View("Details", detailsModel); 
                 }
                 catch (DbUpdateException ex)
                 {
@@ -265,7 +267,7 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, charges, categories);
+            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
             return View("details", detailsModel);
         }
 
