@@ -8,18 +8,21 @@ namespace Service_Billing.Models
     {
         [Key]
         public int Id { get; set; }
+        [ForeignKey("ClientAccount")]
         public int ClientAccountId { get; set; }
+        public ClientAccount ClientAccount { get; set; }
 
-        [Display(Name = "Client Name")]
-        public string? ClientName { get; set; }
-
+        [ForeignKey("ServiceCategory")]
+        public int ServiceCategoryId { get; set; }
+        public ServiceCategory ServiceCategory { get; set; }
+  
         [Display(Name = "Title")]
         public string? Title { get; set; }
 
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
 
-        public int ServiceCategoryId { get; set; }
+        
 
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }

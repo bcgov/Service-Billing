@@ -7,24 +7,17 @@ using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
 using CsvHelper;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Identity.Client;
-using Microsoft.Graph.TermStore;
-using Microsoft.Identity.Abstractions;
-using MailKit.Security;
-using MimeKit;
-using MailKit.Net.Smtp;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
-using System.Security.Principal;
-using System.Security.Claims;
 using Service_Billing.Extensions;
 using Service_Billing.Filters;
-using Microsoft.AspNetCore.Authentication;
 using System.Net.Http.Headers;
-using NuGet.Configuration;
-using Azure;
 using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
+using Service_Billing.Services.GraphApi;
+using Microsoft.Graph.TermStore;
+using System.Security.Principal;
 
 namespace Service_Billing.Controllers
 {
@@ -40,7 +33,9 @@ namespace Service_Billing.Controllers
         private readonly ILogger<ClientAccountController> _logger;
         private readonly string[]? _graphScopes;
         private readonly IEmailService _emailService;
+        private readonly IGraphApiService _graphApiService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IConfiguration _configuration;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -53,7 +48,8 @@ namespace Service_Billing.Controllers
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
-                            IEmailService emailService)
+                            IEmailService emailService,
+                            IGraphApiService graphApiService)
         {
             _graphServiceClient = graphServiceClient;
             _consentHandler = consentHandler;
@@ -66,13 +62,15 @@ namespace Service_Billing.Controllers
             _logger = logger;
             _graphScopes = configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
             _emailService = emailService;
+            _graphApiService = graphApiService;
             _authorizationService = authorizationService;
+            _configuration = configuration;
         }
 
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public ActionResult Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -108,6 +106,27 @@ namespace Service_Billing.Controllers
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             if (team == null)
                 team = new ClientTeam();
+            // check if user ought to be able to view this record
+            if(!User.IsInRole("GDXBillingService.Owner"))
+            {
+                string userLastName = GetUserLastName();
+                if(!String.IsNullOrEmpty(userLastName))
+                {
+                    if(!IsUserAccountContact(team, userLastName))
+                    {
+                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
+                        {
+
+                            return View("Unauthorized");
+                        }
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning($"User tried to view Account details for client account with id: {id}, but user's name could not be discerned");
+                    return View("Unauthorized");
+                }
+            }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
@@ -125,16 +144,7 @@ namespace Service_Billing.Controllers
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ClientIntakeViewModel model = new ClientIntakeViewModel();
             model.Account = account;
-            if (team != null)
-            {
-                model.Team = team;
-            }
-            else
-            {
-                _logger.LogWarning($"No client team was found for client account with ID {account.Id}.");
-                model.Team = new ClientTeam();
-            }
-
+        
             return View(model);
         }
 
@@ -152,14 +162,13 @@ namespace Service_Billing.Controllers
                         if (model.Team.Id == 0)
                         {
                             model.Team.Name = $"{model.Account.Name} Team";
-                            model.Account.TeamId = _clientTeamRepository.Add(model.Team);
-                            model.Account.ClientTeam = model.Team.Name;
+                            model.Account.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
                         }
                         else
                         {
                             _clientTeamRepository.Update(model.Team);
                             model.Account.TeamId = model.Team.Id;
-                            model.Account.ClientTeam = model.Team.Name;
+                            model.Team.Name = model.Team.Name;
                         }
                     }
                     _clientAccountRepository.Update(model.Account);
@@ -167,7 +176,7 @@ namespace Service_Billing.Controllers
                     IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
                     IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
                     ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-                    return View("Details", detailsModel);
+                    return View("Details", detailsModel); 
                 }
                 catch (DbUpdateException ex)
                 {
@@ -232,10 +241,8 @@ namespace Service_Billing.Controllers
                         team.Name = $"{model.Account.Name} Team";
                         int teamId = _clientTeamRepository.Add(team);
                         account.TeamId = teamId;
-                        account.ClientTeam = team.Name;
-                        account.IsApprovedByEA = false;
                     }
-                    _logger.LogInformation($"Client Account with client number {account.ClientNumber} is being added to DB");
+                    _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                     int accountId = _clientAccountRepository.AddClientAccount(account);
                     var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
@@ -313,18 +320,26 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if (_graphServiceClient == null)
-                    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
-                var queriedUsers = await _graphServiceClient.Users.Request()
-                    .Filter($"startswith(displayName, '{term}')")
-                    .Top(8)
-                    .Select("displayName, id")
-                    .GetAsync();
+                //if (_graphServiceClient == null)
+                //    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
+                //var queriedUsers = await _graphServiceClient.Users.Request()
+                //    .Filter($"startswith(displayName, '{term}')")
+                //    .Top(8)
+                //    .Select("displayName, id")
+                //    .GetAsync();
+
+                var cca = ConfidentialClientApplicationBuilder
+                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
+
+                var queriedUsers = await _graphApiService.GetUsersByDisplayName(term, cca);
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
 
-                foreach (var user in queriedUsers)
+                foreach (var user in queriedUsers.Value)
                 {
                     contacts.Add(user.DisplayName);
                 }
@@ -371,16 +386,16 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
             if (!String.IsNullOrEmpty(authorityFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
-            if (!String.IsNullOrEmpty(teamFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
+            //if (!String.IsNullOrEmpty(teamFilter))
+            //    clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
             if (!String.IsNullOrEmpty(keyword))
             {
                 clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower()))) 
+               // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
@@ -459,6 +474,42 @@ namespace Service_Billing.Controllers
                 return StatusCode(500);
             }
 
+        }
+
+
+        // Right now this just checks if the current user has a last name that matches a contact. 
+        // It could certainly be improved by having all contact entries match their Azure AD display name,
+        // like "Alexander.Carmichael@gov.bc.ca
+        public bool IsUserAccountContact(ClientTeam team, string lastName)
+        {
+            if (!String.IsNullOrEmpty(lastName))
+            {
+                if (!String.IsNullOrEmpty(lastName) &&
+                    (!String.IsNullOrEmpty(team.PrimaryContact) && team.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(team.FinancialContact) && team.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(team.Approver) && team.Approver.ToLower().Contains(lastName.ToLower())))
+                {
+                    return true;
+                }
+            }
+            
+            return false;
+        }
+
+        public string GetUserLastName()
+        {
+            string? userName = User.GetDisplayName();
+            string lastName = string.Empty;
+            if (!String.IsNullOrEmpty(userName))
+            {
+                string[] nameElements = userName.Split('.');
+                if (nameElements.Length > 1)
+                {
+                    lastName = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                    lastName = lastName.Trim();
+                }
+            }
+            return lastName;
         }
     }
 }

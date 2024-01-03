@@ -9,7 +9,7 @@
         public string? AuthorityFilter { get; set; }
         public int? ClientNumber {  get; set; }
         public string? Keyword {  get; set; }
-        public bool? Inactive { get; set; }
+        public bool? Inactive { get; set; } = false;
         public bool ShouldRestrictToUserOwnedServices { get; set; }
     }
 }

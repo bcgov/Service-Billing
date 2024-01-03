@@ -26,8 +26,8 @@ namespace Service_Billing.Models.Repositories
             if(date != null )
                 today = date.Value;
             string quarter = "";
-            string year1 = today.Year.ToString();
-            string year2 = (today.Year + 1).ToString();
+            int year1 = today.Year;
+            int year2 = (today.Year + 1);
 
             switch (today.Month)
             {
@@ -50,10 +50,10 @@ namespace Service_Billing.Models.Repositories
                 case 2:
                 case 3:
                     quarter = "Quarter 4";
-                    break;
+                    return $"Fiscal {(year1 -1).ToString().Substring(2)}/{year1.ToString().Substring(2)} {quarter}";
             }
 
-            return $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            return $"Fiscal {year1.ToString().Substring(2)}/{year2.ToString().Substring(2)} {quarter}";
         }
         private DateTime DetermineStartOfCurrentQuarter()
         {
@@ -170,6 +170,11 @@ namespace Service_Billing.Models.Repositories
             
             foreach (Bill bill in billsToPromote)
             {
+                List<string> recordedPeriods = _fiscalPeriodRepository.GetPeriodsByChargeId(bill.Id).Select(b => b.Period).ToList();
+                if(!String.IsNullOrEmpty(bill.FiscalPeriod) && recordedPeriods.Contains(bill.FiscalPeriod))
+                {
+                    continue; //don't add anything more than once.
+                }
                 _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
                 bill.FiscalPeriod = newQuarter;
                 _billingContext.Update(bill);
@@ -226,7 +231,13 @@ namespace Service_Billing.Models.Repositories
             try
             {
                 Dictionary<int, decimal?> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
-                IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
+                List<Bill> bills = new List<Bill>();
+                foreach (int key in previousQuarterChargeIds.Keys)
+                {
+                    bills.Add(GetBill(key));
+                }
+                return bills;
+                //IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
                 
             }
             catch(Exception e) 
