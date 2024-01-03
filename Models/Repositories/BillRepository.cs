@@ -170,6 +170,11 @@ namespace Service_Billing.Models.Repositories
             
             foreach (Bill bill in billsToPromote)
             {
+                List<string> recordedPeriods = _fiscalPeriodRepository.GetPeriodsByChargeId(bill.Id).Select(b => b.Period).ToList();
+                if(!String.IsNullOrEmpty(bill.FiscalPeriod) && recordedPeriods.Contains(bill.FiscalPeriod))
+                {
+                    continue; //don't add anything more than once.
+                }
                 _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
                 bill.FiscalPeriod = newQuarter;
                 _billingContext.Update(bill);

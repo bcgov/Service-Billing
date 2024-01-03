@@ -1,0 +1,17 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "_Layout";
+}
+<h1>Press the button to promote charges to current quarter, and make a record of previous charges</h1>
+<h4>This updates the "fiscal period" field for fixed charges, and makes a record in the repository for the previous quarter,
+    and how much the service was charged for at that moment.
+</h4>
+<form asp-action="PromoteChargesToNewQuarter">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div class="form-group">
+        <input type="submit" value="Promote Charges" class="btn btn-primary" />
+    </div>
+ </form>
