@@ -107,7 +107,7 @@ namespace Service_Billing.Controllers
             if (team == null)
                 team = new ClientTeam();
             // check if user ought to be able to view this record
-            if(!User.IsInRole("GDXBillingService.Owner"))
+            if(!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
                 if(!String.IsNullOrEmpty(userLastName))
