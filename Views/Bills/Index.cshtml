@@ -22,7 +22,7 @@
 
 <h1>Service Billing Charges</h1>
 
-@if (!Model.Bills.Any())
+@if (Model.Bills != null && !Model.Bills.Any())
 {
     if (searchModel?.ClientNumber > 0)
     {
@@ -116,7 +116,14 @@
                     <div class="option-buttons">
                         <input type="submit" value="Filter" class="btn btn-default" /> |
                         <a asp-action="Index">Back to Full List</a>
-                        <div>Found @Model.Bills.Count() results</div>
+                        @if(Model.Bills != null )
+                        {
+                            <div>Found @Model.Bills.Count() results</div>
+                        }
+                        else
+                        {
+                            <div>No results were returned</div>
+                        }
                     </div>
 
                 </div>
@@ -174,7 +181,7 @@
                            asp-action="Details"
                            asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
                     </td>
-                    <td>@bill.ClientName</td>
+                    <td>@bill.ClientAccount?.Name</td>
                     <td>@bill.Title</td>
                     <td>@bill.FiscalPeriod</td>
                     <td>@bill.IdirOrUrl</td>
