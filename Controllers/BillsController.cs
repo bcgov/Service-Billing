@@ -243,7 +243,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
-                //TODO: log exception
+                _logger.LogError(ex.Message, ex);
                 return new JsonResult(ex.Message);
             }
         }
@@ -259,6 +259,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"{ex.Message}", ex);
                 return new JsonResult(ex.Message);
             }
         }
@@ -316,6 +317,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return "Could not get user's Graph name";
             }
         }
@@ -476,7 +478,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
-                //we really need an error page
+                _logger.LogError(ex.Message);
                 return StatusCode(500);
             }
         }
@@ -510,7 +512,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError(ex.Message, ex);
             }
 
             return Ok(500);

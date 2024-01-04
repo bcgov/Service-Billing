@@ -202,8 +202,9 @@ namespace Service_Billing.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 return View();
             }
         }
@@ -308,8 +309,9 @@ namespace Service_Billing.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch(Exception ex) 
             {
+                _logger.LogError(ex.Message, ex);
                 return View();
             }
         }
@@ -432,6 +434,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 //we really need an error page
                 return StatusCode(500);
             }
