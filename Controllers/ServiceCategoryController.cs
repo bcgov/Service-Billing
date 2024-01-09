@@ -173,7 +173,7 @@ namespace Service_Billing.Controllers
             if (!String.IsNullOrEmpty(areaFilter))
                 categories = categories.Where(x => x.GDXBusArea == areaFilter);
             if (!String.IsNullOrEmpty(nameFilter))
-                categories = categories.Where(x => x.Name == nameFilter);
+                categories = categories.Where(x => x.Name.ToLower().Contains(nameFilter.ToLower()));
             if (activeFilter != null)
             {
                 if (activeFilter == "active")
