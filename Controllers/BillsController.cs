@@ -348,6 +348,12 @@ namespace Service_Billing.Controllers
                         break;
                 }
                 // now filter the results
+                //filter out charges from inactive clients
+                if(String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                {
+                    IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
+                    bills = bills.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
+                }
                 if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
                 {
                     bills = bills.Where(b => b.IsActive);

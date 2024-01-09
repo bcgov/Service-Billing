@@ -70,5 +70,10 @@ namespace Service_Billing.Models.Repositories
             _context.Update(account);
             _context.SaveChanges(true);
         }
+
+        public IEnumerable<ClientAccount> GetInactiveAccounts()
+        {
+            return _context.ClientAccounts.Where(x => !x.IsActive);
+        }
     }
 }
