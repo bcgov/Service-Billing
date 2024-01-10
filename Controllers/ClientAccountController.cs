@@ -144,7 +144,7 @@ namespace Service_Billing.Controllers
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
             ClientIntakeViewModel model = new ClientIntakeViewModel();
             model.Account = account;
-        
+
             return View(model);
         }
 
@@ -176,7 +176,7 @@ namespace Service_Billing.Controllers
                     IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
                     IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
                     ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-                    return View("Details", detailsModel); 
+                    return View("Details", detailsModel);
                 }
                 catch (DbUpdateException ex)
                 {
@@ -211,7 +211,7 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public ActionResult Intake()
+        public async Task<ActionResult> Intake()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -246,10 +246,25 @@ namespace Service_Billing.Controllers
                     _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                     int accountId = _clientAccountRepository.AddClientAccount(account);
-                    var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
-                    await _emailService.SendEmail("waino.steuber35@ethereal.email",
-                        "New account created",
-                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
+
+
+                    var cca = ConfidentialClientApplicationBuilder
+                       .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                       .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                       .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                        .Build();
+
+                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                    if (expenseAuthority is not null)
+                    {
+                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                        await _emailService.SendEmail(eaEmail,
+                            "New account created",
+                            $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
+                    }
                 }
                 else
                 {
@@ -309,7 +324,7 @@ namespace Service_Billing.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch(Exception ex) 
+            catch(Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
                 return View();
@@ -396,7 +411,7 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower()))) 
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
                // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
@@ -480,7 +495,7 @@ namespace Service_Billing.Controllers
         }
 
 
-        // Right now this just checks if the current user has a last name that matches a contact. 
+        // Right now this just checks if the current user has a last name that matches a contact.
         // It could certainly be improved by having all contact entries match their Azure AD display name,
         // like "Alexander.Carmichael@gov.bc.ca
         public bool IsUserAccountContact(ClientTeam team, string lastName)
@@ -495,7 +510,7 @@ namespace Service_Billing.Controllers
                     return true;
                 }
             }
-            
+
             return false;
         }
 
