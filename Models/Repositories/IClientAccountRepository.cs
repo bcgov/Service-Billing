@@ -10,5 +10,6 @@
         IEnumerable<ClientAccount> GetAccountsByContactName(string contactName);
         void Update(ClientAccount account);
         void Approve(ClientAccount account);
+        IEnumerable<ClientAccount> GetInactiveAccounts();
     }
 }

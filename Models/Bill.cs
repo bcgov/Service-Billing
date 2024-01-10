@@ -15,9 +15,7 @@ namespace Service_Billing.Models
         [ForeignKey("ServiceCategory")]
         public int ServiceCategoryId { get; set; }
         public ServiceCategory ServiceCategory { get; set; }
-        [Display(Name = "Client Name")]
-        public string? ClientName { get; set; }
-
+  
         [Display(Name = "Title")]
         public string? Title { get; set; }
 

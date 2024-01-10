@@ -58,6 +58,10 @@
             {
                 <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
             }
+            @if(isMinistryClient)
+            {
+                <li>@Html.ActionLink("View My Teams' Charges", "Index", "ClientAccount")</li>
+            }
         </ul>
     </div>
 </nav>
