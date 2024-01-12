@@ -83,7 +83,7 @@ namespace Service_Billing.Controllers
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-            IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
+          //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
             var authUser = User;
             if (authUser.IsMinistryClient(_authorizationService))
@@ -92,7 +92,7 @@ namespace Service_Billing.Controllers
                 if (name is not null) ViewData["NameClaim"] = name.Value;
             }
 
-            return View(new ClientAccountViewModel(clients, teams));
+            return View(clients);
         }
 
 
