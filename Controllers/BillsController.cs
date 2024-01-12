@@ -254,11 +254,11 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult GetClients()
         {
+
             try
             {
-                IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
-                List<ClientAccount> result = accounts.ToList();
-                return new JsonResult(accounts.ToList());
+                return new JsonResult(from a in _clientAccountRepository.GetAll() select new { a.Id, a.Name });
+            
             }
             catch (Exception ex)
             {
@@ -376,6 +376,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
