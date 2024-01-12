@@ -84,7 +84,10 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
             /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             if(bills != null && bills.Any())
+            {
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
+                bills = bills.Where(b => b.ClientAccount.IsActive);
+            }
             var authUser = User;
             if (authUser.IsMinistryClient(_authorizationService))
             {
