@@ -3,7 +3,7 @@
 
 @using Service_Billing.ViewModels;
 @using System.Security.Claims
-@model AllBillsViewModel;
+@model IEnumerable<Bill>;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
@@ -22,7 +22,7 @@
 
 <h1>Service Billing Charges</h1>
 
-@if (Model.Bills != null && !Model.Bills.Any())
+@if (Model != null && !Model.Any())
 {
     if (searchModel?.ClientNumber > 0)
     {
@@ -116,9 +116,9 @@
                     <div class="option-buttons">
                         <input type="submit" value="Filter" class="btn btn-default" /> |
                         <a asp-action="Index">Back to Full List</a>
-                        @if(Model.Bills != null )
+                        @if(Model != null )
                         {
-                            <div>Found @Model.Bills.Count() results</div>
+                            <div>Found @Model.Count() results</div>
                         }
                         else
                         {
@@ -167,7 +167,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var bill in Model.Bills)
+            @foreach (var bill in Model)
             {
                 var category = bill.ServiceCategory;
                 var client = bill.ClientAccount;

@@ -8,13 +8,13 @@ namespace Service_Billing.Models
     {
         [Key]
         public int Id { get; set; }
-        [ForeignKey("ClientAccount")]
         public int ClientAccountId { get; set; }
-        public ClientAccount ClientAccount { get; set; }
+        [ForeignKey("ClientAccountId")]
+        public virtual ClientAccount ClientAccount { get; set; }
 
         [ForeignKey("ServiceCategory")]
         public int ServiceCategoryId { get; set; }
-        public ServiceCategory ServiceCategory { get; set; }
+        public virtual ServiceCategory ServiceCategory { get; set; }
   
         [Display(Name = "Title")]
         public string? Title { get; set; }
@@ -47,7 +47,7 @@ namespace Service_Billing.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
+        public virtual ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
 
 
         public Bill()

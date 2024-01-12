@@ -62,6 +62,8 @@ o	Note: not all naming convention components are required. The naming convention
         public bool IsApprovedByEA { get; set; } = false;
 
         public bool IsActive { get; set; } = true;
+
+        public virtual ICollection<Bill> Bills { get; set; }
     }
 }
 /* some validation concerns:
