@@ -27,7 +27,7 @@ namespace Service_Billing.Services.Email
                 builder.HtmlBody = message;
                 email.Body = builder.ToMessageBody();
                 using var smtp = new SmtpClient();
-                smtp.Connect("apps.smtp.gov.bc.ca", 587, false);
+                smtp.Connect("apps.smtp.gov.bc.ca", 587, true);
                 await smtp.SendAsync(email);
                 smtp.Disconnect(true);
 
