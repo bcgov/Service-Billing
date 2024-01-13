@@ -309,8 +309,30 @@ namespace Service_Billing.Models.Repositories
             await _billingContext.SaveChangesAsync();
         }
 
-        public async Task Update(Bill bill)
+        public async Task Update(Bill editedBill)
         {
+
+            Bill? bill = GetBill(editedBill.Id);
+            if(bill == null)
+            {
+                throw new Exception("could not retrieve bill from database");
+            }
+            bill.Title = editedBill.Title;
+         //   bill.ServiceCategory = editedBill.ServiceCategory;
+            bill.ServiceCategoryId = editedBill.ServiceCategoryId;
+            bill.BillingCycle = editedBill.BillingCycle;
+            bill.AggregateGLCode = editedBill.AggregateGLCode;
+            bill.Amount = editedBill.Amount;
+            bill.EndDate = editedBill.EndDate;
+            bill.StartDate = editedBill.StartDate;
+            bill.CreatedBy = editedBill.CreatedBy;
+            bill.ClientAccountId = editedBill.ClientAccountId;
+            bill.FiscalPeriod = editedBill.FiscalPeriod;
+            bill.IdirOrUrl = editedBill.IdirOrUrl;
+            bill.IsActive = editedBill.IsActive;
+            bill.Quantity = editedBill.Quantity;
+            bill.BillingCycle = editedBill?.BillingCycle;
+            bill.TicketNumberAndRequester = editedBill?.TicketNumberAndRequester;
             _billingContext.Update(bill);
             await _billingContext.SaveChangesAsync();
         }

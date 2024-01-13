@@ -98,7 +98,7 @@ namespace Service_Billing.Controllers
             return View(bills);
         }
 
-        public ActionResult Details(int id)
+        public IActionResult Details(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
             if (bill == null)
@@ -142,7 +142,8 @@ namespace Service_Billing.Controllers
             try
             {
                 await _billRepository.Update(bill);
-                return View("details", bill);
+                //  return View("Details", bill.Id);
+                return RedirectToAction("Details", new { bill.Id });
             }
             catch (DbUpdateException ex)
             {
