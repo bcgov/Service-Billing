@@ -141,16 +141,14 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ClientIntakeViewModel model = new ClientIntakeViewModel();
-            model.Account = account;
 
-            return View(model);
+            return View(account);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ClientIntakeViewModel model)
+        public IActionResult Edit(ClientAccount model)
         {
             if (ModelState.IsValid)
             {
@@ -160,26 +158,23 @@ namespace Service_Billing.Controllers
                     {
                         if (model.Team.Id == 0)
                         {
-                            model.Team.Name = $"{model.Account.Name} Team";
-                            model.Account.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
+                            model.Team.Name = $"{model.Name} Team";
+                            model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
                         }
                         else
                         {
                             _clientTeamRepository.Update(model.Team);
-                            model.Account.TeamId = model.Team.Id;
+                            model.TeamId = model.Team.Id;
                             model.Team.Name = model.Team.Name;
                         }
                     }
-                    _clientAccountRepository.Update(model.Account);
+                    _clientAccountRepository.Update(model);
 
-                    IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
-                    IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-                 //   ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-                    return View("Details", new { model.Account.Id });
+                    return View("Details", new { model.Id });
                 }
                 catch (DbUpdateException ex)
                 {
-                    _logger.LogError($"An error occurred while updating client account number {model.Account.Id}. Inner Exception: {ex.InnerException}");
+                    _logger.LogError($"An error occurred while updating client account number {model.Id}. Inner Exception: {ex.InnerException}");
                     _logger.LogError(ex.Message);
                 }
             }
@@ -246,7 +241,6 @@ namespace Service_Billing.Controllers
 
                     int accountId = _clientAccountRepository.AddClientAccount(account);
 
-
                     var cca = ConfidentialClientApplicationBuilder
                        .Create(_configuration.GetSection("AzureAd")["ClientId"])
                        .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
@@ -282,7 +276,7 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-         //   ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+       
             return View("details", new { model.Account.Id });
         }
 
