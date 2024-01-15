@@ -103,16 +103,16 @@ namespace Service_Billing.Controllers
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
-            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            if (team == null)
-                team = new ClientTeam();
+
+            if (account.Team == null)
+                account.Team = new ClientTeam();
             // check if user ought to be able to view this record
             if(!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
                 if(!String.IsNullOrEmpty(userLastName))
                 {
-                    if(!IsUserAccountContact(team, userLastName))
+                    if(!IsUserAccountContact(account.Team, userLastName))
                     {
                         if(!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
                         {
@@ -129,9 +129,8 @@ namespace Service_Billing.Controllers
             }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
 
-            return View(model);
+            return View(account);
         }
 
         // GET: ClientAccountController/Edit/5
@@ -175,8 +174,8 @@ namespace Service_Billing.Controllers
 
                     IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
                     IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-                    return View("Details", detailsModel);
+                 //   ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+                    return View("Details", new { model.Account.Id });
                 }
                 catch (DbUpdateException ex)
                 {
@@ -283,8 +282,8 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-            return View("details", detailsModel);
+         //   ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
+            return View("details", new { model.Account.Id });
         }
 
         private short GetNextClientNumber()
