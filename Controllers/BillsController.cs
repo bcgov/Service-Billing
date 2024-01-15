@@ -371,7 +371,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.MinistryFilter.ToLower()));
+                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(searchParams.MinistryFilter.ToLower()));
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if (searchParams?.CategoryFilter > 0)

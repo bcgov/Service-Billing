@@ -9,9 +9,9 @@
     ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
     if (string.IsNullOrEmpty(searchModel?.QuarterFilter))
         searchModel.QuarterFilter = "Current Quarter";
-    bool current = searchModel.QuarterFilter == "Current Quarter";
-    bool previous = searchModel.QuarterFilter == "Previous Quarter";
-    bool next = searchModel.QuarterFilter == "Next Quarter";
+    bool current = searchModel.QuarterFilter == "current";
+    bool previous = searchModel.QuarterFilter == "previous";
+    bool next = searchModel.QuarterFilter == "next";
     bool all = searchModel.QuarterFilter == "All Quarters";
 }
 @{
@@ -66,13 +66,13 @@
                                     if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
                                         selectedMinistry = searchModel.MinistryFilter;
 
-                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Acronym} - {ministry.Title}")
                                     {
-                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        <option selected="true" value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                     else
                                     {
-                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        <option value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                 }
                             }
