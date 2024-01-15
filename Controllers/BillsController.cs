@@ -59,8 +59,12 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             if (searchModel != null && searchModel.QuarterFilter == "previous")
+            {
                 searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+                ViewData["FiscalPeriod"] = searchModel.QuarterString;
+            }
             else if(searchModel != null)
             {
                 searchModel.QuarterString = string.Empty;
@@ -82,9 +86,8 @@ namespace Service_Billing.Controllers
             ViewData["searchModel"] = searchModel;
 
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
-            /* filter out categories we don't bill on. Hardcoding this is probably not the best bet. We should come up with a better scheme */
             if(bills != null && bills.Any())
-            {
+            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class. 
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
