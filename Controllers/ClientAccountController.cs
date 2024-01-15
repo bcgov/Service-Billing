@@ -273,7 +273,7 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
 
-            return View("details", new { model.Account.Id });
+            return RedirectToAction("details", new { model.Account.Id });
         }
 
         private short GetNextClientNumber()

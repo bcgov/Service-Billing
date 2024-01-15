@@ -65,7 +65,7 @@ o	Note: not all naming convention components are required. The naming convention
 
         public bool IsActive { get; set; } = true;
 
-        public virtual ICollection<Bill> Bills { get; set; }
+        public virtual ICollection<Bill>? Bills { get; set; }
     }
 }
 /* some validation concerns:
