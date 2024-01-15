@@ -83,7 +83,7 @@ namespace Service_Billing.Controllers
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-          //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
+            //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
             var authUser = User;
             if (authUser.IsMinistryClient(_authorizationService))
@@ -107,14 +107,14 @@ namespace Service_Billing.Controllers
             if (account.Team == null)
                 account.Team = new ClientTeam();
             // check if user ought to be able to view this record
-            if(!User.IsInRole("GDXBillingService.FinancialOfficer"))
+            if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
-                if(!String.IsNullOrEmpty(userLastName))
+                if (!String.IsNullOrEmpty(userLastName))
                 {
-                    if(!IsUserAccountContact(account.Team, userLastName))
+                    if (!IsUserAccountContact(account.Team, userLastName))
                     {
-                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
+                        if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
                         {
 
                             return View("Unauthorized");
@@ -150,34 +150,30 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Edit(ClientAccount model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (model.Team != null)
                 {
-                    if (model.Team != null)
+                    if (model.Team.Id == 0)
                     {
-                        if (model.Team.Id == 0)
-                        {
-                            model.Team.Name = $"{model.Name} Team";
-                            model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
-                        }
-                        else
-                        {
-                            _clientTeamRepository.Update(model.Team);
-                            model.TeamId = model.Team.Id;
-                            model.Team.Name = model.Team.Name;
-                        }
+                        model.Team.Name = $"{model.Name} Team";
+                        model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
                     }
-                    _clientAccountRepository.Update(model);
+                    else
+                    {
+                        _clientTeamRepository.Update(model.Team);
+                    }
+                }
+                _clientAccountRepository.Update(model);
 
-                    return View("Details", new { model.Id });
-                }
-                catch (DbUpdateException ex)
-                {
-                    _logger.LogError($"An error occurred while updating client account number {model.Id}. Inner Exception: {ex.InnerException}");
-                    _logger.LogError(ex.Message);
-                }
+                return RedirectToAction("Details", new { model.Id });
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError($"An error occurred while updating client account number {model.Id}. Inner Exception: {ex.InnerException}");
+                _logger.LogError(ex.Message);
+            }
+
             return View(model);
         }
 
@@ -196,7 +192,7 @@ namespace Service_Billing.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
                 return View();
@@ -276,7 +272,7 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-       
+
             return View("details", new { model.Account.Id });
         }
 
@@ -317,7 +313,7 @@ namespace Service_Billing.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message, ex);
                 return View();
@@ -405,7 +401,7 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
-               // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
