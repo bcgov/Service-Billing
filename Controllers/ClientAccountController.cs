@@ -219,46 +219,38 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
-
-                if (ModelState.IsValid)
+                string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
+                model.Account.Name = accountName;
+                ClientAccount account = model.Account;
+                if (model.Team != null)
                 {
-                    _logger.LogInformation("Intake form is valid.");
-                    string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
-                    model.Account.Name = accountName;
-                    ClientAccount account = model.Account;
-                    if (model.Team != null)
-                    {
-                        ClientTeam team = model.Team;
-                        team.Name = $"{model.Account.Name} Team";
-                        int teamId = _clientTeamRepository.Add(team);
-                        account.TeamId = teamId;
-                    }
-                    _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
-
-                    int accountId = _clientAccountRepository.AddClientAccount(account);
-
-                    var cca = ConfidentialClientApplicationBuilder
-                       .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                       .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                       .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                        .Build();
-
-                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
-                    if (expenseAuthority is not null)
-                    {
-                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
-                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
-                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
-
-                        await _emailService.SendEmail(eaEmail,
-                            "New account created",
-                            $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
-                    }
+                    ClientTeam team = model.Team;
+                    team.Name = $"{model.Account.Name} Team";
+                    int teamId = _clientTeamRepository.Add(team);
+                    account.TeamId = teamId;
                 }
-                else
+                _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
+
+                int accountId = _clientAccountRepository.AddClientAccount(account);
+
+                var cca = ConfidentialClientApplicationBuilder
+                   .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
+
+                var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                if (expenseAuthority is not null)
                 {
-                    return View();
+                    var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                    var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                    var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                    await _emailService.SendEmail(eaEmail,
+                        "New account created",
+                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
                 }
+
             }
             catch (DbUpdateException ex)
             {
