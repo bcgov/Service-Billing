@@ -377,3 +377,7 @@ legend{
 .container {
     width: 95%;
 }
+
+.report-total{
+   text-align: right;
+}
