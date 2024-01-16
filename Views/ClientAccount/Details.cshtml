@@ -101,6 +101,14 @@
                 @Html.DisplayFor(model => Model.IsApprovedByEA)
             </td>
         </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => Model.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(model => Model.Notes)
+            </td>
+        </tr>
     </table>
     <partial name="_ClientTeam" model="@Model.Team" />
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)

@@ -49,9 +49,9 @@
                 <span asp-validation-for="@Model.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.ServicesEnabled" class="control-label"></label>
-                <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
-                <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
+                <label asp-for="@Model.Notes" class="control-label"></label>
+                <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
+                <span asp-validation-for="@Model.Notes" class="text-danger"></span>
             </div>
 @*             <div class="form-group">
                 <label asp-for="@Model.CasClientNumber" class="control-label"></label>
@@ -97,6 +97,11 @@
                 <input type="checkbox" asp-for="@Model.IsApprovedByEA" checked="@Model.IsApprovedByEA" />
                 <span asp-validation-for="@Model.IsApprovedByEA" class="text-danger"></span>
                
+                <div class="form-group">
+                    <label asp-for="@Model.ServicesEnabled" class="control-label"></label>
+                    <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
+                    <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
+                </div>
                 <input type="hidden" asp-for="@Model.Team.Id" class="form-control" />
                 <input type="hidden" asp-for="@Model.Team.Name" class="form-control" />
                 <input type="hidden" asp-for="@Model.Id" class="form-control" />
