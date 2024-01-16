@@ -65,7 +65,7 @@ namespace Service_Billing.Controllers
                 searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
                 ViewData["FiscalPeriod"] = searchModel.QuarterString;
             }
-            else if(searchModel != null)
+            else if (searchModel != null)
             {
                 searchModel.QuarterString = string.Empty;
             }
@@ -75,7 +75,7 @@ namespace Service_Billing.Controllers
             }
             if (categories != null && categories.Any())
             {
-                if(!User.IsInRole("GDXBillingService.FinancialOfficer")
+                if (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"))
                 {
                     categories = categories.Where(c => GetUserOwnedServiceIds().Contains(c.ServiceId));
@@ -86,7 +86,7 @@ namespace Service_Billing.Controllers
             ViewData["searchModel"] = searchModel;
 
             IEnumerable<Bill> bills = GetFilteredBills(searchModel);
-            if(bills != null && bills.Any())
+            if (bills != null && bills.Any())
             {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class. 
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
@@ -101,7 +101,7 @@ namespace Service_Billing.Controllers
             return View(bills);
         }
 
-        public IActionResult Details(int id)
+        public ActionResult Details(int id)
         {
             Bill? bill = _billRepository.GetBill(id);
             if (bill == null)
@@ -174,6 +174,7 @@ namespace Service_Billing.Controllers
                 if (account != null)
                 {
                     bill.ClientAccountId = accountId;
+                    bill.ClientAccount = account;
                     bill.ClientAccount.Name = account.Name;
                 }
             }
@@ -188,25 +189,25 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
-                {
-                    _logger.LogInformation($"New charge is valid");
-                    // Add aggregate gl code. 
-                    string aggregateCode = string.Empty;
-                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    if (account != null)
-                    {
-                        aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
-                            $"{account.ServiceLine}.{account.STOB}.{account.Project}";
-                    }
-                    bill.AggregateGLCode = aggregateCode;
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
+                bill.ClientAccount = account;
+                bill.ServiceCategory = category;
+                _logger.LogInformation($"New charge is valid");
+                // Add aggregate gl code. 
+                string aggregateCode = string.Empty;
 
-                    await _billRepository.CreateBill(bill);
-                }
-                else
+                if (account != null)
                 {
-                    _logger.LogWarning($"New charge is not in a valid model state");
+                    aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
+                        $"{account.ServiceLine}.{account.STOB}.{account.Project}";
                 }
+                bill.AggregateGLCode = aggregateCode;
+
+                int billId = await _billRepository.CreateBill(bill);
+                bill = _billRepository.GetBill(billId);
+                return RedirectToAction($"Details", new { bill.Id });
+
             }
             catch (DbUpdateException ex)
             {
@@ -214,7 +215,7 @@ namespace Service_Billing.Controllers
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
             }
 
-            return RedirectToAction(nameof(Details), bill);
+            return View();
         }
 
         [HttpGet]
@@ -262,7 +263,7 @@ namespace Service_Billing.Controllers
             try
             {
                 return new JsonResult(from a in _clientAccountRepository.GetAll() select new { a.Id, a.Name });
-            
+
             }
             catch (Exception ex)
             {
@@ -356,7 +357,7 @@ namespace Service_Billing.Controllers
                 }
                 // now filter the results
                 //filter out charges from inactive clients
-                if(String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
                 {
                     IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
                     bills = bills.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
@@ -442,7 +443,7 @@ namespace Service_Billing.Controllers
                         row.Amount = @String.Format("${0:.##}", bill.Amount);
                         row.Quantity = bill.Quantity;
                         row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
-                        if(bill.DateCreated != null)
+                        if (bill.DateCreated != null)
                             row.Created = bill.DateCreated.Value.ToShortDateString();
                         if (bill.StartDate != null)
                             row.Start = bill.StartDate.Value.ToShortDateString();
@@ -571,8 +572,8 @@ new { Id = "Grand Total", Name = total },
         }
         [HttpGet]
         public IActionResult PromoteCharges()
-        { 
-            return View(); 
+        {
+            return View();
         }
 
         [HttpPost]
@@ -638,7 +639,7 @@ new { Id = "Grand Total", Name = total },
                     throw new Exception("No service owner name could be determined based on User info.");
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
             }

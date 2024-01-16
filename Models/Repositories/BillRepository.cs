@@ -303,10 +303,11 @@ namespace Service_Billing.Models.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task CreateBill(Bill bill)
+        public async Task<int> CreateBill(Bill bill)
         {
             await _billingContext.AddAsync(bill);
             await _billingContext.SaveChangesAsync();
+            return bill.Id;
         }
 
         public async Task Update(Bill editedBill)

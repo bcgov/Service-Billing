@@ -66,13 +66,13 @@
                                     if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
                                         selectedMinistry = searchModel.MinistryFilter;
 
-                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Acronym} - {ministry.Title}")
+                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
                                     {
-                                        <option selected="true" value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                        <option selected="true" value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                     else
                                     {
-                                        <option value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                        <option value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                 }
                             }
