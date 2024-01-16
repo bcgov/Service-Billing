@@ -29,7 +29,7 @@ namespace Service_Billing.Controllers
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
-        public IActionResult Index(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        public IActionResult Index(string areaFilter, string nameFilter, string uomFilter, string ownerFilter, string activeFilter = "active")
         {
             ViewData["AreaFilter"] = areaFilter;
             ViewData["NameFilter"] = nameFilter;
