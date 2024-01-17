@@ -16,6 +16,7 @@ namespace Service_Billing.Models
         [Required(ErrorMessage = "Please give the service a descriptive name")]
         public string? Name { get; set; }
 
+        [Display(Name = "Amount")]
         public string? Costs { get; set; }
         [BindRequired]
         public string? Description { get; set; }
