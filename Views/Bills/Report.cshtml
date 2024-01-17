@@ -54,14 +54,13 @@ else
                     <td>@serviceAndSum.Key</td>
                     @if(serviceAndSum.Value != null && serviceAndSum.Value != 0)
                     {
-                        <td>@string.Format("${0:.##}", serviceAndSum.Value)</td>
+                        <td class="">@string.Format("${0:#,##0.##}", serviceAndSum.Value)</td>
                     }
                 </tr>
             }
             <tr>
-                <td></td>
-                <td>Total:</td>
-                <td class="report-total">@string.Format("${0:.##}", total)</td>
+                <td class="report-total-label"></td>
+                <td class="report-total">@string.Format("${0:#,##0.##}", total)</td>
             </tr>
         </tbody>
     </table>
