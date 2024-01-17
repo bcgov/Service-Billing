@@ -247,8 +247,8 @@ namespace Service_Billing.Controllers
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
                     await _emailService.SendEmail(eaEmail,
-                        "New account created",
-                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
+                        "GDX Service Billing - New account created",
+                        $"<p>A new client account has been created in GDX Service Billing, please <a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
                 }
 
             }
