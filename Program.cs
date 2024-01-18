@@ -124,7 +124,8 @@ builder.Services.AddMvc();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
+    options.UseLazyLoadingProxies()
+    .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddRazorPages().AddMvcOptions(options =>
 {

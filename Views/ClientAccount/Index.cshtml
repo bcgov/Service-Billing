@@ -3,7 +3,7 @@
 @using System.Security.Claims
 
 @inject IAuthorizationService AuthorizationService
-@model ClientAccountViewModel
+@model IEnumerable<ClientAccount>
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     string threeFmt = "000";
@@ -96,7 +96,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (ClientAccount account in Model.ClientAccounts)
+            @foreach (ClientAccount account in Model)
             {
                 var parms = new Dictionary<string, string>
             {
@@ -104,7 +104,7 @@
             };
                 var hideRow = isMinistryClient
                     && (!nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
-                    || !nameClaim.IsContainedIgnoringOrderAndCase(@Model.PrimaryContacts[account.Id] ?? ""));
+                    || !nameClaim.IsContainedIgnoringOrderAndCase(account.Team?.PrimaryContact));
 
                 <tr style="@(hideRow ? "display:none;" : "")">
                     <td>
@@ -121,7 +121,7 @@
                     </td>
                     
                     <td>@account.ExpenseAuthorityName</td>
-                    <td>@Model.PrimaryContacts[account.Id]</td>
+                    <td>@account.Team?.PrimaryContact</td>
                     <td>@account.ClientTeam</td>
                     <td>@account.IsActive</td>
                     

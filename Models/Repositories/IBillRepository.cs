@@ -15,10 +15,11 @@ namespace Service_Billing.Models.Repositories
         IEnumerable<Bill> GetCurrentQuarterBills();
         IEnumerable<Bill> GetPreviousQuarterBills();
         IEnumerable<Bill> GetNextQuarterBills();
-        Task CreateBill(Bill bill);
+        Task<int> CreateBill(Bill bill);
         Task PromoteChargesToNewQuarter();
         Task Update(Bill bill);
         Task UpdateAllChargesForServiceCategory(int serviceCategoryId);
         string GetPreviousQuarterString();
+        string DetermineCurrentQuarter(DateTime? date = null);
     }
 }

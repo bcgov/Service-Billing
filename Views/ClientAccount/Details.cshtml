@@ -1,10 +1,10 @@
-﻿@model Service_Billing.ViewModels.ClientDetailsViewModel
+﻿@model Service_Billing.Models.ClientAccount
 @{
     ViewData["Title"] = "Details";
     ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
     var parms = new Dictionary<string, string>
 {
-{ "clientNumber", Model.Account.ClientNumber.ToString() }
+{ "clientNumber", Model.ClientNumber.ToString() }
 };
 }
 @using Microsoft.AspNetCore.Authorization
@@ -16,100 +16,108 @@
 }
 <h1>Client Account Information</h1>
 <div>
-    <h4>@Model.Account.Id-@Model.Account.Name</h4>
+    <h4>@Model.Id-@Model.Name</h4>
     <hr />
     <table>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.Name)
+                @Html.DisplayNameFor(model => Model.Name)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Account.Name)
+                @Html.DisplayFor(model => Model.Name)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.ClientNumber)
+                @Html.DisplayNameFor(model => Model.ClientNumber)
             </td>
             <td>
                 <a asp-controller="Bills"
                    asp-action="Index"
                    asp-all-route-data="parms"
-                   title="See charges associated with this account">@Model.Account.ClientNumber</a>
+                   title="See charges associated with this account">@Model.ClientNumber</a>
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.ResponsibilityCentre)
+                @Html.DisplayNameFor(model => Model.ResponsibilityCentre)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Account.ResponsibilityCentre)
+                @Html.DisplayFor(model => Model.ResponsibilityCentre)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.ServiceLine)
+                @Html.DisplayNameFor(model => Model.ServiceLine)
             </td>
             <td>
-                @String.Format("{0:00000}", Model.Account.ServiceLine)
+                @String.Format("{0:00000}", Model.ServiceLine)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.STOB)
+                @Html.DisplayNameFor(model => Model.STOB)
             </td>
             <td>
-                @String.Format("{0:0000}", Model.Account.STOB)
+                @String.Format("{0:0000}", Model.STOB)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.Project)
+                @Html.DisplayNameFor(model => Model.Project)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Account.Project)
+                @Html.DisplayFor(model => Model.Project)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.ExpenseAuthorityName)
+                @Html.DisplayNameFor(model => Model.ExpenseAuthorityName)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Account.ExpenseAuthorityName)
+                @Html.DisplayFor(model => Model.ExpenseAuthorityName)
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.ServicesEnabled)
+                @Html.DisplayNameFor(model => Model.ServicesEnabled)
             </td>
             <td>
-                @if (String.IsNullOrEmpty(Model.Account.ServicesEnabled))
+                @if (String.IsNullOrEmpty(Model.ServicesEnabled))
                 {
                     <br />
                 }
                 else
                 {
-                    @Html.DisplayFor(model => model.Account.ServicesEnabled)
+                    @Html.DisplayFor(model => Model.ServicesEnabled)
                 }
             </td>
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.Account.IsApprovedByEA)
+                @Html.DisplayNameFor(model => Model.IsApprovedByEA)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Account.IsApprovedByEA)
+                @Html.DisplayFor(model => Model.IsApprovedByEA)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => Model.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
     </table>
     <partial name="_ClientTeam" model="@Model.Team" />
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive && !isMinistryClient)
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
     {
-        <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Account.Id)" />
+        <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Id)" />
     }
     else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
     {
-        <input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateClient(@Model.Account.Id)" />
+        <input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateClient(@Model.Id)" />
     }
     <table class="table table-striped">
         <thead>
@@ -123,13 +131,13 @@
         </tr>
         </thead>
         <tbody>
-            @foreach (Bill charge in Model.Charges)
+            @foreach (Bill charge in Model.Bills)
             {
                 @if (charge.IsActive)
                 {
                 <tr>
                 <td>@charge.Title</td>
-                <td>@Model.CategoryNames[charge.Id]</td>
+                <td>@charge.ServiceCategory.Name</td>
                 <td>@charge.Amount</td>
                 <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
@@ -150,7 +158,7 @@
             }
         </tbody>
     </table>
-    @if (Model.InactiveCharges.Any())
+    @if (Model.Bills.FirstOrDefault(x => !x.IsActive) != null)
     {
         <h4>Inactive Charges</h4>
         <p>These are old or cancelled charges, and are not factored into quarterly reporting.</p>
@@ -166,11 +174,13 @@
             </tr>
             </thead>
             <tbody>
-                @foreach (Bill charge in Model.InactiveCharges)
+                @foreach (Bill charge in Model.Bills)
                 {
+                    if (charge.IsActive)
+                        continue;
                 <tr>
                 <td>@charge.Title</td>
-                <td>@Model.CategoryNames[charge.Id]</td>
+                <td>@charge.ServiceCategory.Name</td>
                 <td>@charge.Amount</td>
                 <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
@@ -182,7 +192,7 @@
                     <td>@charge.EndDate</td>
                         }
                 <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
-                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.Account.IsActive)
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive)
                         {
                     <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
                         }
@@ -195,10 +205,10 @@
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
 {
     <div class="bottom-nav">
-        <a asp-action="Edit" asp-route-id="@Model?.Account.Id">Edit</a> |
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
         @if (!isMinistryClient)
         {
-            <a href="/Bills/Create?accountId=@Model?.Account.Id">Order a Service</a>
+            <a href="/Bills/Create?accountId=@Model?.Id">Order a Service</a>
             <text> | </text>
         }
         <a asp-action="Index">Back to List</a>

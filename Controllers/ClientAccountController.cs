@@ -83,7 +83,7 @@ namespace Service_Billing.Controllers
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-            IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
+            //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
             var authUser = User;
             if (authUser.IsMinistryClient(_authorizationService))
@@ -92,7 +92,7 @@ namespace Service_Billing.Controllers
                 if (name is not null) ViewData["NameClaim"] = name.Value;
             }
 
-            return View(new ClientAccountViewModel(clients, teams));
+            return View(clients);
         }
 
 
@@ -103,18 +103,18 @@ namespace Service_Billing.Controllers
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
-            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            if (team == null)
-                team = new ClientTeam();
+
+            if (account.Team == null)
+                account.Team = new ClientTeam();
             // check if user ought to be able to view this record
-            if(!User.IsInRole("GDXBillingService.FinancialOfficer"))
+            if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
-                if(!String.IsNullOrEmpty(userLastName))
+                if (!String.IsNullOrEmpty(userLastName))
                 {
-                    if(!IsUserAccountContact(team, userLastName))
+                    if (!IsUserAccountContact(account.Team, userLastName))
                     {
-                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
+                        if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
                         {
 
                             return View("Unauthorized");
@@ -129,9 +129,8 @@ namespace Service_Billing.Controllers
             }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel model = new ClientDetailsViewModel(account, team, charges, categories);
 
-            return View(model);
+            return View(account);
         }
 
         // GET: ClientAccountController/Edit/5
@@ -142,48 +141,39 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
             ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-            ClientIntakeViewModel model = new ClientIntakeViewModel();
-            model.Account = account;
-        
-            return View(model);
+
+            return View(account);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ClientIntakeViewModel model)
+        public IActionResult Edit(ClientAccount model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (model.Team != null)
                 {
-                    if (model.Team != null)
+                    if (model.Team.Id == 0)
                     {
-                        if (model.Team.Id == 0)
-                        {
-                            model.Team.Name = $"{model.Account.Name} Team";
-                            model.Account.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
-                        }
-                        else
-                        {
-                            _clientTeamRepository.Update(model.Team);
-                            model.Account.TeamId = model.Team.Id;
-                            model.Team.Name = model.Team.Name;
-                        }
+                        model.Team.Name = $"{model.Name} Team";
+                        model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
                     }
-                    _clientAccountRepository.Update(model.Account);
+                    else
+                    {
+                        _clientTeamRepository.Update(model.Team);
+                    }
+                }
+                _clientAccountRepository.Update(model);
 
-                    IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
-                    IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-                    ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-                    return View("Details", detailsModel); 
-                }
-                catch (DbUpdateException ex)
-                {
-                    _logger.LogError($"An error occurred while updating client account number {model.Account.Id}. Inner Exception: {ex.InnerException}");
-                    _logger.LogError(ex.Message);
-                }
+                return RedirectToAction("Details", new { model.Id });
             }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError($"An error occurred while updating client account number {model.Id}. Inner Exception: {ex.InnerException}");
+                _logger.LogError(ex.Message);
+            }
+
             return View(model);
         }
 
@@ -202,15 +192,16 @@ namespace Service_Billing.Controllers
             {
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 return View();
             }
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public ActionResult Intake()
+        public async Task<ActionResult> Intake()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -228,32 +219,38 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
-
-                if (ModelState.IsValid)
+                string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
+                model.Account.Name = accountName;
+                ClientAccount account = model.Account;
+                if (model.Team != null)
                 {
-                    _logger.LogInformation("Intake form is valid.");
-                    string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
-                    model.Account.Name = accountName;
-                    ClientAccount account = model.Account;
-                    if (model.Team != null)
-                    {
-                        ClientTeam team = model.Team;
-                        team.Name = $"{model.Account.Name} Team";
-                        int teamId = _clientTeamRepository.Add(team);
-                        account.TeamId = teamId;
-                    }
-                    _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
+                    ClientTeam team = model.Team;
+                    team.Name = $"{model.Account.Name} Team";
+                    int teamId = _clientTeamRepository.Add(team);
+                    account.TeamId = teamId;
+                }
+                _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
-                    int accountId = _clientAccountRepository.AddClientAccount(account);
-                    var baseUrl = $"{this.Request.Scheme}://{this.Request.Host}{this.Request.PathBase}";
-                    await _emailService.SendEmail("waino.steuber35@ethereal.email",
-                        "New account created",
-                        $"<p><a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
-                }
-                else
+                int accountId = _clientAccountRepository.AddClientAccount(account);
+
+                var cca = ConfidentialClientApplicationBuilder
+                   .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
+
+                var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                if (expenseAuthority is not null)
                 {
-                    return View();
+                    var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                    var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                    var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                    await _emailService.SendEmail(eaEmail,
+                        "GDX Service Billing - New account created",
+                        $"<p>A new client account has been created in GDX Service Billing, please <a href='{baseUrl}/ClientAccount/Approve/{accountId}'>Click here</a> to approve the account.</p>");
                 }
+
             }
             catch (DbUpdateException ex)
             {
@@ -267,8 +264,8 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            ClientDetailsViewModel detailsModel = new ClientDetailsViewModel(model.Account, model.Team, charges, categories);
-            return View("details", detailsModel);
+
+            return RedirectToAction("details", new { model.Account.Id });
         }
 
         private short GetNextClientNumber()
@@ -308,8 +305,9 @@ namespace Service_Billing.Controllers
 
                 return RedirectToAction(nameof(Index));
             }
-            catch
+            catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 return View();
             }
         }
@@ -394,8 +392,8 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(keyword.ToLower()) ||
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
-                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower()))) 
-               // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
+                (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
+                // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
@@ -432,6 +430,7 @@ namespace Service_Billing.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message, ex);
                 //we really need an error page
                 return StatusCode(500);
             }
@@ -477,7 +476,7 @@ namespace Service_Billing.Controllers
         }
 
 
-        // Right now this just checks if the current user has a last name that matches a contact. 
+        // Right now this just checks if the current user has a last name that matches a contact.
         // It could certainly be improved by having all contact entries match their Azure AD display name,
         // like "Alexander.Carmichael@gov.bc.ca
         public bool IsUserAccountContact(ClientTeam team, string lastName)
@@ -492,7 +491,7 @@ namespace Service_Billing.Controllers
                     return true;
                 }
             }
-            
+
             return false;
         }
 

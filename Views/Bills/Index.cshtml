@@ -3,15 +3,15 @@
 
 @using Service_Billing.ViewModels;
 @using System.Security.Claims
-@model AllBillsViewModel;
+@model IEnumerable<Bill>;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
     if (string.IsNullOrEmpty(searchModel?.QuarterFilter))
         searchModel.QuarterFilter = "Current Quarter";
-    bool current = searchModel.QuarterFilter == "Current Quarter";
-    bool previous = searchModel.QuarterFilter == "Previous Quarter";
-    bool next = searchModel.QuarterFilter == "Next Quarter";
+    bool current = searchModel.QuarterFilter == "current";
+    bool previous = searchModel.QuarterFilter == "previous";
+    bool next = searchModel.QuarterFilter == "next";
     bool all = searchModel.QuarterFilter == "All Quarters";
 }
 @{
@@ -22,7 +22,7 @@
 
 <h1>Service Billing Charges</h1>
 
-@if (Model.Bills != null && !Model.Bills.Any())
+@if (Model != null && !Model.Any())
 {
     if (searchModel?.ClientNumber > 0)
     {
@@ -38,7 +38,7 @@
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    <h2>@searchModel?.QuarterFilter</h2>
+    <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
 
     <div class="table-filter-section">
         <form asp-action="Index" method="get">
@@ -66,13 +66,13 @@
                                     if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
                                         selectedMinistry = searchModel.MinistryFilter;
 
-                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
                                     {
-                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        <option selected="true" value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                     else
                                     {
-                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        <option value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                     }
                                 }
                             }
@@ -116,9 +116,9 @@
                     <div class="option-buttons">
                         <input type="submit" value="Filter" class="btn btn-default" /> |
                         <a asp-action="Index">Back to Full List</a>
-                        @if(Model.Bills != null )
+                        @if(Model != null )
                         {
-                            <div>Found @Model.Bills.Count() results</div>
+                            <div>Found @Model.Count() results</div>
                         }
                         else
                         {
@@ -146,7 +146,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
-                <th scope="col">GDX Client No. and Account Details</th>
+                <th scope="col">GDX Client No.</th>
                 <th scope="col">GDX Client Name</th>
                 <th scope="col">Program</th>
                 <th scope="col">Fiscal Period</th>
@@ -159,7 +159,7 @@
                 <th scope="col">Amount</th>
                 <th scope="col">Unit Price</th>
                 <th scope="col">Quantity</th>
-                <th scope="col">UOM</th>
+                <th scope="col">Unit of Measure</th>
                 <th scope="col">Aggregated Financial Code</th>
                 <th scope="col">Start</th>
                 <th scope="col">End</th>
@@ -167,7 +167,7 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var bill in Model.Bills)
+            @foreach (var bill in Model)
             {
                 var category = bill.ServiceCategory;
                 var client = bill.ClientAccount;
