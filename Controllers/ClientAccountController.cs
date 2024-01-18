@@ -246,9 +246,19 @@ namespace Service_Billing.Controllers
                     var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
-                    await _emailService.SendEmail(eaEmail,
-                        "Action Required: Confirm Your New Account with GDX Service",
-                        $"<p>Hello {eaEmail}, A new client account has been created in GDX Service Billing. Please <a href='{baseUrl}/ClientAccount/Approve/{accountId}'>approve the account</a>.</p>");
+                    await _emailService.SendEmail(
+                        eaEmail,
+                        "Important: Please Verify Your New GDX Service Billing Account",
+                        $@"
+                        <p>Dear {eaEmail.Split('@')[0]},</p>
+                        <p>We're reaching out to inform you that a new client account has been set up in your name within the GDX Service Billing system. This account is designed to provide you with enhanced access and features.</p>
+                        <p>To activate your account and ensure full access to its features, it is essential that you verify the account creation. For security reasons, we don't include direct links in our emails. Please access the GDX Service Billing portal through our official website or your internal systems.</p>
+                        <p>If you have not requested this account or believe this email has been sent to you in error, please contact our support team immediately at [Support Contact Information] for assistance.</p>
+                        <p>Thank you for your attention to this important matter. If you have any questions or need further assistance, feel free to reach out.</p>
+                        <p>Warm regards,</p>
+                        <p>GDX Service Billing Team</p>"
+                    );
+
                 }
 
             }
