@@ -83,7 +83,7 @@
                         <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
                         <div id="category-multiselect">
                             <label for="categoryFilter">Service Category</label>
-                            <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter">
+                            <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
                                 <option value="-1"></option>
                                 @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                                 {
