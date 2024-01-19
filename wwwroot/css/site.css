@@ -387,3 +387,6 @@ legend{
     font-weight: bold;
     text-align: right;
 }
+#category-multiselect{
+    display: inline-block;
+}
