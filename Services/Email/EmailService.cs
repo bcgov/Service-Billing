@@ -20,8 +20,9 @@ namespace Service_Billing.Services.Email
             try
             {
                 var email = new MimeMessage();
-                email.Sender = MailboxAddress.Parse("Andre.Lashley@gov.bc.ca");
-                email.To.Add(MailboxAddress.Parse(to));
+                var addr = new MailboxAddress("Andre Lashley", "andre.lashley@gov.bc.ca");
+                email.Sender = addr;
+                email.To.Add(addr);
                 email.Subject = subject;
                 var builder = new BodyBuilder();
                 builder.HtmlBody = message;
