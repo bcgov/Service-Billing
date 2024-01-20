@@ -68,11 +68,11 @@
 
                                     if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
                                     {
-                                        <option selected="true" value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
                                     }
                                     else
                                     {
-                                        <option value="@ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
                                     }
                                 }
                             }
@@ -81,24 +81,26 @@
                     <div>
                         <label for="titleFilter">Program</label>
                         <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
-                        <label for="categoryFilter">Service Category</label>
-                        <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter">
-                            <option value="-1"></option>
-                            @foreach (ServiceCategory category in ViewBag.ServiceCategories)
-                            {
-                                if (category.IsActive)
+                        <div id="category-multiselect">
+                            <label for="categoryFilter">Service Category</label>
+                            <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
+                                <option value="-1"></option>
+                                @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                                 {
-                                    if (searchModel?.CategoryFilter > 0 && category.ServiceId == searchModel?.CategoryFilter)
+                                    if (category.IsActive)
                                     {
-                                        <option value="@category.ServiceId" selected>@category.Name</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@category.ServiceId">@category.Name</option>
+                                        if (searchModel?.CategoryFilter != null  && searchModel.CategoryFilter.Contains(category.ServiceId))
+                                        {
+                                            <option value="@category.ServiceId" selected>@category.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@category.ServiceId">@category.Name</option>
+                                        }
                                     }
                                 }
-                            }
-                        </select>
+                            </select>
+                        </div>
                         <label for="authorityFilter">Expense Authority</label>
                         <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
                         <label for="clientNumber">GDX Client No.</label>
@@ -257,7 +259,5 @@
             }
         </tbody>
     </table>
-
-
 </div>
 

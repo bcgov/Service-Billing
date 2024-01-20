@@ -375,8 +375,15 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(searchParams.MinistryFilter.ToLower()));
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-                if (searchParams?.CategoryFilter > 0)
-                    bills = bills.Where(x => x.ServiceCategoryId == searchParams?.CategoryFilter);
+                if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
+                {
+                    List<Bill> categoryBills = new List<Bill>();
+                    foreach(int catId in  searchParams.CategoryFilter)
+                    {
+                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId.Equals(catId)));
+                    }
+                    bills = categoryBills;
+                }
                 if (!string.IsNullOrEmpty(searchParams?.Keyword))
                     bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
@@ -477,12 +484,12 @@ namespace Service_Billing.Controllers
                     fileName += $"-{searchParams.MinistryFilter}";
                 if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
                     fileName += $"-{searchParams.TitleFilter}";
-                if (searchParams?.CategoryFilter > 0)
-                {
-                    ServiceCategory? category = _categoryRepository.GetById(searchParams.CategoryFilter);
-                    if (category != null)
-                        fileName += $"-{category.Name}";
-                }
+                //if (searchParams?.CategoryFilter > 0)
+                //{
+                //    ServiceCategory? category = _categoryRepository.GetById(searchParams.CategoryFilter);
+                //    if (category != null)
+                //        fileName += $"-{category.Name}";
+                //}
                 if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
                     fileName += $"-{searchParams.AuthorityFilter}";
 
@@ -510,13 +517,13 @@ namespace Service_Billing.Controllers
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
-                if (searchParams?.CategoryFilter > 0)
-                {
-                    ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
-                    if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
-                        model.Service = serviceCategory.Name;
-                }
-                model.ServiceCategoryId = searchParams?.CategoryFilter > 0 ? (int)searchParams.CategoryFilter : -1;
+                //if (searchParams?.CategoryFilter > 0)
+                //{
+                //    ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
+                //    if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
+                //        model.Service = serviceCategory.Name;
+                //}
+                //model.ServiceCategoryId = searchParams?.CategoryFilter > 0 ? (int)searchParams.CategoryFilter : -1;
                 SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
 
 

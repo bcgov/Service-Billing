@@ -5,7 +5,7 @@
         public string? QuarterFilter { get; set; }
         public string? MinistryFilter { get; set; }
         public string? TitleFilter { get; set; }
-        public int? CategoryFilter { get; set; }
+        public List<int>? CategoryFilter { get; set; }
         public string? AuthorityFilter { get; set; }
         public int? ClientNumber {  get; set; }
         public string? Keyword {  get; set; }
