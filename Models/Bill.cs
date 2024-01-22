@@ -13,6 +13,7 @@ namespace Service_Billing.Models
         public virtual ClientAccount ClientAccount { get; set; }
 
         [ForeignKey("ServiceCategory")]
+        [Required(ErrorMessage ="A service Category must be provided.")]
         public int ServiceCategoryId { get; set; }
         public virtual ServiceCategory ServiceCategory { get; set; }
   

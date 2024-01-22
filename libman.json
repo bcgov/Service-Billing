@@ -5,6 +5,18 @@
     {
       "library": "bootstrap-multiselect@1.1.2",
       "destination": "wwwroot/lib/bootstrap-multiselect/"
+    },
+    {
+      "library": "jquery-validate@1.20.0",
+      "destination": "wwwroot/lib/jquery-validate/"
+    },
+    {
+      "library": "jquery-validation-unobtrusive@4.0.0",
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
+    },
+    {
+      "library": "jquery@3.7.1",
+      "destination": "wwwroot/lib/jquery/"
     }
   ]
 }

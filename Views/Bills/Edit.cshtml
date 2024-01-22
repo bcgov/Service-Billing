@@ -29,7 +29,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Title" class="control-label"></label>
-                <input asp-for="@Model.Title" class="form-control" id="title"/>
+                <input asp-for="@Model.Title" class="form-control" id="title" data-val-required="A project tile must be provided" />
                 <span asp-validation-for="@Model.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -56,12 +56,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.FiscalPeriod" class="control-label"></label>
-                <input asp-for="@Model.FiscalPeriod" class="form-control" />
+                <input asp-for="@Model.FiscalPeriod" class="form-control" data-val-required="Please provide a Fiscal Period" />
                 <span asp-validation-for="@Model.FiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Quantity" class="control-label"></label>
-                <input asp-for="@Model.Quantity" class="form-control" id="quantity"/>
+                <input asp-for="@Model.Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
                 <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -107,7 +107,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
         $(document).ready(function () {
             calculateAmount = () => {
