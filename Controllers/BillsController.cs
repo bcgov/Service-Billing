@@ -306,7 +306,8 @@ namespace Service_Billing.Controllers
                 case 3:
                     quarter = "Quarter 4";
                     bill.BillingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
-                    break;
+                    bill.FiscalPeriod = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    return;
             }
 
             bill.FiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
