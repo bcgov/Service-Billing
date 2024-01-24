@@ -193,12 +193,6 @@ namespace Service_Billing.Controllers
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
                 _logger.LogInformation($"New charge is valid");
-                // Add aggregate gl code. 
-                
-                if(account != null)
-                {
-                    bill.AggregateGLCode = _billRepository.GetAggregateGLCode(account);
-                }
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);

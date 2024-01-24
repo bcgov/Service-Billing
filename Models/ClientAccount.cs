@@ -69,6 +69,15 @@ o	Note: not all naming convention components are required. The naming convention
         public string? Notes { get; set; }
 
         public virtual ICollection<Bill>? Bills { get; set; }
+
+        [NotMapped]
+        public string AggregatedGLCode
+        {
+            get
+            {
+                return $"{ClientNumber}.{ResponsibilityCentre}.{ServiceLine}.{STOB}.{Project}";
+            }
+        }
     }
 }
 /* some validation concerns:

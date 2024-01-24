@@ -165,7 +165,6 @@ namespace Service_Billing.Controllers
                     }
                 }
                 _clientAccountRepository.Update(model);
-            //    _billRepository.UpdateGLCodeForClientCharges(model);
 
                 return RedirectToAction("Details", new { model.Id });
             }
