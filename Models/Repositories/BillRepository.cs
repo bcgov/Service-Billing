@@ -355,5 +355,32 @@ namespace Service_Billing.Models.Repositories
                 }
             }
         }
+
+        public async Task UpdateGLCodeForClientCharges(ClientAccount account)
+        {
+            IEnumerable<Bill> charges = _billingContext.Bills.Where(b => b.ClientAccountId == account.Id);
+            string aggregateCode = GetAggregateGLCode(account);
+
+            foreach(Bill charge in charges)
+            {
+                charge.AggregateGLCode = aggregateCode;
+                _billingContext.Update(charge);
+            }
+
+            await _billingContext.SaveChangesAsync();
+        }
+
+        public string GetAggregateGLCode(ClientAccount account)
+        {
+            string aggregateCode = string.Empty;
+
+            if (account != null)
+            {
+                aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
+                    $"{account.ServiceLine}.{account.STOB}.{account.Project}";
+            }
+
+            return aggregateCode;
+        }
     }
 }

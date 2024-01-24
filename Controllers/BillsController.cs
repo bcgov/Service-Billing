@@ -141,7 +141,6 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Bill bill)
         {
-
             try
             {
                 await _billRepository.Update(bill);
@@ -195,14 +194,11 @@ namespace Service_Billing.Controllers
                 bill.ServiceCategory = category;
                 _logger.LogInformation($"New charge is valid");
                 // Add aggregate gl code. 
-                string aggregateCode = string.Empty;
-
-                if (account != null)
+                
+                if(account != null)
                 {
-                    aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
-                        $"{account.ServiceLine}.{account.STOB}.{account.Project}";
+                    bill.AggregateGLCode = _billRepository.GetAggregateGLCode(account);
                 }
-                bill.AggregateGLCode = aggregateCode;
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
@@ -600,6 +596,7 @@ new { Id = "Grand Total", Name = total },
             }
             return Ok(200);
         }
+
         private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
         {
             SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();

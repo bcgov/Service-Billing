@@ -111,7 +111,10 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                int id = _categoryRepository.Add(model.Service);
+                if(ModelState.IsValid)
+                {
+                    int id = _categoryRepository.Add(model.Service);
+                }
             }
             catch (DbUpdateException ex)
             {
