@@ -24,9 +24,6 @@ namespace Service_Billing.Models
         [Display(Name = "Is Active?")]
         public bool IsActive { get; set; }
 
-        [BindRequired]
-        [MinLength(2)]
-        [MaxLength(5)]
         public string? UOM { get; set; }
 
         [Display(Name = "Service Owner")]
