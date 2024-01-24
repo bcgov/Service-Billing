@@ -59,7 +59,7 @@
                 <span asp-validation-for="@Model.CasClientNumber" class="text-danger"></span>
             </div> *@
             <div>
-                @if(!String.IsNullOrEmpty(Model.Team.Name))
+                @if(Model.Team != null && !String.IsNullOrEmpty(Model.Team.Name))
                 {
                     <h3>@Model.Team.Name</h3>
                 }

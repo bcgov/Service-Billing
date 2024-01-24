@@ -140,8 +140,8 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-
+            if(account.Team == null)
+                account.Team = new ClientTeam();
             return View(account);
         }
 
@@ -165,6 +165,7 @@ namespace Service_Billing.Controllers
                     }
                 }
                 _clientAccountRepository.Update(model);
+                _billRepository.UpdateGLCodeForClientCharges(model);
 
                 return RedirectToAction("Details", new { model.Id });
             }
@@ -333,14 +334,6 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                //if (_graphServiceClient == null)
-                //    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
-                //var queriedUsers = await _graphServiceClient.Users.Request()
-                //    .Filter($"startswith(displayName, '{term}')")
-                //    .Top(8)
-                //    .Select("displayName, id")
-                //    .GetAsync();
-
                 var cca = ConfidentialClientApplicationBuilder
                     .Create(_configuration.GetSection("AzureAd")["ClientId"])
                     .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
