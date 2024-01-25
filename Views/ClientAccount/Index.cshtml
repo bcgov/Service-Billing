@@ -2,6 +2,11 @@
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
 
+@{
+    ViewData["Title"] = "Index of Client Accounts";
+    Layout = "_Layout";
+}
+
 @inject IAuthorizationService AuthorizationService
 @model IEnumerable<ClientAccount>
 @{

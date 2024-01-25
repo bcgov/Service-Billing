@@ -1,6 +1,7 @@
 ﻿@model Service_Billing.Models.ClientAccount
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Client Details";
+    Layout = "_Layout";
     ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
     var parms = new Dictionary<string, string>
 {

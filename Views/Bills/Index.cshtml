@@ -3,6 +3,12 @@
 
 @using Service_Billing.ViewModels;
 @using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Quarterly Report";
+    Layout = "_Layout";
+}
+
 @model IEnumerable<Bill>;
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
