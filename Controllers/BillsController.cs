@@ -450,7 +450,7 @@ namespace Service_Billing.Controllers
                             row.End = bill.EndDate.Value.ToShortDateString();
 
                         row.CreatedBy = bill.CreatedBy;
-                        row.AggregateGLCode = bill.AggregateGLCode;
+                        row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
                         row.FiscalPeriod = bill.FiscalPeriod;
                         row.IdirOrURL = bill.IdirOrUrl;
                         if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
