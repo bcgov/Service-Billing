@@ -334,6 +334,7 @@ namespace Service_Billing.Models.Repositories
             bill.Quantity = editedBill.Quantity;
             bill.BillingCycle = editedBill?.BillingCycle;
             bill.TicketNumberAndRequester = editedBill?.TicketNumberAndRequester;
+            bill.Notes = editedBill?.Notes;
             _billingContext.Update(bill);
             await _billingContext.SaveChangesAsync();
         }
