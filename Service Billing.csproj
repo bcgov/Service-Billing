@@ -9,9 +9,13 @@
 
   <ItemGroup>
     <Compile Remove="ServiceBilling.API\**" />
+    <Compile Remove="wwwroot\fonts\NewFolder\**" />
     <Content Remove="ServiceBilling.API\**" />
+    <Content Remove="wwwroot\fonts\NewFolder\**" />
     <EmbeddedResource Remove="ServiceBilling.API\**" />
+    <EmbeddedResource Remove="wwwroot\fonts\NewFolder\**" />
     <None Remove="ServiceBilling.API\**" />
+    <None Remove="wwwroot\fonts\NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>
