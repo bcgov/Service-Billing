@@ -141,13 +141,13 @@
                 @Html.DisplayNameFor(model => model.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Costs)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.IsActive)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Costs)
             </th>
             <th>
                 Unit of Measure
@@ -169,13 +169,13 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
-                    $@Html.DisplayFor(modelItem => item.Costs)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.IsActive)
+                </td>
+                <td>
+                    $@Html.DisplayFor(modelItem => item.Costs)
                 </td>
                 @if(!string.IsNullOrEmpty(item.UOM) && item.UOM.ToLower() == "hr")
                 {
