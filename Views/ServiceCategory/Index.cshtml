@@ -77,7 +77,7 @@
                             }
                         </div>
 
-                        <label name="uomFilter">UOM: </label>
+                        <label name="uomFilter">Unit Of Measure: </label>
                         <select name="uomFilter">
                             @if (uomFilterValue == "Month")
                             {
@@ -150,7 +150,7 @@
                 @Html.DisplayNameFor(model => model.IsActive)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UOM)
+                Unit of Measure
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.ServiceOwner)
@@ -177,9 +177,16 @@
                 <td>
                     @Html.DisplayFor(modelItem => item.IsActive)
                 </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.UOM)
-                </td>
+                @if(!string.IsNullOrEmpty(item.UOM) && item.UOM.ToLower() == "hr")
+                {
+                    <td>Hour</td>
+                }
+                else
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UOM)
+                    </td>
+                }
                 <td>
                     @Html.DisplayFor(modelItem => item.ServiceOwner)
                 </td>
