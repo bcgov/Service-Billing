@@ -429,6 +429,7 @@ namespace Service_Billing.Controllers
                         ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                         ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                         ChargeRow row = new ChargeRow();
+                        row.ChargeId = bill.Id;
                         row.ClientNumber = bill.ClientAccountId;
                         row.ClientName = bill.ClientAccount.Name;
                         row.Program = bill.Title;
@@ -649,6 +650,7 @@ new { Id = "Grand Total", Name = total },
     // For exporting (filtered) charges from the Index view
     public class ChargeRow
     {
+        public int ChargeId { get; set; }
         public int ClientNumber { get; set; }
         public string? ClientName { get; set; }
         public string? Program { get; set; } //"Title"
