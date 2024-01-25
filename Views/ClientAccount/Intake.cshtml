@@ -95,6 +95,11 @@
                 <input type="checkbox" asp-for="@Model.Account.IsApprovedByEA" />
                 <span asp-validation-for="@Model.Account.IsApprovedByEA" class="text-danger"></span>
             </div>
+             <div class="form-group">
+                <label asp-for="@Model.Account.Notes" class="control-label"></label>
+                <textarea asp-for="@Model.Account.Notes" class="form-control" value="@Model.Account.Notes" > </textArea>
+                <span asp-validation-for="@Model.Account.Notes" class="text-danger"></span>
+            </div>
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <input type="submit" value="Intake" class="btn btn-primary" />

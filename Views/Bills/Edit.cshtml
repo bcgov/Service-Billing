@@ -94,6 +94,11 @@
                 <input asp-for="@Model.CreatedBy" class="form-control" />
                 <span asp-validation-for="@Model.CreatedBy" class="text-danger"></span>
             </div>
+             <div class="form-group">
+                <label asp-for="@Model.Notes" class="control-label"></label>
+                <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
+                <span asp-validation-for="@Model.Notes" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

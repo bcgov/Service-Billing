@@ -169,6 +169,12 @@
             <td>
                 @Model.ClientAccount?.AggregatedGLCode
             </td>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => Model.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(model => Model.Notes)
+            </td>
         </tr>
     </table>
 </div>
