@@ -1,5 +1,7 @@
-﻿using CsvHelper;
+﻿using ClosedXML.Excel;
+using CsvHelper;
 using CsvHelper.Configuration;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +18,8 @@ using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
+using System.Data;
+using System.IO;
 using System.Security.Claims;
 
 namespace Service_Billing.Controllers
@@ -369,7 +373,7 @@ namespace Service_Billing.Controllers
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
                     List<Bill> categoryBills = new List<Bill>();
-                    foreach(int catId in  searchParams.CategoryFilter)
+                    foreach (int catId in searchParams.CategoryFilter)
                     {
                         categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId.Equals(catId)));
                     }
@@ -409,6 +413,76 @@ namespace Service_Billing.Controllers
                 _logger.LogError("An error occurred while trying to filter charges in Index view");
                 _logger.LogError(ex.Message);
                 return null;
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
+        {
+            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
+            try
+            {
+
+                string fileName = GetFilename(searchParams, "xlsx");
+              
+
+                using var wb = new XLWorkbook();
+                var ws = wb.AddWorksheet();
+                var dataTable = new DataTable();
+                List<ChargeRow> rows = new List<ChargeRow>();
+                // Inserts the collection to Excel as a table with a header row.
+                //ws.Cell("A1").InsertTable(bills);
+                foreach (Bill bill in bills)
+                {
+                    ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    ChargeRow row = new ChargeRow();
+                    row.ChargeId = bill.Id;
+                    row.ClientNumber = bill.ClientAccountId;
+                    row.ClientName = bill.ClientAccount.Name;
+                    row.Program = bill.Title;
+                    if (serviceCategory != null)
+                    {
+                        row.GDXBusArea = serviceCategory.GDXBusArea;
+                        row.ServiceCategory = serviceCategory.Name;
+                    }
+                    row.TicketNumber = bill.TicketNumberAndRequester;
+                    row.Amount = @String.Format("${0:.##}", bill.Amount);
+                    row.Quantity = bill.Quantity;
+                    row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                    if (bill.DateCreated != null)
+                        row.Created = bill.DateCreated.Value.ToShortDateString();
+                    if (bill.StartDate != null)
+                        row.Start = bill.StartDate.Value.ToShortDateString();
+                    if (bill.EndDate != null)
+                        row.End = bill.EndDate.Value.ToShortDateString();
+
+                    row.CreatedBy = bill.CreatedBy;
+                    row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                    row.FiscalPeriod = bill.FiscalPeriod;
+                    row.IdirOrURL = bill.IdirOrUrl;
+                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                        row.ExpenseAuthority = account.ExpenseAuthorityName;
+
+                    rows.Add(row);
+                }
+
+                ws.Cell("A1").InsertTable(rows);
+                // Adjust column size to contents.
+                ws.Columns().AdjustToContents();
+
+                using var stream = new MemoryStream();
+                wb.SaveAs(stream);
+                var content = stream.ToArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(content, contentType, fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Could not export Excel file. See exception logged below.");
+                _logger.LogError($"{ex.Message}");
+                return StatusCode(500);
             }
         }
 
@@ -462,32 +536,8 @@ namespace Service_Billing.Controllers
 
                     //  csvWriter.WriteRecords(bills);
                 }
-                string fileName = "Charges";
-                if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
-                {
-                    if (searchParams.QuarterFilter == "all")
-                        fileName += "-all-Quarters";
-                    if (bills.Any())
-                    {
-                        fileName += $"={bills.First().BillingCycle}";
-                    }
-                }
-                if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    fileName += $"-{searchParams.MinistryFilter}";
-                if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
-                    fileName += $"-{searchParams.TitleFilter}";
-                //if (searchParams?.CategoryFilter > 0)
-                //{
-                //    ServiceCategory? category = _categoryRepository.GetById(searchParams.CategoryFilter);
-                //    if (category != null)
-                //        fileName += $"-{category.Name}";
-                //}
-                if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
-                    fileName += $"-{searchParams.AuthorityFilter}";
-
-                fileName += DateTime.Today.ToString("dd-mm-yyyy");
-                fileName += ".csv";
-
+                string fileName = GetFilename(searchParams);
+              
                 return File(memoryStream.ToArray(), "application/octet-stream", fileName);
             }
             catch (Exception ex)
@@ -645,7 +695,36 @@ new { Id = "Grand Total", Name = total },
             }
             return new List<int>();
         }
+
+        private string GetFilename(ChargeIndexSearchParamsModel searchParams, string extension = "csv")
+        {
+            string fileName = "Charges";
+            //if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
+            //{
+            //    if (searchParams.QuarterFilter == "all")
+            //        fileName += "-all-Quarters";
+            //    if (bills.Any())
+            //    {
+            //        fileName += $"={bills.First().BillingCycle}";
+            //    }
+            //}
+            if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
+                fileName += $"-{searchParams.MinistryFilter}";
+            if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
+                fileName += $"-{searchParams.TitleFilter}";
+
+            if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
+                fileName += $"-{searchParams.AuthorityFilter}";
+
+            fileName += DateTime.Today.ToString("dd-mm-yyyy");
+            fileName += $".{extension}";
+
+            return fileName;
+        }
     }
+
+
+
 
     // For exporting (filtered) charges from the Index view
     public class ChargeRow

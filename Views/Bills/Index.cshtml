@@ -143,7 +143,7 @@
                 </div>
             }
             <div class="export-button">
-                <input type="submit" value="Export to CSV" formaction="Bills/WriteToCSV" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                <input type="submit" value="Export to Excel" formaction="Bills/WriteToExcel" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
                     <input type="submit" value="Run Report" formaction="/Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
