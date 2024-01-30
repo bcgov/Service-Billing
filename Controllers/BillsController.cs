@@ -524,7 +524,6 @@ namespace Service_Billing.Controllers
         [HttpPost]
         public async Task<IActionResult> ReportToExcel(GeneratedReportViewModel model)
         {
-
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;
 
@@ -546,8 +545,10 @@ namespace Service_Billing.Controllers
             List<ChargeRow> rows = new List<ChargeRow>();
             ws.Cell("A1").InsertTable(records);
             // Adjust column size to contents.
+            ws.Cell("D1").Value = "Grand Total";
+            ws.Cell($"D{model.ServicesAndSums.Count() + 2}").Value = total;
+            ws.Column(3).Delete(); // don't need UOM
             ws.Columns().AdjustToContents();
-            ws.Cell($"D{model.ServicesAndSums.Count() + 1}").InsertData(summedTotal);
             using var stream = new MemoryStream();
             wb.SaveAs(stream);
             var content = stream.ToArray();
@@ -667,9 +668,6 @@ namespace Service_Billing.Controllers
         }
     }
 
-
-
-
     // For exporting (filtered) charges from the Index view
     public class ChargeRow
     {
@@ -693,12 +691,12 @@ namespace Service_Billing.Controllers
         public string? ExpenseAuthority { get; set; }
     }
 
-
     // For creating the exported quarterly reports. 
     public class RecordEntry
     {
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
+        public string UOM { get; set; }
 
         public RecordEntry(string serviceCategory, decimal? amount)
         {
