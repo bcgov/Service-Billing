@@ -35,14 +35,15 @@ else
     <h3>Client Number: @Model.ClientNumber</h3>
 }
 <div class="row row-cols-1 row-cols-md-3 g-4">
-    <form asp-action="ReportToCSV" method="get">
-        <input type="text" name="quarterFilter" value="@Model.BillingQuarter" hidden />
-        <input type="text" name="ministryFilter" value="@Model.Ministry" hidden />
-        <input type="text" name="titleFilter" value="@Model.Title" hidden />
-        <input type="text" name="categoryFilter" value="@Model.ServiceCategoryId" hidden />
-        <input type="text" name="authorityFilter" value="@Model.Authority" hidden />
-        <input type="text" name="clientNumber" value="@Model.ClientNumber" hidden />
-        <input type="submit" value="Download as CSV" value="@Model.ServicesAndSums" formmethod="get" />
+    <form asp-action="ReportToExcel" method="post">
+        @foreach(var kvp in Model.ServicesAndSums)
+        {<!-- Oh man, was this ever a pain.-->
+            Guid guid = Guid.NewGuid();
+            <input type="text" name="Model.ServicesAndSums[@guid].Key" value="@kvp.Key" hidden/>
+            <input type="text" name="Model.ServicesAndSums[@guid].Value" value="@kvp.Value" hidden/>
+            <input type="hidden" name="Model.ServicesAndSums.Index" value="@guid" />
+        }
+        <input type="submit" value="Download as Excel" />
     </form>
     <table class="table table-striped">
         <thead>
