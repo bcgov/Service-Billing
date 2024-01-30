@@ -203,12 +203,12 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public async Task<ActionResult> Intake()
+        public async Task<ActionResult> Create()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-            ClientIntakeViewModel model = new ClientIntakeViewModel();
+            ClientCreateViewModel model = new ClientCreateViewModel();
 
             return View(model);
         }
@@ -216,7 +216,7 @@ namespace Service_Billing.Controllers
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Intake(ClientIntakeViewModel model)
+        public async Task<IActionResult> Create(ClientCreateViewModel model)
         {
             _logger.LogInformation("User submitted Intake form.");
             try
@@ -272,7 +272,7 @@ namespace Service_Billing.Controllers
             catch (DbUpdateException ex)
             {
                 _logger.LogError($"Error adding client account to DB. Inner Exception: {ex.InnerException}");
-                return View(new ClientIntakeViewModel());
+                return View(new ClientCreateViewModel());
             }
             catch (Exception ex)
             {

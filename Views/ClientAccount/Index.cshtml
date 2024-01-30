@@ -79,7 +79,7 @@
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
                     <div class="create-new-button">
-                        <input type="submit" value="Create Account" formaction="/ClientAccount/Intake" formmethod="get" />
+                        <input type="submit" value="Create Account" formaction="/ClientAccount/Create" formmethod="get" />
                     </div>
                 }
                 <div class="export-button">
