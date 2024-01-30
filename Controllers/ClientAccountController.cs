@@ -18,6 +18,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using Service_Billing.Services.GraphApi;
 using Microsoft.Graph.TermStore;
 using System.Security.Principal;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Vml;
 
 namespace Service_Billing.Controllers
 {
@@ -408,17 +410,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public IActionResult WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             try
             {
-                using var memoryStream = new MemoryStream();
-                using (var streamWriter = new StreamWriter(memoryStream))
-                {
-                    using var csvWriter = new CsvWriter(streamWriter);
-                    csvWriter.WriteRecords(accounts);
-                }
                 string fileName = "Client-Accounts";
                 if (!String.IsNullOrEmpty(ministryFilter))
                     fileName += $"-Client{numberFilter}";
@@ -429,11 +425,21 @@ namespace Service_Billing.Controllers
                 if (!String.IsNullOrEmpty(teamFilter))
                     fileName += $"-{teamFilter}";
 
-
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
-                fileName += ".csv";
+                fileName += ".xlsx";
 
-                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+                using var wb = new XLWorkbook();
+                var ws = wb.AddWorksheet();
+                List<ChargeRow> rows = new List<ChargeRow>();
+                ws.Cell("A1").InsertTable(accounts);
+                // Adjust column size to contents.
+                ws.Columns().AdjustToContents();
+                using var stream = new MemoryStream();
+                wb.SaveAs(stream);
+                var content = stream.ToArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(content, contentType, fileName);
             }
             catch (Exception ex)
             {
