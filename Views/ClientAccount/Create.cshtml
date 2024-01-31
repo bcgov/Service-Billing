@@ -3,16 +3,14 @@
 @model Service_Billing.ViewModels.ClientCreateViewModel
 
 @{
-    ViewData["Title"] = "Client Intake";
+    ViewData["Title"] = "Create Client Account";
     Layout = "_Layout";
 }
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
 }
 
-<h1>Client Intake</h1>
-
-<h4>Please fill out the client intake form.</h4>
+<h1>Create Client Account</h1>
 <hr />
 
 <div class="row">
@@ -80,8 +78,8 @@
                 <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Account.STOB" class="control-label">CAS SToB Number</label>
-                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please Provide a four character SToB number" />
+                <label asp-for="@Model.Account.STOB" class="control-label">CAS STOB Number</label>
+                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please Provide a four character STOB number" />
                 <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
