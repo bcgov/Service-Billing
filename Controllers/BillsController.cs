@@ -462,15 +462,22 @@ namespace Service_Billing.Controllers
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
                     row.FiscalPeriod = bill.FiscalPeriod;
                     row.IdirOrURL = bill.IdirOrUrl;
-                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                        row.ExpenseAuthority = account.ExpenseAuthorityName;
-
+                    if (account != null)
+                    {
+                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                            row.ExpenseAuthority = account.ExpenseAuthorityName;
+                        if(account.Team != null && !String.IsNullOrEmpty(account.Team.PrimaryContact))
+                            row.PrimaryContact = account.Team.PrimaryContact;
+                    }
                     rows.Add(row);
                 }
 
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
+                ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
+                ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
+                ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
 
                 using var stream = new MemoryStream();
                 wb.SaveAs(stream);
@@ -690,6 +697,7 @@ namespace Service_Billing.Controllers
         public string? AggregateGLCode { get; set; }
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
+        public string? PrimaryContact { get; set; }
     }
 
     // For creating the exported quarterly reports. 
