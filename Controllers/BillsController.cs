@@ -390,10 +390,11 @@ namespace Service_Billing.Controllers
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
-                        ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+                  
+                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) 
+                            && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                         {
-                            filteredBills.Append(bill);
+                            filteredBills.Add(bill);
                         }
                     }
 
