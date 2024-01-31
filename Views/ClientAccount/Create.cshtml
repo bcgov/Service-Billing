@@ -37,7 +37,7 @@
             </div>
             <div class="form-group">
                 <label class="control-label">CAS Client Number</label>
-                <input asp-for="@Model.Account.ClientNumber" class="form-group" />
+                <input type="number" asp-for="@Model.Account.ClientNumber" class="form-group" />
                 <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group" id="intake-contacts">
