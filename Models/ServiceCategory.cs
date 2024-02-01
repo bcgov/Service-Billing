@@ -13,7 +13,7 @@ namespace Service_Billing.Models
         [Display(Name = "GDX Business Area")]
         public string? GDXBusArea { get; set; }
 
-        [Required(ErrorMessage = "Add the digital asset / web property you will be providing the service for.")]
+        [Required(ErrorMessage = "Add the name of the digital asset / web property / IDIR. Don't use acronyms.")]
         public string? Name { get; set; }
 
         [Display(Name = "Unit Price")]
