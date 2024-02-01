@@ -122,6 +122,11 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
+                        if ($('#uom').val() == 'Month') {
+                            $('#quantity').val(3);
+                        } else {
+                             $('#quantity').val(1);
+                        }
                     }
                 };
                 xhr.open('get', url);
@@ -131,8 +136,8 @@
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
+
                 var id = $('#categorySelect').val();
-                console.log(id);
                 $("#categoryIdInput").val(id);
                 
                 calculateAmount();
