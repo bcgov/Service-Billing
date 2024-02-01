@@ -407,7 +407,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
-                return bills.OrderBy(c => c.ClientAccount.Name);
+                return bills.OrderBy(c => c.ClientAccount.Id);
             }
             catch (Exception ex)
             {
