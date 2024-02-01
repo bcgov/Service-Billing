@@ -9,11 +9,11 @@ namespace Service_Billing.Models
         [Key]
         public int ServiceId { get; set; }
 
-        [Required (ErrorMessage = "A business area must be defined")]
+        [Required (ErrorMessage = "Select the Government Digital Experience (GDX) business area from the drop down.")]
         [Display(Name = "GDX Business Area")]
         public string? GDXBusArea { get; set; }
 
-        [Required(ErrorMessage = "Please give the service a descriptive name")]
+        [Required(ErrorMessage = "Add the digital asset / web property you will be providing the service for.")]
         public string? Name { get; set; }
 
         [Display(Name = "Unit Price")]

@@ -24,13 +24,8 @@
                 <span asp-validation-for="@Model.Service.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Service.Costs" class="control-label"></label>
-                <input asp-for="@Model.Service.Costs" class="form-control" />
-                <span asp-validation-for="@Model.Service.Costs" class="text-danger"></span>
-            </div>
-            <div class="form-group">
                 <label asp-for="@Model.Service.Description" class="control-label"></label>
-                <input asp-for="@Model.Service.Description" class="form-@Model.Service." data-val="true" data-val-required="Please provide a short description of this service" />
+                <input asp-for="@Model.Service.Description" class="form-control" data-val="true" data-val-required="Provide a short description of this service using active voice and plain language. Avoid acronyms." />
                 <span asp-validation-for="@Model.Service.Description" class="text-danger"></span>
             </div>
             <div class="form-group form-check">
@@ -40,13 +35,18 @@
             <div class="form-group">
                 <label asp-for="@Model.Service.UOM" class="control-label"></label>
                 @* <input asp-for="UOM" class="form-control" /> *@
-                <select asp-for="@Model.Service.UOM" class="form-control" data-val="true" data-val-required="A Unit of Measure must be provided (Each, Hour, or Month)">
+                <select asp-for="@Model.Service.UOM" class="form-control" data-val="true" data-val-required="Select the unit of measure for this service: each, hour, month.">
                     <option value=""></option>
                     <option value="Month">Month</option>
                     <option value="Hr">Hour</option>
                     <option value="Each">Each</option>
                 </select>
                 <span asp-validation-for="@Model.Service.UOM" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Service.Costs" class="control-label"></label>
+                <input asp-for="@Model.Service.Costs" class="form-control" />
+                <span asp-validation-for="@Model.Service.Costs" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Service.ServiceOwner" class="control-label"></label>
