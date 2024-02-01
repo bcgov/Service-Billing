@@ -23,8 +23,6 @@ namespace Service_Billing.Models
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
 
-        
-
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }
 
