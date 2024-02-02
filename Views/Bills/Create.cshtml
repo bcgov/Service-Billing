@@ -27,8 +27,8 @@
                 <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" data-val="true" data-val-required="A project tile must be provided" />
+                <label asp-for="Title" class="control-label">Program</label>
+                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the name of the digital asset / web property / IDIR. Don't use acronyms." />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -122,6 +122,11 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
+                        if ($('#uom').val() == 'Month') {
+                            $('#quantity').val(3);
+                        } else {
+                             $('#quantity').val(1);
+                        }
                     }
                 };
                 xhr.open('get', url);
@@ -131,8 +136,8 @@
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
+
                 var id = $('#categorySelect').val();
-                console.log(id);
                 $("#categoryIdInput").val(id);
                 
                 calculateAmount();

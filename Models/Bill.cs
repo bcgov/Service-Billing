@@ -13,7 +13,7 @@ namespace Service_Billing.Models
         public virtual ClientAccount ClientAccount { get; set; }
 
         [ForeignKey("ServiceCategory")]
-        [Required(ErrorMessage ="A service Category must be provided.")]
+        [Required(ErrorMessage ="Add a service category from the drop down list.")]
         public int ServiceCategoryId { get; set; }
         public virtual ServiceCategory ServiceCategory { get; set; }
   
@@ -22,8 +22,6 @@ namespace Service_Billing.Models
 
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
-
-        
 
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }

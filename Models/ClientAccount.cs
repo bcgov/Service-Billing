@@ -14,7 +14,7 @@ namespace Service_Billing.Models
         /*	<sector/group> - <ministry acronym> - <sub group> - <full org/branch name> - <service>; e.g.: ECON – JTT – DataBC – WordPress; CITZ – OCIO – ISB. 
 o	Note: not all naming convention components are required. The naming convention is used to easily group and sort Client Accounts along organizational lines.
 */
-        [Required(ErrorMessage = "A Client Name must be provided")]
+        [Required(ErrorMessage = "Add a client name")]
         [Display(Name = "Name")]
         public string? Name { get; set; }
 

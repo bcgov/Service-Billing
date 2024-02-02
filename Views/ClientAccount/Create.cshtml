@@ -79,7 +79,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.STOB" class="control-label">CAS STOB Number</label>
-                <input asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please Provide a four character STOB number" />
+                <input type="number" asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please Provide a four character STOB number" />
                 <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">

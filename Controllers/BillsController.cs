@@ -97,7 +97,7 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
             if (bills != null && bills.Any())
-            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class. 
+            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class.
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
@@ -390,10 +390,11 @@ namespace Service_Billing.Controllers
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
-                        ClientAccount? account = bill.ClientAccount;
-                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+
+                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName)
+                            && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                         {
-                            filteredBills.Append(bill);
+                            filteredBills.Add(bill);
                         }
                     }
 
@@ -406,11 +407,9 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
-
                 if (!String.IsNullOrEmpty(ministryUserName))
                 {
                     bills = bills.Where(b => b.ClientAccount.Team is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
-
                     bills = bills.Where(bill =>
                         (!String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) &&
                          bill.ClientAccount.ExpenseAuthorityName.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
@@ -421,7 +420,7 @@ namespace Service_Billing.Controllers
                     ).ToList();
                 }
 
-                return bills.OrderBy(c => c.ClientAccount.Name);
+                return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
             }
             catch (Exception ex)
             {
@@ -476,15 +475,22 @@ namespace Service_Billing.Controllers
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
                     row.FiscalPeriod = bill.FiscalPeriod;
                     row.IdirOrURL = bill.IdirOrUrl;
-                    if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                        row.ExpenseAuthority = account.ExpenseAuthorityName;
-
+                    if (account != null)
+                    {
+                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                            row.ExpenseAuthority = account.ExpenseAuthorityName;
+                        if(account.Team != null && !String.IsNullOrEmpty(account.Team.PrimaryContact))
+                            row.PrimaryContact = account.Team.PrimaryContact;
+                    }
                     rows.Add(row);
                 }
 
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
+                ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
+                ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
+                ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
 
                 using var stream = new MemoryStream();
                 wb.SaveAs(stream);
@@ -704,9 +710,10 @@ namespace Service_Billing.Controllers
         public string? AggregateGLCode { get; set; }
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
+        public string? PrimaryContact { get; set; }
     }
 
-    // For creating the exported quarterly reports. 
+    // For creating the exported quarterly reports.
     public class RecordEntry
     {
         public string ServiceCategory { get; set; }
