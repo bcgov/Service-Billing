@@ -103,7 +103,7 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddScoped<IBillRepository, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
-builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
+builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
 builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();

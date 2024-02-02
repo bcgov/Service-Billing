@@ -20,11 +20,6 @@
     bool next = searchModel.QuarterFilter == "next";
     bool all = searchModel.QuarterFilter == "All Quarters";
 }
-@{
-    var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
-    var nameClaim = ViewData["NameClaim"] as string ?? "";
-}
 
 <h1>Service Billing Charges</h1>
 
@@ -180,10 +175,7 @@
                 var category = bill.ServiceCategory;
                 var client = bill.ClientAccount;
 
-                var hideRow = isMinistryClient
-                && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
-
-                <tr style="@(hideRow ? "display:none;" : "")">
+                <tr>
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
