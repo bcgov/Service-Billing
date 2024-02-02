@@ -84,16 +84,13 @@ namespace Service_Billing.Controllers
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-            //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
-            var authUser = User;
-            if (authUser.IsMinistryClient(_authorizationService))
-            {
-                var name = authUser?.FindFirst("name");
-                if (name is not null) ViewData["NameClaim"] = name.Value;
-            }
+            var isMinistryUser = User.IsInRole("GDXBillingService.User");
+            string? ministryUserName = string.Empty;
+            if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, ministryUserName ?? "");
+ 
             return View(clients);
         }
 
@@ -142,7 +139,7 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-            if(account.Team == null)
+            if (account.Team == null)
                 account.Team = new ClientTeam();
             return View(account);
         }
@@ -382,7 +379,7 @@ namespace Service_Billing.Controllers
             return View("Index", new ClientAccountViewModel(currentUserAccounts, null));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string ministryUserName = "")
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (!String.IsNullOrEmpty(ministryFilter))
@@ -404,6 +401,11 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
                 // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
+            }
+
+            if (!String.IsNullOrEmpty(ministryUserName))
+            {
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
             }
 
             return clients;

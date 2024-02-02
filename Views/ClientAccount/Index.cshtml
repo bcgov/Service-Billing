@@ -14,17 +14,11 @@
     string threeFmt = "000";
 }
 
-@{
-    var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
-    var nameClaim = ViewData["NameClaim"] as string ?? "";
-}
-
 <h1>Manage Client Account Information</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
     {
         <div class="table-filter-section">
             <form asp-action="Index" method="get">
@@ -107,11 +101,8 @@
             {
             { "clientNumber",  account.ClientNumber.ToString()}
             };
-                var hideRow = isMinistryClient
-                    && (!nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
-                    || !nameClaim.IsContainedIgnoringOrderAndCase(account.Team?.PrimaryContact));
 
-                <tr style="@(hideRow ? "display:none;" : "")">
+                <tr>
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
