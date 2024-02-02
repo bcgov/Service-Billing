@@ -1,7 +1,7 @@
 ﻿@model Service_Billing.Models.ServiceCategory
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit a Service Category";
     Layout = "_Layout";
 }
 
@@ -32,7 +32,7 @@
             <div class="form-group">
                 <label asp-for="Description" class="control-label"></label>
                 <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
+                <span asp-validation-for="Description" class="text-danger" data-val="true" data-val-required="Please provide a short description of this service"></span>
             </div>
             <div class="form-group form-check">
                 <label class="form-check-label">
@@ -42,7 +42,7 @@
             <div class="form-group">
                 <label asp-for="UOM" class="control-label"></label>
                 @* <input asp-for="UOM" class="form-control" /> *@
-                <select asp-for="UOM" class="form-control">
+                <select asp-for="UOM" class="form-control" data-val="true" data-val-required="A Unit of Measure must be provided (Each, Hour, or Month)">
                     <option value=""></option>
                     <option value="Month">Month</option>
                     <option value="Hr">Hour</option>
@@ -80,7 +80,6 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
         var _isDirty = false;
         $("#dialog").dialog({

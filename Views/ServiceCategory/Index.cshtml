@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<Service_Billing.Models.ServiceCategory>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Index of Service Categories";
     Layout = "_Layout";
 }
 @{
@@ -77,7 +77,7 @@
                             }
                         </div>
 
-                        <label name="uomFilter">UOM: </label>
+                        <label name="uomFilter">Unit of Measure: </label>
                         <select name="uomFilter">
                             @if (uomFilterValue == "Month")
                             {
@@ -126,7 +126,7 @@
             <input type="submit" value="Create New Service" formaction="/ServiceCategory/Create" formmethod="get" />
         </div>
         <div class="export-button">
-            <input type="submit" value="Export to CSV" formaction="/ServiceCategory/WriteToCSV" formmethod="get" />
+            <input type="submit" value="Export to Excel" formaction="/ServiceCategory/WriteToExcel" formmethod="get" />
         </div>
     </form>
 </div>
@@ -141,16 +141,16 @@
                 @Html.DisplayNameFor(model => model.Name)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Costs)
-            </th>
-            <th>
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.IsActive)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.UOM)
+                @Html.DisplayNameFor(model => model.Costs)
+            </th>
+            <th>
+                Unit of Measure
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.ServiceOwner)
@@ -169,17 +169,24 @@
                     @Html.DisplayFor(modelItem => item.Name)
                 </td>
                 <td>
-                    $@Html.DisplayFor(modelItem => item.Costs)
-                </td>
-                <td>
                     @Html.DisplayFor(modelItem => item.Description)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.IsActive)
                 </td>
                 <td>
-                    @Html.DisplayFor(modelItem => item.UOM)
+                    $@Html.DisplayFor(modelItem => item.Costs)
                 </td>
+                @if(!string.IsNullOrEmpty(item.UOM) && item.UOM.ToLower() == "hr")
+                {
+                    <td>Hour</td>
+                }
+                else
+                {
+                    <td>
+                        @Html.DisplayFor(modelItem => item.UOM)
+                    </td>
+                }
                 <td>
                     @Html.DisplayFor(modelItem => item.ServiceOwner)
                 </td>

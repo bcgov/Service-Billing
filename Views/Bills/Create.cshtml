@@ -1,7 +1,7 @@
 ﻿@model Service_Billing.Models.Bill
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Order a Service";
     Layout = "_Layout";
 }
 @{
@@ -27,8 +27,8 @@
                 <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
+                <label asp-for="Title" class="control-label">Program</label>
+                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the name of the digital asset / web property / IDIR. Don't use acronyms." />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -37,7 +37,7 @@
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
             @* <input asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" readonly="true" /> *@
-                <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
+            <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories })
    
             
@@ -55,12 +55,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="FiscalPeriod" class="control-label"></label>
-                <input asp-for="FiscalPeriod" class="form-control" />
+                <input asp-for="FiscalPeriod" class="form-control" data-val="true" data-val-required="Please provide a Fiscal Period" />
                 <span asp-validation-for="FiscalPeriod" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Quantity" class="control-label"></label>
-                <input asp-for="Quantity" class="form-control" id="quantity" />
+                <input asp-for="Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
                 <span asp-validation-for="Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -88,6 +88,11 @@
                 <input asp-for="CreatedBy" value="@currentUserName" class="form-control" />
                 <span asp-validation-for="CreatedBy" class="text-danger"></span>
             </div>
+             <div class="form-group">
+                <label asp-for="@Model.Notes" class="control-label"></label>
+                <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
+                <span asp-validation-for="@Model.Notes" class="text-danger"></span>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -103,7 +108,6 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
     <script>
         $(document).ready(function () {
             calculateAmount = () => {
@@ -118,6 +122,11 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
+                        if ($('#uom').val() == 'Month') {
+                            $('#quantity').val(3);
+                        } else {
+                             $('#quantity').val(1);
+                        }
                     }
                 };
                 xhr.open('get', url);
@@ -127,8 +136,8 @@
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
+
                 var id = $('#categorySelect').val();
-                console.log(id);
                 $("#categoryIdInput").val(id);
                 
                 calculateAmount();

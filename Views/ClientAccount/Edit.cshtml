@@ -1,7 +1,8 @@
 ﻿@model Service_Billing.Models.ClientAccount
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Client Account";
+    Layout = "_Layout";
 }
 
 <h1>Edit</h1>
@@ -20,22 +21,22 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ClientNumber" class="control-label"></label>
-                <input asp-for="@Model.ClientNumber" class="form-control" value="@Model.ClientNumber" />
+                <input asp-for="@Model.ClientNumber" class="form-control" value="@Model.ClientNumber" data-val="true" data-val-required="A CAS Client Number must be provided"/>
                 <span asp-validation-for="@Model.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ResponsibilityCentre" class="control-label"></label>
-                <input asp-for="@Model.ResponsibilityCentre" class="form-control" value="@Model.ResponsibilityCentre" />
+                <input asp-for="@Model.ResponsibilityCentre" class="form-control" value="@Model.ResponsibilityCentre" data-val="true" data-val-required="Please Provide a five character RC code"/>
                 <span asp-validation-for="@Model.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ServiceLine" class="control-label"></label>
-                <input asp-for="@Model.ServiceLine" class="form-control" value="@String.Format("{0:00000}", Model.ServiceLine)" maxlength="5" />
+                <input asp-for="@Model.ServiceLine" class="form-control" value="@String.Format("{0:00000}", Model.ServiceLine)" maxlength="5" data-val="true" data-val-required="Please Provide a five character Service Line code" />
                 <span asp-validation-for="@Model.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.STOB" class="control-label"></label>
-                <input asp-for="@Model.STOB" class="form-control" value="@String.Format("{0:0000}", Model.STOB)" maxlength="4" />
+                <input asp-for="@Model.STOB" class="form-control" value="@String.Format("{0:0000}", Model.STOB)" maxlength="4" data-val-required="Please Provide a four character SToB number" />
                 <span asp-validation-for="@Model.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -59,7 +60,7 @@
                 <span asp-validation-for="@Model.CasClientNumber" class="text-danger"></span>
             </div> *@
             <div>
-                @if(!String.IsNullOrEmpty(Model.Team.Name))
+                @if(Model.Team != null && !String.IsNullOrEmpty(Model.Team.Name))
                 {
                     <h3>@Model.Team.Name</h3>
                 }

@@ -1,5 +1,7 @@
 ﻿
+using ClosedXML.Excel;
 using CsvHelper;
+using DocumentFormat.OpenXml.Vml;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -111,7 +113,10 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                int id = _categoryRepository.Add(model.Service);
+                if(ModelState.IsValid)
+                {
+                    int id = _categoryRepository.Add(model.Service);
+                }
             }
             catch (DbUpdateException ex)
             {
@@ -131,17 +136,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        public async Task<IActionResult> WriteToExcel(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
             try
             {
-                using var memoryStream = new MemoryStream();
-                using (var streamWriter = new StreamWriter(memoryStream))
-                {
-                    using var csvWriter = new CsvWriter(streamWriter);
-                    csvWriter.WriteRecords(categories);
-                }
                 string fileName = "Service-Categories";
                 if (!String.IsNullOrEmpty(areaFilter))
                     fileName += $"-{areaFilter}";
@@ -155,9 +154,21 @@ namespace Service_Billing.Controllers
                     fileName += $"-{ownerFilter}";
 
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
-                fileName += ".csv";
+                fileName += ".xlsx";
 
-                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+                using var wb = new XLWorkbook();
+                var ws = wb.AddWorksheet();
+                List<ChargeRow> rows = new List<ChargeRow>();
+                ws.Cell("A1").InsertTable(categories);
+                ws.Column(9).Delete(); // don't need "UpdateCharges?"
+                // Adjust column size to contents.
+                ws.Columns().AdjustToContents();
+                using var stream = new MemoryStream();
+                wb.SaveAs(stream);
+                var content = stream.ToArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(content, contentType, fileName);
             }
             catch (Exception ex)
             {

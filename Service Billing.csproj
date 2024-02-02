@@ -9,9 +9,13 @@
 
   <ItemGroup>
     <Compile Remove="ServiceBilling.API\**" />
+    <Compile Remove="wwwroot\fonts\NewFolder\**" />
     <Content Remove="ServiceBilling.API\**" />
+    <Content Remove="wwwroot\fonts\NewFolder\**" />
     <EmbeddedResource Remove="ServiceBilling.API\**" />
+    <EmbeddedResource Remove="wwwroot\fonts\NewFolder\**" />
     <None Remove="ServiceBilling.API\**" />
+    <None Remove="wwwroot\fonts\NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.102.2" />
     <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.8" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8">

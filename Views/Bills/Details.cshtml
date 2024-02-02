@@ -1,6 +1,6 @@
 ﻿@model Service_Billing.Models.Bill
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Charge Details";
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
 }
@@ -164,10 +164,19 @@
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.AggregateGLCode)
+                Aggregate GL Code
             </td>
             <td>
-                @Html.DisplayFor(model => model.AggregateGLCode)
+                @Model.ClientAccount?.AggregatedGLCode
+            </td>
+
+        </tr>
+        <tr>
+            <td class="table-right">
+                @Html.DisplayNameFor(model => Model.Notes)
+            </td>
+            <td>
+                @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
     </table>

@@ -13,6 +13,7 @@ namespace Service_Billing.Models
         public virtual ClientAccount ClientAccount { get; set; }
 
         [ForeignKey("ServiceCategory")]
+        [Required(ErrorMessage ="Add a service category from the drop down list.")]
         public int ServiceCategoryId { get; set; }
         public virtual ServiceCategory ServiceCategory { get; set; }
   
@@ -21,8 +22,6 @@ namespace Service_Billing.Models
 
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
-
-        
 
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }
@@ -42,10 +41,9 @@ namespace Service_Billing.Models
         public DateTime? StartDate { get; set; }
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
-
         public string? AggregateGLCode { get; set; }
-
         public bool IsActive { get; set; } = true;
+        public string? Notes { get; set; }
 
         public virtual ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
 

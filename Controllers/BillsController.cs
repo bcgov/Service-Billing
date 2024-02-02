@@ -1,5 +1,7 @@
-﻿using CsvHelper;
+﻿using ClosedXML.Excel;
+using CsvHelper;
 using CsvHelper.Configuration;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +18,8 @@ using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
+using System.Data;
+using System.IO;
 using System.Security.Claims;
 
 namespace Service_Billing.Controllers
@@ -141,7 +145,6 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Bill bill)
         {
-
             try
             {
                 await _billRepository.Update(bill);
@@ -194,15 +197,6 @@ namespace Service_Billing.Controllers
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
                 _logger.LogInformation($"New charge is valid");
-                // Add aggregate gl code. 
-                string aggregateCode = string.Empty;
-
-                if (account != null)
-                {
-                    aggregateCode = $"{account.ClientNumber}.{account.ResponsibilityCentre}." +
-                        $"{account.ServiceLine}.{account.STOB}.{account.Project}";
-                }
-                bill.AggregateGLCode = aggregateCode;
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
@@ -379,7 +373,7 @@ namespace Service_Billing.Controllers
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
                     List<Bill> categoryBills = new List<Bill>();
-                    foreach(int catId in  searchParams.CategoryFilter)
+                    foreach (int catId in searchParams.CategoryFilter)
                     {
                         categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId.Equals(catId)));
                     }
@@ -396,10 +390,11 @@ namespace Service_Billing.Controllers
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
-                        ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName) && account.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+                  
+                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) 
+                            && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                         {
-                            filteredBills.Append(bill);
+                            filteredBills.Add(bill);
                         }
                     }
 
@@ -412,7 +407,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
-                return bills.OrderBy(c => c.ClientAccountId);
+                return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
             }
             catch (Exception ex)
             {
@@ -423,85 +418,78 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToCSV(ChargeIndexSearchParamsModel? searchParams)
+        public async Task<IActionResult> WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
         {
             IEnumerable<Bill> bills = GetFilteredBills(searchParams);
             try
             {
-                using var memoryStream = new MemoryStream();
-                using (var streamWriter = new StreamWriter(memoryStream))
-                {
-                    using var csvWriter = new CsvWriter(streamWriter);
-                    csvWriter.WriteHeader<ChargeRow>();
-                    csvWriter.NextRecord();
-                    foreach (Bill bill in bills)
-                    {
-                        ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-                        ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                        ChargeRow row = new ChargeRow();
-                        row.ClientNumber = bill.ClientAccountId;
-                        row.ClientName = bill.ClientAccount.Name;
-                        row.Program = bill.Title;
-                        if (serviceCategory != null)
-                        {
-                            row.GDXBusArea = serviceCategory.GDXBusArea;
-                            row.ServiceCategory = serviceCategory.Name;
-                        }
-                        row.TicketNumber = bill.TicketNumberAndRequester;
-                        row.Amount = @String.Format("${0:.##}", bill.Amount);
-                        row.Quantity = bill.Quantity;
-                        row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
-                        if (bill.DateCreated != null)
-                            row.Created = bill.DateCreated.Value.ToShortDateString();
-                        if (bill.StartDate != null)
-                            row.Start = bill.StartDate.Value.ToShortDateString();
-                        if (bill.EndDate != null)
-                            row.End = bill.EndDate.Value.ToShortDateString();
 
-                        row.CreatedBy = bill.CreatedBy;
-                        row.AggregateGLCode = bill.AggregateGLCode;
-                        row.FiscalPeriod = bill.FiscalPeriod;
-                        row.IdirOrURL = bill.IdirOrUrl;
-                        if (account != null && !String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                string fileName = GetFilename(searchParams, "xlsx");
+              
+
+                using var wb = new XLWorkbook();
+                var ws = wb.AddWorksheet();
+                var dataTable = new DataTable();
+                List<ChargeRow> rows = new List<ChargeRow>();
+                // Inserts the collection to Excel as a table with a header row.
+                //ws.Cell("A1").InsertTable(bills);
+                foreach (Bill bill in bills)
+                {
+                    ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    ChargeRow row = new ChargeRow();
+                    row.ChargeId = bill.Id;
+                    row.ClientNumber = bill.ClientAccountId;
+                    row.ClientName = bill.ClientAccount.Name;
+                    row.Program = bill.Title;
+                    if (serviceCategory != null)
+                    {
+                        row.GDXBusArea = serviceCategory.GDXBusArea;
+                        row.ServiceCategory = serviceCategory.Name;
+                    }
+                    row.TicketNumber = bill.TicketNumberAndRequester;
+                    row.Amount = @String.Format("${0:.##}", bill.Amount);
+                    row.Quantity = bill.Quantity;
+                    row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                    if (bill.DateCreated != null)
+                        row.Created = bill.DateCreated.Value.ToShortDateString();
+                    if (bill.StartDate != null)
+                        row.Start = bill.StartDate.Value.ToShortDateString();
+                    if (bill.EndDate != null)
+                        row.End = bill.EndDate.Value.ToShortDateString();
+
+                    row.CreatedBy = bill.CreatedBy;
+                    row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                    row.FiscalPeriod = bill.FiscalPeriod;
+                    row.IdirOrURL = bill.IdirOrUrl;
+                    if (account != null)
+                    {
+                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                             row.ExpenseAuthority = account.ExpenseAuthorityName;
-
-                        csvWriter.WriteRecord(row);
-                        csvWriter.NextRecord();
+                        if(account.Team != null && !String.IsNullOrEmpty(account.Team.PrimaryContact))
+                            row.PrimaryContact = account.Team.PrimaryContact;
                     }
-
-                    //  csvWriter.WriteRecords(bills);
+                    rows.Add(row);
                 }
-                string fileName = "Charges";
-                if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
-                {
-                    if (searchParams.QuarterFilter == "all")
-                        fileName += "-all-Quarters";
-                    if (bills.Any())
-                    {
-                        fileName += $"={bills.First().BillingCycle}";
-                    }
-                }
-                if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    fileName += $"-{searchParams.MinistryFilter}";
-                if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
-                    fileName += $"-{searchParams.TitleFilter}";
-                //if (searchParams?.CategoryFilter > 0)
-                //{
-                //    ServiceCategory? category = _categoryRepository.GetById(searchParams.CategoryFilter);
-                //    if (category != null)
-                //        fileName += $"-{category.Name}";
-                //}
-                if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
-                    fileName += $"-{searchParams.AuthorityFilter}";
 
-                fileName += DateTime.Today.ToString("dd-mm-yyyy");
-                fileName += ".csv";
+                ws.Cell("A1").InsertTable(rows);
+                // Adjust column size to contents.
+                ws.Columns().AdjustToContents();
+                ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
+                ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
+                ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
 
-                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+                using var stream = new MemoryStream();
+                wb.SaveAs(stream);
+                var content = stream.ToArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(content, contentType, fileName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
+                _logger.LogError("Could not export Excel file. See exception logged below.");
+                _logger.LogError($"{ex.Message}");
                 return StatusCode(500);
             }
         }
@@ -541,34 +529,40 @@ namespace Service_Billing.Controllers
             return Ok(500);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> ReportToCSV(ChargeIndexSearchParamsModel? searchParams)
+        [HttpPost]
+        public async Task<IActionResult> ReportToExcel(GeneratedReportViewModel model)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
-            SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;
 
-            foreach (var entry in servicesAndSums)
+            foreach (var entry in model.ServicesAndSums)
             {
                 records.Add(new RecordEntry(entry.Key, entry.Value));
                 total += entry.Value;
             }
 
             var summedTotal = new List<object>
-{
-new { Id = "Grand Total", Name = total },
-};
-            using var memoryStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(memoryStream))
             {
-                using var csvWriter = new CsvWriter(streamWriter);
-                csvWriter.WriteRecords(records);
-                csvWriter.WriteRecords(summedTotal);
-            }
-            string fileName = "GeneratedReport.csv";
+            new { Id = "Grand Total", Name = "total" },
+            };
+            string fileName = "QuarterlySummary.xlsx";
 
-            return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+
+            using var wb = new XLWorkbook();
+            var ws = wb.AddWorksheet();
+            List<ChargeRow> rows = new List<ChargeRow>();
+            ws.Cell("A1").InsertTable(records);
+            // Adjust column size to contents.
+            ws.Cell("D1").Value = "Grand Total";
+            ws.Cell($"D{model.ServicesAndSums.Count() + 2}").Value = total;
+            ws.Column(3).Delete(); // don't need UOM
+            ws.Columns().AdjustToContents();
+            using var stream = new MemoryStream();
+            wb.SaveAs(stream);
+            var content = stream.ToArray();
+            var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+            return File(content, contentType, fileName);
         }
 
         [HttpPost]
@@ -600,6 +594,7 @@ new { Id = "Grand Total", Name = total },
             }
             return Ok(200);
         }
+
         private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
         {
             SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
@@ -653,11 +648,38 @@ new { Id = "Grand Total", Name = total },
             }
             return new List<int>();
         }
+
+        private string GetFilename(ChargeIndexSearchParamsModel searchParams, string extension = "csv")
+        {
+            string fileName = "Charges";
+            //if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
+            //{
+            //    if (searchParams.QuarterFilter == "all")
+            //        fileName += "-all-Quarters";
+            //    if (bills.Any())
+            //    {
+            //        fileName += $"={bills.First().BillingCycle}";
+            //    }
+            //}
+            if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
+                fileName += $"-{searchParams.MinistryFilter}";
+            if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
+                fileName += $"-{searchParams.TitleFilter}";
+
+            if (!String.IsNullOrEmpty(searchParams?.AuthorityFilter))
+                fileName += $"-{searchParams.AuthorityFilter}";
+
+            fileName += DateTime.Today.ToString("dd-mm-yyyy");
+            fileName += $".{extension}";
+
+            return fileName;
+        }
     }
 
     // For exporting (filtered) charges from the Index view
     public class ChargeRow
     {
+        public int ChargeId { get; set; }
         public int ClientNumber { get; set; }
         public string? ClientName { get; set; }
         public string? Program { get; set; } //"Title"
@@ -675,8 +697,8 @@ new { Id = "Grand Total", Name = total },
         public string? AggregateGLCode { get; set; }
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
+        public string? PrimaryContact { get; set; }
     }
-
 
     // For creating the exported quarterly reports. 
     public class RecordEntry

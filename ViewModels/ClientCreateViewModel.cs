@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Service_Billing.ViewModels
 {
-    public class ClientIntakeViewModel
+    public class ClientCreateViewModel
     {
         public int Id { get; set; }
         public ClientTeam? Team { get; set; }
@@ -15,7 +15,7 @@ namespace Service_Billing.ViewModels
         [NotMapped]
         public IEnumerable<SelectListItem>? Contacts { get; set; }
 
-        public ClientIntakeViewModel()
+        public ClientCreateViewModel()
         {
             Team = new ClientTeam();
             Account = new ClientAccount();

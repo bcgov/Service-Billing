@@ -18,6 +18,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 using Service_Billing.Services.GraphApi;
 using Microsoft.Graph.TermStore;
 using System.Security.Principal;
+using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Vml;
 
 namespace Service_Billing.Controllers
 {
@@ -140,8 +142,8 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-            ClientTeam? team = _clientTeamRepository.GetTeamById(account.TeamId);
-
+            if(account.Team == null)
+                account.Team = new ClientTeam();
             return View(account);
         }
 
@@ -201,12 +203,12 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public async Task<ActionResult> Intake()
+        public async Task<ActionResult> Create()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ViewData["Ministries"] = ministries;
-            ClientIntakeViewModel model = new ClientIntakeViewModel();
+            ClientCreateViewModel model = new ClientCreateViewModel();
 
             return View(model);
         }
@@ -214,7 +216,7 @@ namespace Service_Billing.Controllers
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Intake(ClientIntakeViewModel model)
+        public async Task<IActionResult> Create(ClientCreateViewModel model)
         {
             _logger.LogInformation("User submitted Intake form.");
             try
@@ -270,7 +272,7 @@ namespace Service_Billing.Controllers
             catch (DbUpdateException ex)
             {
                 _logger.LogError($"Error adding client account to DB. Inner Exception: {ex.InnerException}");
-                return View(new ClientIntakeViewModel());
+                return View(new ClientCreateViewModel());
             }
             catch (Exception ex)
             {
@@ -333,14 +335,6 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                //if (_graphServiceClient == null)
-                //    throw new Exception("GraphServiceClient is null in BillsController.SearchForContact");
-                //var queriedUsers = await _graphServiceClient.Users.Request()
-                //    .Filter($"startswith(displayName, '{term}')")
-                //    .Top(8)
-                //    .Select("displayName, id")
-                //    .GetAsync();
-
                 var cca = ConfidentialClientApplicationBuilder
                     .Create(_configuration.GetSection("AzureAd")["ClientId"])
                     .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
@@ -416,17 +410,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public IActionResult WriteToCSV(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
         {
             IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
             try
             {
-                using var memoryStream = new MemoryStream();
-                using (var streamWriter = new StreamWriter(memoryStream))
-                {
-                    using var csvWriter = new CsvWriter(streamWriter);
-                    csvWriter.WriteRecords(accounts);
-                }
                 string fileName = "Client-Accounts";
                 if (!String.IsNullOrEmpty(ministryFilter))
                     fileName += $"-Client{numberFilter}";
@@ -437,11 +425,21 @@ namespace Service_Billing.Controllers
                 if (!String.IsNullOrEmpty(teamFilter))
                     fileName += $"-{teamFilter}";
 
-
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
-                fileName += ".csv";
+                fileName += ".xlsx";
 
-                return File(memoryStream.ToArray(), "application/octet-stream", fileName);
+                using var wb = new XLWorkbook();
+                var ws = wb.AddWorksheet();
+                List<ChargeRow> rows = new List<ChargeRow>();
+                ws.Cell("A1").InsertTable(accounts);
+                // Adjust column size to contents.
+                ws.Columns().AdjustToContents();
+                using var stream = new MemoryStream();
+                wb.SaveAs(stream);
+                var content = stream.ToArray();
+                var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+                return File(content, contentType, fileName);
             }
             catch (Exception ex)
             {

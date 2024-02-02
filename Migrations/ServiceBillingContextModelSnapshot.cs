@@ -66,6 +66,9 @@ namespace Service_Billing.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal?>("Quantity")
                         .HasColumnType("decimal(18,2)");
 
