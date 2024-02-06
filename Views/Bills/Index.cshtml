@@ -23,7 +23,9 @@
 
     foreach(ServiceCategory serviceCategory in ViewBag.ServiceCategories)
     {
-        serviceCategories.Add(new SelectListItem { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name });
+        serviceCategories.Add(new SelectListItem 
+                { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name, Selected = (searchModel.CategoryFilter != null && searchModel.CategoryFilter.Contains(serviceCategory.ServiceId)) }
+        );
     }
 
 }
