@@ -19,7 +19,14 @@
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
-        </main>         
+        </main>
+            <div id="loading-card">
+            <div class="overlay"></div>
+            <div class="spanner">
+                <div class="loader"></div>
+                <p>Loading...</p>
+            </div>
+            </div>
     </div>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

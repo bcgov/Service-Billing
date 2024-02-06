@@ -207,7 +207,7 @@
 
                             if (category != null)
                             {
-                                @category.Name
+                                    @category.Name
                                 ;
                             }
                         }
@@ -269,3 +269,14 @@
     </table>
 </div>
 
+@section Scripts
+{
+    <script>
+
+        $("input[type='submit']").click(function () {
+            $("div.spanner").addClass("show");
+            $("div.overlay").addClass("show");
+        });
+    </script>
+});
+}
