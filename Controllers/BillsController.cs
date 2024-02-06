@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using Service_Billing.Extensions;
 using Service_Billing.Models;
@@ -89,17 +90,16 @@ namespace Service_Billing.Controllers
 
             ViewData["searchModel"] = searchModel;
 
-            IEnumerable<Bill> bills = GetFilteredBills(searchModel);
+
+            var isMinistryUser = User.IsInRole("GDXBillingService.User");
+            string? ministryUserName = string.Empty;
+            if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
+
+            IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
             if (bills != null && bills.Any())
-            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class. 
+            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class.
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
-            }
-            var authUser = User;
-            if (authUser.IsMinistryClient(_authorizationService))
-            {
-                var name = authUser?.FindFirst("name");
-                if (name is not null) ViewData["NameClaim"] = name.Value;
             }
 
             return View(bills);
@@ -325,7 +325,7 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams)
+        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
         {
             try
             {
@@ -390,8 +390,8 @@ namespace Service_Billing.Controllers
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
-                  
-                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) 
+
+                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName)
                             && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                         {
                             filteredBills.Add(bill);
@@ -405,6 +405,19 @@ namespace Service_Billing.Controllers
                 {
                     // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
+                }
+
+                if (!String.IsNullOrEmpty(ministryUserName))
+                {
+                    bills = bills.Where(b => b.ClientAccount.Team is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
+                    bills = bills.Where(bill =>
+                        (!String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) &&
+                         bill.ClientAccount.ExpenseAuthorityName.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!String.IsNullOrEmpty(bill.ClientAccount.Team.Approver) &&
+                         bill.ClientAccount.Team.Approver.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!String.IsNullOrEmpty(bill.ClientAccount.Team.FinancialContact) &&
+                         bill.ClientAccount.Team.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
                 }
 
                 return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
@@ -425,7 +438,7 @@ namespace Service_Billing.Controllers
             {
 
                 string fileName = GetFilename(searchParams, "xlsx");
-              
+
 
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
@@ -700,7 +713,7 @@ namespace Service_Billing.Controllers
         public string? PrimaryContact { get; set; }
     }
 
-    // For creating the exported quarterly reports. 
+    // For creating the exported quarterly reports.
     public class RecordEntry
     {
         public string ServiceCategory { get; set; }

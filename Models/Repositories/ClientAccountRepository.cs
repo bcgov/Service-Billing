@@ -4,10 +4,10 @@ using Service_Billing.Models;
 
 namespace Service_Billing.Models.Repositories
 {
-    public class ClientAccountRepositry : IClientAccountRepository
+    public class ClientAccountRepository : IClientAccountRepository
     {
         private readonly ServiceBillingContext _context;
-        public ClientAccountRepositry(ServiceBillingContext context)
+        public ClientAccountRepository(ServiceBillingContext context)
         {
             _context = context;
         }

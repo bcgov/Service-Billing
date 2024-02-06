@@ -27,11 +27,6 @@
     }
 
 }
-@{
-    var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
-    var nameClaim = ViewData["NameClaim"] as string ?? "";
-}
 
 <h1>Service Billing Charges</h1>
 
@@ -52,97 +47,113 @@
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
     <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
-
-    <div class="table-filter-section">
-        <form asp-action="Index" method="get">
-            <fieldset>
-                <legend>Filter by...</legend>
-                <div class="ui-section">
-                    <div>
-                        <div id="quarter-select">
-                            <label for="quarterFilter">Select Quarter</label>
-                            <select name="quarterFilter">
-                                <option value="current" selected="@current">Current</option>
-                                <option value="previous" selected="@previous">Previous</option>
-                                <option value="next" selected="@next">Next</option>
-                                <option value="all" selected="@all">All</option>
-                            </select>
-                        </div>
-                        <label for="ministryFilter">Organization</label>
-                        <select name="ministryFilter">
-                            <option value="" disabled selected hidden></option>
-                            @if (ministries != null)
-                            {
-                                foreach (Ministry ministry in ministries)
+    @if (!User.IsInRole("GDXBillingService.User"))
+    {
+        <div class="table-filter-section">
+            <form asp-action="Index" method="get">
+                <fieldset>
+                    <legend>Filter by...</legend>
+                    <div class="ui-section">
+                        <div>
+                            <div id="quarter-select">
+                                <label for="quarterFilter">Select Quarter</label>
+                                <select name="quarterFilter">
+                                    <option value="current" selected="@current">Current</option>
+                                    <option value="previous" selected="@previous">Previous</option>
+                                    <option value="next" selected="@next">Next</option>
+                                    <option value="all" selected="@all">All</option>
+                                </select>
+                            </div>
+                            <label for="ministryFilter">Organization</label>
+                            <select name="ministryFilter">
+                                <option value="" disabled selected hidden></option>
+                                @if (ministries != null)
                                 {
-                                    string selectedMinistry = "";
-                                    if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
-                                        selectedMinistry = searchModel.MinistryFilter;
-
-                                    if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
+                                    foreach (Ministry ministry in ministries)
                                     {
-                                        <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        string selectedMinistry = "";
+                                        if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
+                                            selectedMinistry = searchModel.MinistryFilter;
+                                            
+                                        if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
+                                        {
+                                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                        }
                                     }
                                 }
-                            }
-                        </select>
-                    </div>
-                    <div>
-                        <label for="titleFilter">Program</label>
-                        <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
-                    <div>
-                        <label for="categoryFilter">Service Categories</label>
-                        @Html.ListBox("categoryFilter", serviceCategories, 
-                        new { @multiple = "multiple", @class = "form-control", id="categoryFilter" })
-                    </div>
-                        <label for="authorityFilter">Expense Authority</label>
-                        <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
-                        <label for="clientNumber">GDX Client No.</label>
-                        <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
-
-                        <label for="keyword">Keyword</label>
-                        <input type="text" name="keyword" value="@searchModel.Keyword" />
-                        @* <label for="inactive">Include Inactive</label>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="titleFilter">Program</label>
+                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
+                            <div id="category-multiselect">
+                                <label for="categoryFilter">Service Category</label>
+                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
+                                    <option value="-1"></option>
+                                    @foreach (ServiceCategory category in ViewBag.ServiceCategories)
+                                    {
+                                        if (category.IsActive)
+                                        {
+                                            if (searchModel?.CategoryFilter != null && searchModel.CategoryFilter.Contains(category.ServiceId))
+                                            {
+                                                <option value="@category.ServiceId" selected>@category.Name</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@category.ServiceId">@category.Name</option>
+                                            }
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <label for="authorityFilter">Expense Authority</label>
+                            <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
+                            <label for="clientNumber">GDX Client No.</label>
+                            <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
+                            <label for="keyword">Keyword</label>
+                            <input type="text" name="keyword" value="@searchModel.Keyword" />
+                            @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
                         @ViewData["Inactive"] *@
+                        </div>
+                        <input type="text" name="quarterFilter" value="@searchModel.QuarterFilter" hidden />
                     </div>
-                    <input type="text" name="quarterFilter" value="@searchModel.QuarterFilter" hidden />
-                </div>
-                <div class="ui-section-buttons">
-                    <div class="option-buttons">
-                        <input type="submit" value="Filter" class="btn btn-default" /> |
-                        <a asp-action="Index">Back to Full List</a>
-                        @if(Model != null )
-                        {
-                            <div>Found @Model.Count() results</div>
-                        }
-                        else
-                        {
-                            <div>No results were returned</div>
-                        }
-                    </div>
+                    <div class="ui-section-buttons">
+                        <div class="option-buttons">
+                            <input type="submit" value="Filter" class="btn btn-default" /> |
+                            <a asp-action="Index">Back to Full List</a>
+                            @if (Model != null)
+                            {
+                                <div>Found @Model.Count() results</div>
+                            }
+                            else
+                            {
+                                <div>No results were returned</div>
+                            }
+                        </div>
 
-                </div>
-            </fieldset>
-            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-            {
-                <div class="create-new-button">
-                    <input type="submit" value="Create New Charge" formaction="/Bills/Create" formmethod="get" />
-                </div>
-            }
-            <div class="export-button">
-                <input type="submit" value="Export to Excel" formaction="Bills/WriteToExcel" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                    </div>
+                </fieldset>
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
-                    <input type="submit" value="Run Report" formaction="/Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                    <div class="create-new-button">
+                        <input type="submit" value="Create New Charge" formaction="/Bills/Create" formmethod="get" />
+                    </div>
                 }
-            </div>
-        </form>
-    </div>
+                <div class="export-button">
+                    <input type="submit" value="Export to Excel" formaction="Bills/WriteToExcel" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                    {
+                        <input type="submit" value="Run Report" formaction="/Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
+                    }
+                </div>
+            </form>
+        </div>
+    }
     <table class="table table-striped">
         <thead>
             <tr>
@@ -172,10 +183,7 @@
                 var category = bill.ServiceCategory;
                 var client = bill.ClientAccount;
 
-                var hideRow = isMinistryClient
-                && (!nameClaim.IsContainedIgnoringOrderAndCase(client?.ExpenseAuthorityName ?? ""));
-
-                <tr style="@(hideRow ? "display:none;" : "")">
+                <tr>
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
@@ -183,9 +191,9 @@
                     </td>
                     <td>@bill.ClientAccount?.Name</td>
                     <td>@bill.Title</td>
-                    @if(searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterString))
+                    @if (searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterString))
                     {
-                        <td>@searchModel.QuarterString</td>   
+                        <td>@searchModel.QuarterString</td>
                     }
                     else
                     {
