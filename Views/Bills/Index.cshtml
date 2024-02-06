@@ -19,6 +19,13 @@
     bool previous = searchModel.QuarterFilter == "previous";
     bool next = searchModel.QuarterFilter == "next";
     bool all = searchModel.QuarterFilter == "All Quarters";
+    List<SelectListItem> serviceCategories = new List<SelectListItem>();
+
+    foreach(ServiceCategory serviceCategory in ViewBag.ServiceCategories)
+    {
+        serviceCategories.Add(new SelectListItem { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name });
+    }
+
 }
 @{
     var user = User as ClaimsPrincipal;
@@ -87,26 +94,11 @@
                     <div>
                         <label for="titleFilter">Program</label>
                         <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
-                        <div id="category-multiselect">
-                            <label for="categoryFilter">Service Category</label>
-                            <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
-                                <option value="-1"></option>
-                                @foreach (ServiceCategory category in ViewBag.ServiceCategories)
-                                {
-                                    if (category.IsActive)
-                                    {
-                                        if (searchModel?.CategoryFilter != null  && searchModel.CategoryFilter.Contains(category.ServiceId))
-                                        {
-                                            <option value="@category.ServiceId" selected>@category.Name</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@category.ServiceId">@category.Name</option>
-                                        }
-                                    }
-                                }
-                            </select>
-                        </div>
+                    <div>
+                        <label for="categoryFilter">Service Categories</label>
+                        @Html.ListBox("categoryFilter", serviceCategories, 
+                        new { @multiple = "multiple", @class = "form-control", id="categoryFilter" })
+                    </div>
                         <label for="authorityFilter">Expense Authority</label>
                         <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
                         <label for="clientNumber">GDX Client No.</label>

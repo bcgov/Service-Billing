@@ -370,7 +370,7 @@ legend{
     padding-top: 6px;
 }
 #categoryFilter{
-    max-width: 33%;
+    margin-bottom: 6px;
 }
 .container {
     width: 95%;

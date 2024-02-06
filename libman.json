@@ -3,10 +3,6 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "bootstrap-multiselect@1.1.2",
-      "destination": "wwwroot/lib/bootstrap-multiselect/"
-    },
-    {
       "library": "jquery-validate@1.20.0",
       "destination": "wwwroot/lib/jquery-validate/"
     },
