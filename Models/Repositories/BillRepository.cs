@@ -18,7 +18,10 @@ namespace Service_Billing.Models.Repositories
             _fiscalPeriodRepository = fiscalPeriodRepository;  
         }
 
-        public IEnumerable<Bill> AllBills => _billingContext.Bills;
+        public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
+                .Include(c => c.ServiceCategory)
+                .Include(bill => bill.ClientAccount)
+                    .ThenInclude(account => account.Team);
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {
