@@ -14,7 +14,7 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<ClientAccount> GetAll()
         {
-            return _context.ClientAccounts.OrderBy(c => c.Name);
+            return _context.ClientAccounts.AsNoTracking().OrderBy(c => c.Name);
         }
 
         public ClientAccount? GetClientAccount(int accountId)
