@@ -1,17 +1,12 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Service_Billing.Data;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Service_Billing.Models.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.DataProtection;
 using Service_Billing.HostedServices;
 using static Service_Billing.HostedServices.ChargePromotionService;
 using Microsoft.Graph;
@@ -20,7 +15,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
 using Service_Billing.Filters;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Service_Billing.Services.GraphApi;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
@@ -124,7 +118,7 @@ builder.Services.AddMvc();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
-    options.UseLazyLoadingProxies()
+    options
     .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddRazorPages().AddMvcOptions(options =>
