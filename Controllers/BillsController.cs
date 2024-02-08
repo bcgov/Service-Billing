@@ -64,16 +64,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
-            if (searchModel != null && searchModel.QuarterFilter == "previous")
-            {
-                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
-                ViewData["FiscalPeriod"] = searchModel.QuarterString;
-            }
-            else if (searchModel != null)
-            {
-                searchModel.QuarterString = string.Empty;
-            }
+          
             if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
@@ -107,7 +98,16 @@ namespace Service_Billing.Controllers
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
-
+            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+            if (searchModel != null && searchModel.QuarterFilter == "previous")
+            {
+                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+                ViewData["FiscalPeriod"] = searchModel.QuarterString;
+            }
+            else if (searchModel != null)
+            {
+                searchModel.QuarterString = string.Empty;
+            }
             return PartialView("ChargesTable", bills);
         }
 
@@ -389,8 +389,8 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
+                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
                     List<Bill> filteredBills = new List<Bill>();

@@ -11,10 +11,7 @@
             <th scope="col">Fiscal Period</th>
             <th scope="col">URL or IDIR</th>
             <th scope="col">Service Category</th>
-        @*     @if (searchModel.QuarterFilter == "All Quarters")
-            {
-                <th>Fiscal Period</th>
-            } *@
+            <th>Fiscal Period</th>
             <th scope="col">Amount</th>
             <th scope="col">Unit Price</th>
             <th scope="col">Quantity</th>
@@ -23,6 +20,7 @@
             <th scope="col">Start</th>
             <th scope="col">End</th>
             <th scope="col">Expense Authority</th>
+            <th scope="col">Notes</th>
         </tr>
     </thead>
     <tbody>
@@ -39,14 +37,7 @@
                 </td>
                 <td>@bill.ClientAccount?.Name</td>
                 <td>@bill.Title</td>
-              @*   @if (searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterString))
-                {
-                    <td>@searchModel.QuarterString</td>
-                }
-                else
-                {
-                    <td>@bill.FiscalPeriod</td>
-                } *@
+                <td>@ViewData["FiscalPeriod"]</td>
                 <td>@bill.IdirOrUrl</td>
                 <td>
                     @{
@@ -108,6 +99,9 @@
                     {
                         @client.ExpenseAuthorityName
                     }
+                </td>
+                <td>
+                    @bill.Notes
                 </td>
             </tr>
         }

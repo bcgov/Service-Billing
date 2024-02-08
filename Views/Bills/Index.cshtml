@@ -117,7 +117,9 @@
                             <label for="clientNumber">GDX Client No.</label>
                             <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
                             <label for="keyword">Keyword</label>
-                            <input type="text" name="keyword" value="@searchModel.Keyword" />
+                            <input type="text" name="keyword" value="@searchModel.Keyword" 
+                            title="The keyword search will return results where the input text is contained in the program name,
+URL or IDIR, Client Name, Created By and Notes fields"/>
                             @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
                         @ViewData["Inactive"] *@
