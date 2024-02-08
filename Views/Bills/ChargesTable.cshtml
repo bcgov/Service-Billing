@@ -1,0 +1,115 @@
+﻿@model IEnumerable<Bill>;
+@{
+}
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th scope="col">GDX Client No.</th>
+            <th scope="col">GDX Client Name</th>
+            <th scope="col">Program</th>
+            <th scope="col">Fiscal Period</th>
+            <th scope="col">URL or IDIR</th>
+            <th scope="col">Service Category</th>
+        @*     @if (searchModel.QuarterFilter == "All Quarters")
+            {
+                <th>Fiscal Period</th>
+            } *@
+            <th scope="col">Amount</th>
+            <th scope="col">Unit Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col">Unit of Measure</th>
+            <th scope="col">Aggregated Financial Code</th>
+            <th scope="col">Start</th>
+            <th scope="col">End</th>
+            <th scope="col">Expense Authority</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var bill in Model)
+        {
+            var category = bill.ServiceCategory;
+            var client = bill.ClientAccount;
+
+            <tr>
+                <td>
+                    <a asp-controller="ClientAccount"
+                       asp-action="Details"
+                       asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
+                </td>
+                <td>@bill.ClientAccount?.Name</td>
+                <td>@bill.Title</td>
+              @*   @if (searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterString))
+                {
+                    <td>@searchModel.QuarterString</td>
+                }
+                else
+                {
+                    <td>@bill.FiscalPeriod</td>
+                } *@
+                <td>@bill.IdirOrUrl</td>
+                <td>
+                    @{
+
+                        if (category != null)
+                        {
+                            @category.Name
+                            ;
+                        }
+                    }
+                </td>
+              @*   @if (searchModel?.QuarterFilter == "All Quarters")
+                {
+                    <td>@bill.FiscalPeriod</td>
+                } *@
+
+                <td>
+                    @if (bill.Amount != null)
+                    {
+                        @String.Format("${0:.##}", bill.Amount)
+                    }
+                </td>
+                @if (category != null)
+                {
+                    <td>
+                        $@category.Costs
+                    </td>
+                    <td>
+                        @bill.Quantity
+                    </td>
+                    <td>
+                        @if (!String.IsNullOrEmpty(category.UOM))
+                        {
+                            @category.UOM
+                        }
+                    </td>
+                }
+                else
+                {
+                    <td>
+                    </td>
+                    <td>
+                        @bill.Quantity
+                    </td>
+                    <td>
+                    </td>
+                }
+                <td>
+                    @bill.ClientAccount?.AggregatedGLCode
+                </td>
+                <td>
+                    @bill.StartDate
+                </td>
+                <td>
+                    @bill.EndDate
+                </td>
+                <td>
+                    @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
+                    {
+                        @client.ExpenseAuthorityName
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

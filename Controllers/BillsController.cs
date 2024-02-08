@@ -90,7 +90,13 @@ namespace Service_Billing.Controllers
 
             ViewData["searchModel"] = searchModel;
 
+            return View();
+        }
 
+        [HttpPost]
+        public async Task<ActionResult> GetBillsTable(ChargeIndexSearchParamsModel searchModel)
+        {
+            
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
@@ -102,7 +108,7 @@ namespace Service_Billing.Controllers
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
 
-            return View(bills);
+            return PartialView("ChargesTable", bills);
         }
 
         public ActionResult Details(int id)

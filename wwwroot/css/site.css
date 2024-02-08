@@ -412,6 +412,21 @@ input[type=number]::-webkit-outer-spin-button {
     z-index: 1000;
     visibility: hidden;
 }
+.table-loading-spanner {
+
+  /*  top: 50%;*/
+  position: absolute;
+    margin-left: 25%;
+    background: #2a2a2a55;
+    width: 50%;
+    border-radius: 8px;
+    display: block;
+    text-align: center;
+    height: 150px;
+    color: #FFF;
+    /*   transform: translateY(-50%);*/
+    z-index: 1000;
+}
 
 .overlay {
     position: fixed;
@@ -419,6 +434,14 @@ input[type=number]::-webkit-outer-spin-button {
     height: 100%;
     background: rgba(0,0,0,0.5);
     visibility: hidden;
+}
+
+.table-loading-overlay {
+    width: 70%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    visibility: hidden;
+    background: rgba(0,0,0,0.5);
 }
 
 .loader,
@@ -486,14 +509,17 @@ input[type=number]::-webkit-outer-spin-button {
 .show {
     visibility: visible;
 }
+.hide {
+    visibility: hidden;
+}
 
-.spanner, .overlay {
+.spanner, .overlay, .table-loading-spanner, .table-loading-overlay {
     opacity: 0;
     -webkit-transition: all 0.3s;
     -moz-transition: all 0.3s;
     transition: all 0.3s;
 }
 
-    .spanner.show, .overlay.show {
+    .spanner.show, .overlay.show, .table-loading-spanner.show, .table-loading-overlay {
         opacity: 1
     }
