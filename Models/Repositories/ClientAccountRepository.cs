@@ -19,7 +19,7 @@ namespace Service_Billing.Models.Repositories
 
         public ClientAccount? GetClientAccount(int accountId)
         {
-            return _context.ClientAccounts.FirstOrDefault(c => c.Id == accountId);
+            return _context.ClientAccounts.Include(c => c.Bills).ThenInclude(b => b.ServiceCategory).AsNoTracking().FirstOrDefault(c => c.Id == accountId);
         }
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
