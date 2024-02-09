@@ -154,7 +154,7 @@ URL or IDIR, Client Name, Created By and Notes fields" />
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
                     <div class="create-new-button">
-                        <input type="submit" value="Create New Charge" formaction="/Bills/Create" formmethod="get" />
+                        <a asp-action="AddServiceBilling" asp-controller="Bills">Create New Charge</a>
                     </div>
                 }
                 <div class="export-button">

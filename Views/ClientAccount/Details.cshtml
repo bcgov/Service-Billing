@@ -209,7 +209,7 @@
         <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
         @if (!isMinistryClient)
         {
-            <a href="/Bills/Create?accountId=@Model?.Id">Order a Service</a>
+            <a href="/Bills/AddServiceBilling?accountId=@Model?.Id">Order a Service</a>
             <text> | </text>
         }
         <a asp-action="Index">Back to List</a>
