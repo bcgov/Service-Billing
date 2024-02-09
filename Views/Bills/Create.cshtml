@@ -1,7 +1,7 @@
 ﻿@model Service_Billing.Models.Bill
 
 @{
-    ViewData["Title"] = "Order a Service";
+    ViewData["Title"] = "Add Service Charge";
     Layout = "_Layout";
 }
 @{
@@ -9,9 +9,8 @@
     string? currentUserName = ViewData["CurrentUser"] != null ? ViewData["CurrentUser"].ToString() : "";
 }
 
-<h1>Create</h1>
+<h1>Add Service Charge</h1>
 
-<h4>Charge</h4>
 <hr />
 <div class="row row-cols-1 row-cols-md-3 g-4">
     <div class="col-md-4">

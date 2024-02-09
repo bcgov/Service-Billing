@@ -16,6 +16,8 @@ using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
 using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
+using System;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -127,6 +129,7 @@ builder.Services.AddRazorPages().AddMvcOptions(options =>
                   .RequireAuthenticatedUser()
                   .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
+    options.EnableEndpointRouting = false;
 }).AddMicrosoftIdentityUI();
 
 builder.Services
@@ -210,7 +213,14 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+    );
+
+app.MapControllerRoute(
+    name: "addServiceBilling",
+    pattern: "Bills/AddServiceBilling",
+    defaults: new { controller = "Bills", action = "Create" });
+
 app.MapRazorPages();
 
 app.MapHealthChecks("/healthz");
