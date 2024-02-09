@@ -245,24 +245,24 @@ namespace Service_Billing.Controllers
                     var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
-                    await _emailService.SendEmail(
-                        eaEmail,
-                        "Please Review: New GDX Service Billing Account Information",
-                        $@"
-                        Hello {eaEmail.Split('@')[0]},
+                    //await _emailService.SendEmail(
+                    //    eaEmail,
+                    //    "Please Review: New GDX Service Billing Account Information",
+                    //    $@"
+                    //    Hello {eaEmail.Split('@')[0]},
                     
-                        We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
+                    //    We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
                     
-                        To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
+                    //    To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
                     
-                        If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
+                    //    If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
                     
-                        We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
+                    //    We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
                     
-                        Warm regards,
+                    //    Warm regards,
                     
-                        GDX Service Billing Team"
-                    );
+                    //    GDX Service Billing Team"
+                    //);
                 }
 
             }
@@ -313,9 +313,9 @@ namespace Service_Billing.Controllers
                     return NotFound();
                 _clientAccountRepository.Approve(account);
 
-                await _emailService.SendEmail("waino.steuber35@ethereal.email",
-                      $"Account {id} approved",
-                       $"<p>Account {id} has been approved.</p>");
+                //await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                //      $"Account {id} approved",
+                //       $"<p>Account {id} has been approved.</p>");
 
                 return RedirectToAction(nameof(Index));
             }
