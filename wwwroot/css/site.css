@@ -299,16 +299,10 @@ main {
     color: mediumorchid;
 }
 
-.table-filter-section form select {
-
-}
 .text-center{
     padding-top: 100px;
 }
-#business-area-select
-{
-    display: inline-block;
-}
+
 .ui-section {
     display: inline-block;
 }
@@ -357,6 +351,14 @@ legend{
     max-width: 40%;
 }
 
+label, select {
+    display: inline-block;
+    vertical-align: middle;
+}
+select {
+    display: inline-block;
+    margin-top: 4px;
+}
 .table-right {
     font-weight: bold;
     padding-right: 18px;
@@ -385,9 +387,7 @@ legend{
     font-weight: bold;
     text-align: right;
 }
-#category-multiselect{
-    display: inline-block;
-}
+
 
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {

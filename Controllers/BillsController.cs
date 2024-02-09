@@ -425,6 +425,10 @@ namespace Service_Billing.Controllers
                          bill.ClientAccount.Team.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
                     ).ToList();
                 }
+                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
+                {
+                    bills = bills.Where(b => b.ClientAccount.Team != null && b.ClientAccount.Team.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact));
+                }
 
                 return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
             }

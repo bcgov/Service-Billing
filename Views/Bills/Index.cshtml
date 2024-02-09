@@ -21,9 +21,9 @@
     bool all = searchModel.QuarterFilter == "All Quarters";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
 
-    foreach(ServiceCategory serviceCategory in ViewBag.ServiceCategories)
+    foreach (ServiceCategory serviceCategory in ViewBag.ServiceCategories)
     {
-        serviceCategories.Add(new SelectListItem 
+        serviceCategories.Add(new SelectListItem
                 { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name, Selected = (searchModel.CategoryFilter != null && searchModel.CategoryFilter.Contains(serviceCategory.ServiceId)) }
         );
     }
@@ -66,6 +66,7 @@
                                     <option value="all" selected="@all">All</option>
                                 </select>
                             </div>
+
                             <label for="ministryFilter">Organization</label>
                             <select name="ministryFilter">
                                 <option value="" disabled selected hidden></option>
@@ -76,7 +77,7 @@
                                         string selectedMinistry = "";
                                         if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
                                             selectedMinistry = searchModel.MinistryFilter;
-                                            
+
                                         if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
                                         {
                                             <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
@@ -88,10 +89,11 @@
                                     }
                                 }
                             </select>
-                        </div>
-                        <div>
                             <label for="titleFilter">Program</label>
                             <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
+                        </div>
+                        <div>
+
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
                                 <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
@@ -112,14 +114,21 @@
                                     }
                                 </select>
                             </div>
-                            <label for="authorityFilter">Expense Authority</label>
-                            <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
-                            <label for="clientNumber">GDX Client No.</label>
-                            <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
-                            <label for="keyword">Keyword</label>
-                            <input type="text" name="keyword" value="@searchModel.Keyword" 
-                            title="The keyword search will return results where the input text is contained in the program name,
-URL or IDIR, Client Name, Created By and Notes fields"/>
+
+                            <div>
+                                <label for="authorityFilter">Expense Authority</label>
+                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
+                                <label for="primaryContactFilter">Primary Contact</label>
+                                <input type="text" name="primaryContactFilter" value="@searchModel?.PrimaryContact" />
+                                <label for="clientNumber">GDX Client No.</label>
+                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
+                            </div>
+                            <div>
+                                <label for="keyword">Keyword</label>
+                                <input type="text" name="keyword" value="@searchModel.Keyword"
+                                       title="The keyword search will return results where the input text is contained in the program name,
+URL or IDIR, Client Name, Created By and Notes fields" />
+                            </div>
                             @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
                         @ViewData["Inactive"] *@
@@ -158,7 +167,7 @@ URL or IDIR, Client Name, Created By and Notes fields"/>
             </form>
         </div>
     }
-  @*   <partial name="ChargesTable" model="searchModel" /> *@
+    @*   <partial name="ChargesTable" model="searchModel" /> *@
     <div id="chargesTable"></div>
     <div id="loading-card">
         <div class="table-loading-spanner show">
