@@ -2,6 +2,23 @@
 @{
 }
 
+@if (Model != null && !Model.Any())
+{ 
+    <h3>
+        No charges matching your search parameters have been found. Try searching in another quarter,
+        or change your filter parameters.
+    </h3>
+}
+
+@if (Model != null)
+{
+    <p> <div>Found @Model.Count() results</div> </p>
+}
+else
+{
+    <p><div>No results were returned</div></p>
+}
+
 <table class="table table-striped">
     <thead>
         <tr>
