@@ -20,8 +20,7 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
-                .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team);
+                .Include(bill => bill.ClientAccount);
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {
@@ -192,7 +191,7 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).Where(b => b.FiscalPeriod == fiscalPeriod);
+                .Where(b => b.FiscalPeriod == fiscalPeriod);
         }
 
         public string GetPreviousQuarterString()
@@ -265,7 +264,7 @@ namespace Service_Billing.Models.Repositories
                 return _billingContext.Bills.AsNoTracking()
                     .Include(c => c.ServiceCategory)
                     .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).Where(b => b.ServiceCategoryId != null
+                    .Where(b => b.ServiceCategoryId != null
                    && fixedServiceIds.Contains((int)b.ServiceCategoryId)
                    && (b.EndDate == null || b.EndDate > nextQuarterStart));
             }
@@ -283,7 +282,7 @@ namespace Service_Billing.Models.Repositories
                 .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).FirstOrDefault(b => b.Id == id);
+                .FirstOrDefault(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)

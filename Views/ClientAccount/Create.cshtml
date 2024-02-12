@@ -49,17 +49,17 @@
                 Contacts matching your input will display in a dropdown menu for you to pick.
                 </div>
 
-                <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" />
-                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+                <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.Account.PrimaryContact" class="form-control" id="primaryContact" />
+                <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" />
-                <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
+                <label asp-for="@Model.Account.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Account.Approver" id="approverContact" />
+                <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
 
-                <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" />
-                <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
+                <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.Account.FinancialContact" id="financialContact" />
+                <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
                 <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" />

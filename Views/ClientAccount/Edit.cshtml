@@ -60,14 +60,14 @@
                 <span asp-validation-for="@Model.CasClientNumber" class="text-danger"></span>
             </div> *@
             <div>
-                @if(Model.Team != null && !String.IsNullOrEmpty(Model.Team.Name))
+           @*      @if(Model.Team != null && !String.IsNullOrEmpty(Model.Team.Name))
                 {
                     <h3>@Model.Team.Name</h3>
                 }
                 else
                 {
                     <h3>Add a Client Team</h3>
-                }
+                } *@
                 @* <div id="intake-contacts-instructions">
                     To enter contacts, begin typing in the contact's IDIR display name, which is in the form "LastName, FirstName", followed by their ministry acronym.
                     For example: "Smith, Jane CITZ:EX".
@@ -75,23 +75,23 @@
                     Contacts matching your input will display in a dropdown menu for you to pick.
                 </div> *@
 
-                <label asp-for="@Model.Team.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Team.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.PrimaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
                 <div id="primaryContactSelect">
                 </div>
-                <span asp-validation-for="@Model.Team.PrimaryContact" class="text-danger"></span>
+                <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.Team.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Team.Approver" id="approverContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Approver" id="approverContact" placeholder="start entering surname to search" />
                 <div id="approverContactSelect">
                 </div>
-                <span asp-validation-for="@Model.Team.Approver" class="text-danger"></span>
+                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
 
-                <label asp-for="@Model.Team.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Team.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
                 <div id="financialContactSelect">
                 </div>
-                <span asp-validation-for="@Model.Team.FinancialContact" class="text-danger"></span>
+                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
               
                 <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
 
@@ -103,8 +103,6 @@
                     <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
                     <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
                 </div>
-                <input type="hidden" asp-for="@Model.Team.Id" class="form-control" />
-                <input type="hidden" asp-for="@Model.Team.Name" class="form-control" />
                 <input type="hidden" asp-for="@Model.Id" class="form-control" />
             </div>
             <div class="form-group">

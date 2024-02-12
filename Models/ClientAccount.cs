@@ -52,15 +52,6 @@ o	Note: not all naming convention components are required. The naming convention
         [Display(Name = "Services Enabled")]
         public string? ServicesEnabled { get; set; } // string so we can have a list of id's, like "3, 6, 420"
 
-        [Display(Name = "Client Team")]
-        public string? ClientTeam { get; set; }
-
-        //[Column("Created")]
-        //public DateTime? DateCreated { get; set; }
-
-        public int? TeamId { get; set; }
-        public virtual ClientTeam? Team { get; set; }
-
         [Display(Name = "EA Approved")]
         public bool IsApprovedByEA { get; set; } = false;
 
@@ -69,6 +60,26 @@ o	Note: not all naming convention components are required. The naming convention
         public string? Notes { get; set; }
 
         public virtual ICollection<Bill>? Bills { get; set; }
+        
+        /* This is the Primary Contact for the Client Account.  Normally there is only one.  
+           This role can authorize billable service requests and changes to client account details including new services, 
+           client account team membership, financial coding changes and SharePoint site access for their team.
+        */
+        //   [Required(ErrorMessage = "Please include this contact")]
+        [Display(Name = "Primary Contact")]
+        public string? PrimaryContact { get; set; }
+
+        /* This role can authorize billable service requests and changes to client account details including new services, 
+         * client account team membership, financial coding changes and SharePoint site access for their team.  */
+        //   [Required(ErrorMessage = "Please include this contact")]
+        public string? Approver { get; set; }
+
+        /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
+         * or approvers are not available. The role can provide updated billing information.  
+         * For quarterly billing, this role is a contact. */
+        //  [Required(ErrorMessage = "Please include this contact")]
+        [Display(Name = "Financial Contacts")]
+        public string? FinancialContact { get; set; }
 
         [NotMapped]
         public string AggregatedGLCode

@@ -61,33 +61,7 @@ namespace Service_Billing.Data
             }
         }
 
-        public static void SeedTeams(ServiceBillingContext context)
-        {
-            if (context.ClientTeams.Any())
-            {
-                context.ClientTeams.RemoveRange(context.ClientTeams);
-                context.SaveChanges();
-            }
-
-            var teamData = File.ReadAllText("./Data/ClientTeamSeedData.json");
-            var teams = JsonSerializer.Deserialize<List<ClientTeam>>(teamData);
-
-            using (var transaction = context.Database.BeginTransaction())
-            {
-                context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.ClientTeams ON");
-
-                foreach (var team in teams!)
-                {
-                    context.ClientTeams.Add(team);
-                }
-
-                context.SaveChanges();
-                context.Database.ExecuteSqlRaw("SET IDENTITY_INSERT dbo.ClientTeams OFF");
-
-                transaction.Commit();
-            }
-        }
-
+     
         public static void SeedAccounts(ServiceBillingContext context)
         {
             if (context.ClientAccounts.Any())

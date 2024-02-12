@@ -12,7 +12,6 @@ namespace Service_Billing.Data
 
         public DbSet<Bill> Bills { get; set; } = default!;
         public DbSet<ClientAccount> ClientAccounts { get; set; }
-        public DbSet<ClientTeam> ClientTeams { get; set; }
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<Ministry> Ministries { get; set; }
         public DbSet<FiscalPeriod> FiscalPeriod { get; set; }

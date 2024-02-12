@@ -7,7 +7,6 @@ namespace Service_Billing.ViewModels
     public class ClientCreateViewModel
     {
         public int Id { get; set; }
-        public ClientTeam? Team { get; set; }
         public ClientAccount Account { get; set; }
         public string? MinistryAcronym { get; set; }
         public string? DivisionOrBranch { get; set; }
@@ -17,9 +16,7 @@ namespace Service_Billing.ViewModels
 
         public ClientCreateViewModel()
         {
-            Team = new ClientTeam();
             Account = new ClientAccount();
-    
         }
     }
 }
