@@ -33,15 +33,20 @@ namespace Service_Billing.Migrations
             migrationBuilder.DropIndex(
                 name: "IX_ClientAccounts_TeamId",
                 table: "ClientAccounts");
-
+            
             migrationBuilder.Sql($"update ClientAccounts " + 
                 $"set PrimaryContact = ClientTeams.PrimaryContact, FinancialContact = ClientTeams.FinancialContact, Approver = ClientTeams.Approver " 
                 + $"from ClientTeams " 
                 + $"where ClientAccounts.TeamId = ClientTeams.Id; " 
-                + $"ALTER TABLE ClientAccounts " 
-                + $"Drop column ClientTeam, TeamId; " 
-                + $"Drop Table ClientTeams;" 
                 );
+            migrationBuilder.DropColumn(
+                name: "ClientTeam",
+                table: "ClientAccounts");
+            migrationBuilder.DropColumn(
+                name: "TeamId",
+                table: "ClientAccounts");
+            migrationBuilder.DropTable(
+                name: "ClientTeams");
         }
 
         /// <inheritdoc />
