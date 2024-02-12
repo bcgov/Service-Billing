@@ -62,6 +62,10 @@
             {
                 <li>@Html.ActionLink("View My Team's Charges", "Index", "Bills")</li>
             }
+            @if (isAdmin)
+            {
+                <li>@Html.ActionLink("Create New Service", "Create", "ServiceCategory")</li>
+            }
         </ul>
     </div>
 </nav>
