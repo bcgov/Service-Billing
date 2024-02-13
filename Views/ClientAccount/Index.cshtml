@@ -70,15 +70,15 @@
                         </div>
                     </div>
                 </fieldset>
+                <div class="export-button">
+                    <input type="submit" value="Export to Excel" formaction="/ClientAccount/WriteToExcel" formmethod="get" />
+                </div>
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
                     <div class="create-new-button">
                         <input type="submit" value="Create Account" formaction="/ClientAccount/Create" formmethod="get" />
                     </div>
                 }
-                <div class="export-button">
-                    <input type="submit" value="Export to Excel" formaction="/ClientAccount/WriteToExcel" formmethod="get" />
-                </div>
             </form>
         </div>
     }

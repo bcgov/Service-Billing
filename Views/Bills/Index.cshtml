@@ -125,12 +125,6 @@
 
                     </div>
                 </fieldset>
-                @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-                {
-                    <div class="create-new-button">
-                        <a asp-action="AddServiceBilling" asp-controller="Bills">Create New Charge</a>
-                    </div>
-                }
                 <div class="export-button">
                     <input type="submit" value="Export to Excel" formaction="Bills/WriteToExcel" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
@@ -138,6 +132,12 @@
                         <input type="submit" value="Run Report" formaction="/Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                     }
                 </div>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                {
+                    <div class="create-new-button">
+                        <button asp-action="AddServiceBilling" asp-controller="Bills">Create New Charge</button>
+                    </div>
+                }
             </form>
         </div>
     }

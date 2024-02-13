@@ -316,7 +316,9 @@ main {
    float: left;   
 }
 .create-new-button{
-    float: left;
+    float: right;
+    margin-left: 4px;
+    margin-right: 4px;
 }
 .export-button {
     float: right;
