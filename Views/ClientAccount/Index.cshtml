@@ -90,7 +90,6 @@
                 <th scope="col">CAS Client No.</th>
                 <th scope="col">Expense Authority</th>
                 <th scope="col">Primary Contact</th>
-                <th scope="col">Client Team</th>
                 <th scope="col">Active?</th>
             </tr>
         </thead>
@@ -111,15 +110,10 @@
                     <td>@account.Name</td>
                     <td>
                         @account.ClientNumber
-                        @* <a asp-controller="Bills"
-                           asp-action="Index"
-                           asp-all-route-data="parms"
-                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a> *@
                     </td>
                     
                     <td>@account.ExpenseAuthorityName</td>
                     <td>@account.PrimaryContact</td>
-               @*      <td>@account.ClientTeam</td> *@
                     <td>@account.IsActive</td>
                     
                 </tr>
