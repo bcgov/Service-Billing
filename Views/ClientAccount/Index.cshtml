@@ -110,10 +110,11 @@
                     </td>
                     <td>@account.Name</td>
                     <td>
-                        <a asp-controller="Bills"
+                        @account.ClientNumber
+                        @* <a asp-controller="Bills"
                            asp-action="Index"
                            asp-all-route-data="parms"
-                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a>
+                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a> *@
                     </td>
                     
                     <td>@account.ExpenseAuthorityName</td>
