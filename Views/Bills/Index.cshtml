@@ -162,11 +162,16 @@
                 $("div.table-loading-spanner").addClass("hide");
                 $("div.table-loading-overlay").addClass("hide");
             });
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#charge-index-link').addClass("active-nav-link");
         });
 
         $("input[type='submit']").click(function () {
             $("div.table-loading-spanner").addClass("show");
             $("div.table-loading-overlay").addClass("show");
         });
+
+
     </script>
 }

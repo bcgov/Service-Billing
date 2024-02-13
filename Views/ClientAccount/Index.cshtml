@@ -127,3 +127,14 @@
         </tbody>
     </table>
 </div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(() => {
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#account-index-link').addClass("active-nav-link");
+        });
+    </script>
+}
