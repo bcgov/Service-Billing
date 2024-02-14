@@ -62,7 +62,6 @@ namespace Service_Billing.Controllers
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
           
             if (ministries != null && ministries.Any())
@@ -413,7 +412,6 @@ namespace Service_Billing.Controllers
                 }
                 if (searchParams?.ClientNumber > 0)
                 {
-                    // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
@@ -431,7 +429,7 @@ namespace Service_Billing.Controllers
                 }
                 if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
                 {
-                    bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact));
+                    bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
                 return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
