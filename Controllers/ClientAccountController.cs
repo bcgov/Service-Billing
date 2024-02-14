@@ -69,7 +69,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -78,6 +78,7 @@ namespace Service_Billing.Controllers
             ViewData["MinistryFilter"] = ministryFilter;
             ViewData["NumberFilter"] = numberFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["PrimaryContactFilter"] = primaryContactFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
@@ -86,7 +87,7 @@ namespace Service_Billing.Controllers
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, ministryUserName ?? "");
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter, ministryUserName ?? "");
  
             return View(clients);
         }
@@ -302,7 +303,6 @@ namespace Service_Billing.Controllers
             }
         }
 
-
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
@@ -357,7 +357,7 @@ namespace Service_Billing.Controllers
             return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string ministryUserName = "")
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter, string ministryUserName = "")
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (!String.IsNullOrEmpty(ministryFilter))
@@ -385,14 +385,16 @@ namespace Service_Billing.Controllers
             {
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
             }
+            if(!String.IsNullOrEmpty(primaryContactFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) &&  x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
 
             return clients;
         }
 
         [HttpGet]
-        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
-            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter);
             try
             {
                 string fileName = "Client-Accounts";
