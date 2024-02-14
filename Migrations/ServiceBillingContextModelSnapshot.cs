@@ -88,7 +88,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("Bills");
+                    b.ToTable("Bills", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
@@ -156,7 +156,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("ClientAccounts");
+                    b.ToTable("ClientAccounts", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientTeam", b =>
@@ -181,7 +181,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientTeams");
+                    b.ToTable("ClientTeams", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
@@ -206,7 +206,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("ChargeId");
 
-                    b.ToTable("FiscalPeriod");
+                    b.ToTable("FiscalPeriod", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Ministry", b =>
@@ -225,7 +225,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ministries");
+                    b.ToTable("Ministries", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
@@ -261,7 +261,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("ServiceId");
 
-                    b.ToTable("ServiceCategories");
+                    b.ToTable("ServiceCategories", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>
