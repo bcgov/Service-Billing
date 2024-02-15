@@ -271,9 +271,9 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public void DetermineCurrentQuarter(Bill bill, DateTime? date = null)
+        public void DetermineCurrentQuarter(Bill bill, DateTimeOffset? date = null)
         {
-            DateTime today = DateTime.Today;
+            DateTimeOffset today = DateTimeOffset.Now;
             if (date != null)
                 today = date.Value;
             string quarter = "";
@@ -286,25 +286,25 @@ namespace Service_Billing.Controllers
                 case 5:
                 case 6:
                     quarter = "Quarter 1";
-                    bill.BillingCycle = new DateTime(today.Year, 4, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 4, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 7:
                 case 8:
                 case 9:
                     quarter = "Quarter 2";
-                    bill.BillingCycle = new DateTime(today.Year, 7, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 7, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 10:
                 case 11:
                 case 12:
                     quarter = "Quarter 3";
-                    bill.BillingCycle = new DateTime(today.Year, 10, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 10, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 1:
                 case 2:
                 case 3:
                     quarter = "Quarter 4";
-                    bill.BillingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     bill.FiscalPeriod = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
                     return;
             }
@@ -477,11 +477,11 @@ namespace Service_Billing.Controllers
                     row.Quantity = bill.Quantity;
                     row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
                     if (bill.DateCreated != null)
-                        row.Created = bill.DateCreated.Value.ToShortDateString();
+                        row.Created = bill.DateCreated?.DateTime.ToShortDateString();
                     if (bill.StartDate != null)
-                        row.Start = bill.StartDate.Value.ToShortDateString();
+                        row.Start = bill.StartDate?.DateTime.ToShortDateString();
                     if (bill.EndDate != null)
-                        row.End = bill.EndDate.Value.ToShortDateString();
+                        row.End = bill.EndDate?.DateTime.ToShortDateString();
 
                     row.CreatedBy = bill.CreatedBy;
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
