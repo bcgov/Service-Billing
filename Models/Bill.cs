@@ -35,10 +35,10 @@ namespace Service_Billing.Models
         [Display(Name = "Ticket Number")]
         public string? TicketNumberAndRequester { get; set; }
 
-        public DateTime? DateModified { get; set; }
-        public DateTime? DateCreated { get; set; }
-        public DateTime? EndDate { get; set; }
-        public DateTime? StartDate { get; set; }
+        public DateTimeOffset? DateModified { get; set; }
+        public DateTimeOffset? DateCreated { get; set; }
+        public DateTimeOffset? EndDate { get; set; }
+        public DateTimeOffset? StartDate { get; set; }
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
         public bool IsActive { get; set; } = true;
@@ -50,8 +50,8 @@ namespace Service_Billing.Models
         public Bill()
         {
             this.Quantity = 1;
-            this.DateCreated = DateTime.UtcNow;
-            this.StartDate = DateTime.UtcNow;
+            this.DateCreated = DateTimeOffset.UtcNow;
+            this.StartDate = DateTimeOffset.UtcNow;
             this.IsActive = true;
             fiscalPeriods = new Collection<FiscalPeriod>();
         }
