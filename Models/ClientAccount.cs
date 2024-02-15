@@ -89,6 +89,7 @@ o	Note: not all naming convention components are required. The naming convention
                 return $"{ClientNumber}.{ResponsibilityCentre}.{ServiceLine}.{STOB}.{Project}";
             }
         }
+        public int? OrganizationId { get; set; } //for ministry/organization tracking
     }
 }
 /* some validation concerns:

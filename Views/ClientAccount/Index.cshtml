@@ -39,11 +39,11 @@
 
                                         if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
                                         {
-                                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected="true" value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
-                                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option value="@ministry.Acronym">@ministry.Id - @ministry.Title</option>
                                         }
                                     }
                                 }

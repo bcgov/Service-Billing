@@ -47,10 +47,6 @@ namespace Service_Billing.Migrations
                 table: "ClientAccounts");
             migrationBuilder.DropTable(
                 name: "ClientTeams");
-
-            migrationBuilder.DropColumn(
-                name: "AggregateGLCode",
-                table: "Bills");
         }
 
         /// <inheritdoc />
@@ -107,12 +103,6 @@ namespace Service_Billing.Migrations
                 column: "TeamId",
                 principalTable: "ClientTeams",
                 principalColumn: "Id");
-
-            migrationBuilder.AddColumn<string>(
-               name: "AggregateGLCode",
-               table: "Bills",
-               type: "nvarchar(max)",
-               nullable: true);
         }
     }
 }
