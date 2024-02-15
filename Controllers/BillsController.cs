@@ -62,7 +62,6 @@ namespace Service_Billing.Controllers
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
           
             if (ministries != null && ministries.Any())
@@ -373,7 +372,11 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(searchParams.MinistryFilter.ToLower()));
+                {
+                    string[] elements = searchParams.MinistryFilter.Split('-');
+                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(elements[0].ToLower()) 
+                        && x.ClientAccount.Name.ToLower().Contains(elements[1].ToLower()));
+                }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
@@ -409,25 +412,24 @@ namespace Service_Billing.Controllers
                 }
                 if (searchParams?.ClientNumber > 0)
                 {
-                    // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
 
                 if (!String.IsNullOrEmpty(ministryUserName))
                 {
-                    bills = bills.Where(b => b.ClientAccount.Team is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
+                    bills = bills.Where(b => b.ClientAccount is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
                     bills = bills.Where(bill =>
                         (!String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) &&
                          bill.ClientAccount.ExpenseAuthorityName.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (!String.IsNullOrEmpty(bill.ClientAccount.Team.Approver) &&
-                         bill.ClientAccount.Team.Approver.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (!String.IsNullOrEmpty(bill.ClientAccount.Team.FinancialContact) &&
-                         bill.ClientAccount.Team.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        (!String.IsNullOrEmpty(bill.ClientAccount.Approver) &&
+                         bill.ClientAccount.Approver.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!String.IsNullOrEmpty(bill.ClientAccount.FinancialContact) &&
+                         bill.ClientAccount.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
                     ).ToList();
                 }
                 if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
                 {
-                    bills = bills.Where(b => b.ClientAccount.Team != null && b.ClientAccount.Team.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact));
+                    bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
                 return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
@@ -489,8 +491,8 @@ namespace Service_Billing.Controllers
                     {
                         if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                             row.ExpenseAuthority = account.ExpenseAuthorityName;
-                        if(account.Team != null && !String.IsNullOrEmpty(account.Team.PrimaryContact))
-                            row.PrimaryContact = account.Team.PrimaryContact;
+                        if(!String.IsNullOrEmpty(account.PrimaryContact))
+                            row.PrimaryContact = account.PrimaryContact;
                     }
                     rows.Add(row);
                 }

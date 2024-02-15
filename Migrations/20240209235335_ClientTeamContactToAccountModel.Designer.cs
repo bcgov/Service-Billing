@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20240209235335_ClientTeamContactToAccountModel")]
+    partial class ClientTeamContactToAccountModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,7 +91,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("Bills", (string)null);
+                    b.ToTable("Bills");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
@@ -156,7 +159,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("ClientAccounts", (string)null);
+                    b.ToTable("ClientAccounts");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientTeam", b =>
@@ -181,7 +184,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientTeams", (string)null);
+                    b.ToTable("ClientTeams");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
@@ -206,7 +209,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("ChargeId");
 
-                    b.ToTable("FiscalPeriod", (string)null);
+                    b.ToTable("FiscalPeriod");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Ministry", b =>
@@ -225,7 +228,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ministries", (string)null);
+                    b.ToTable("Ministries");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
@@ -261,7 +264,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("ServiceId");
 
-                    b.ToTable("ServiceCategories", (string)null);
+                    b.ToTable("ServiceCategories");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>

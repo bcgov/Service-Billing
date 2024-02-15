@@ -19,7 +19,7 @@ namespace Service_Billing.Models.Repositories
 
         public ClientAccount? GetClientAccount(int accountId)
         {
-            return _context.ClientAccounts.AsNoTracking().Include(c => c.Team).Include(c => c.Bills).ThenInclude(b => b.ServiceCategory).FirstOrDefault(c => c.Id == accountId);
+            return _context.ClientAccounts.AsNoTracking().Include(c => c.Bills).ThenInclude(b => b.ServiceCategory).FirstOrDefault(c => c.Id == accountId);
         }
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)
@@ -45,17 +45,11 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<ClientAccount> GetAccountsByContactName(string contactName)
         {
-            List<ClientTeam> userTeams = _context.ClientTeams.Where(x => x.PrimaryContact == contactName).ToList();
-            userTeams.AddRange(_context.ClientTeams.Where(x => x.FinancialContact == contactName));
-            userTeams.AddRange(_context.ClientTeams.Where(x => x.Approver == contactName));
-            List<ClientAccount> accounts = new List<ClientAccount>();
-
-            foreach (ClientTeam team in userTeams)
-            {
-                accounts.AddRange(GetAll().Where(x => x.TeamId == team.Id));
-            }
-
-            return accounts.Distinct();
+            List<ClientAccount> userAccounts = _context.ClientAccounts.Where(x => x.PrimaryContact == contactName).ToList();
+            userAccounts.AddRange(_context.ClientAccounts.Where(x => x.FinancialContact == contactName));
+            userAccounts.AddRange(_context.ClientAccounts.Where(x => x.Approver == contactName));
+          
+            return userAccounts.Distinct();
         }
 
         public void Update(ClientAccount account)

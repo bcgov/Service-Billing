@@ -32,20 +32,6 @@
 
 <h1>Service Billing Charges</h1>
 
-@if (Model != null && !Model.Any())
-{
-    if (searchModel?.ClientNumber > 0)
-    {
-        <h3>No charges for client number @searchModel?.ClientNumber have been found for the selected fiscal period. You can try searching previous or all quarters, or clearing other search filters.</h3>
-    }
-    else
-    {
-        <h3>
-            No charges matching your search parameters have been found. Try searching in another quarter,
-            or change your filter parameters.
-        </h3>
-    }
-}
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
     <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
@@ -74,17 +60,13 @@
                                 {
                                     foreach (Ministry ministry in ministries)
                                     {
-                                        string selectedMinistry = "";
-                                        if (!String.IsNullOrEmpty(searchModel?.MinistryFilter))
-                                            selectedMinistry = searchModel.MinistryFilter;
-
-                                        if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == $"{ministry.Title}")
+                                        if (!string.IsNullOrEmpty(searchModel?.MinistryFilter) && searchModel?.MinistryFilter == $"{ministry.Acronym} - {ministry.Title}")
                                         {
-                                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected="true" value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
-                                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
                                         }
                                     }
                                 }
@@ -118,16 +100,15 @@
                             <div>
                                 <label for="authorityFilter">Expense Authority</label>
                                 <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
-                                <label for="primaryContactFilter">Primary Contact</label>
-                                <input type="text" name="primaryContactFilter" value="@searchModel?.PrimaryContact" />
+                                <label for="primaryContact">Primary Contact</label>
+                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" />
                                 <label for="clientNumber">GDX Client No.</label>
                                 <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
                             </div>
                             <div>
                                 <label for="keyword">Keyword</label>
                                 <input type="text" name="keyword" value="@searchModel.Keyword"
-                                       title="The keyword search will return results where the input text is contained in the program name,
-URL or IDIR, Client Name, Created By and Notes fields" />
+                                       title="Search program names, URLs, IDIRs, contact names and / or notes" />
                             </div>
                             @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
@@ -139,24 +120,11 @@ URL or IDIR, Client Name, Created By and Notes fields" />
                         <div class="option-buttons">
                             <input type="submit" value="Filter" class="btn btn-default" /> |
                             <a asp-action="Index">Back to Full List</a>
-                            @if (Model != null)
-                            {
-                                <div>Found @Model.Count() results</div>
-                            }
-                            else
-                            {
-                                <div>No results were returned</div>
-                            }
+                        
                         </div>
 
                     </div>
                 </fieldset>
-                @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-                {
-                    <div class="create-new-button">
-                        <a asp-action="AddServiceBilling" asp-controller="Bills">Create New Charge</a>
-                    </div>
-                }
                 <div class="export-button">
                     <input type="submit" value="Export to Excel" formaction="Bills/WriteToExcel" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
@@ -164,6 +132,12 @@ URL or IDIR, Client Name, Created By and Notes fields" />
                         <input type="submit" value="Run Report" formaction="/Bills/ShowReport" formmethod="get" title="Based on filter settings, not necessarily what the list below displays." />
                     }
                 </div>
+                @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+                {
+                    <div class="create-new-button">
+                        <button asp-action="AddServiceBilling" asp-controller="Bills">Create New Charge</button>
+                    </div>
+                }
             </form>
         </div>
     }
@@ -188,11 +162,16 @@ URL or IDIR, Client Name, Created By and Notes fields" />
                 $("div.table-loading-spanner").addClass("hide");
                 $("div.table-loading-overlay").addClass("hide");
             });
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#charge-index-link').addClass("active-nav-link");
         });
 
         $("input[type='submit']").click(function () {
             $("div.table-loading-spanner").addClass("show");
             $("div.table-loading-overlay").addClass("show");
         });
+
+
     </script>
 }

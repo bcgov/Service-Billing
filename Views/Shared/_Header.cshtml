@@ -35,32 +35,36 @@
             <li>@Html.ActionLink("Home", "Index", "Home")</li>
             @if (!isMinistryClient)
             {
-                <li>@Html.ActionLink("Create Client Account", "Create", "ClientAccount")</li>
+                <li id="create-account-link">@Html.ActionLink("Create Client Account", "Create", "ClientAccount")</li>
             }
             @if (isAdmin)
             {
-                <li>@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
+                <li id="account-index-link">@Html.ActionLink("Manage Account", "Index", "ClientAccount")</li>
             }
             @if (isAdmin)
             {
-                <li>@Html.ActionLink("View Quarterly Reports", "Index", "Bills")</li>
+                <li id="charge-index-link">@Html.ActionLink("View Quarterly Reports", "Index", "Bills")</li>
             }
             else if(isServiceOwner)
             {
-                <li>@Html.ActionLink("View Reports for My Services", "Index","Bills")</li>
+                <li id="charge-index-link">@Html.ActionLink("View Reports for My Services", "Index", "Bills")</li>
             }
 
             @if (!isMinistryClient)
             {
-                <li>@Html.ActionLink("Order a Service", "AddServiceBilling", "Bills")</li>
+                <li id="order-service-link">@Html.ActionLink("Order a Service", "AddServiceBilling", "Bills")</li>
             }
             @if (!isMinistryClient)
             {
-                <li>@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
+                <li id="service-index-link">@Html.ActionLink("View Service Categories", "Index", "ServiceCategory")</li>
             }
             @if(isMinistryClient)
             {
-                <li>@Html.ActionLink("View My Team's Charges", "Index", "Bills")</li>
+                <li id="service-index-link">@Html.ActionLink("View My Team's Charges", "Index", "Bills")</li>
+            }
+            @if (isAdmin)
+            {
+                <li id="create-service-link">@Html.ActionLink("Create New Service", "Create", "ServiceCategory")</li>
             }
         </ul>
     </div>

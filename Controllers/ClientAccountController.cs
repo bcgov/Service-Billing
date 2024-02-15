@@ -26,7 +26,6 @@ namespace Service_Billing.Controllers
     public class ClientAccountController : Controller
     {
         private readonly IClientAccountRepository _clientAccountRepository;
-        private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
         private readonly IBillRepository _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
@@ -42,7 +41,6 @@ namespace Service_Billing.Controllers
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
-            IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
             IBillRepository billRepository,
             IAuthorizationService authorizationService,
@@ -57,7 +55,6 @@ namespace Service_Billing.Controllers
             _consentHandler = consentHandler;
 
             _clientAccountRepository = clientAccountRepository;
-            _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
             _billRepository = billRepository;
             _categoryRepository = categoryRepository;
@@ -72,7 +69,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -81,6 +78,7 @@ namespace Service_Billing.Controllers
             ViewData["MinistryFilter"] = ministryFilter;
             ViewData["NumberFilter"] = numberFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["PrimaryContactFilter"] = primaryContactFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
@@ -89,7 +87,7 @@ namespace Service_Billing.Controllers
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, ministryUserName ?? "");
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter, ministryUserName ?? "");
  
             return View(clients);
         }
@@ -103,15 +101,13 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
 
-            if (account.Team == null)
-                account.Team = new ClientTeam();
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
                 if (!String.IsNullOrEmpty(userLastName))
                 {
-                    if (!IsUserAccountContact(account.Team, userLastName))
+                    if (!IsUserAccountContact(account, userLastName))
                     {
                         if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
                         {
@@ -139,8 +135,7 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-            if (account.Team == null)
-                account.Team = new ClientTeam();
+        
             return View(account);
         }
 
@@ -151,18 +146,6 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if (model.Team != null)
-                {
-                    if (model.Team.Id == 0)
-                    {
-                        model.Team.Name = $"{model.Name} Team";
-                        model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
-                    }
-                    else
-                    {
-                        _clientTeamRepository.Update(model.Team);
-                    }
-                }
                 _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id });
@@ -221,13 +204,7 @@ namespace Service_Billing.Controllers
                 string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
-                if (model.Team != null)
-                {
-                    ClientTeam team = model.Team;
-                    team.Name = $"{model.Account.Name} Team";
-                    int teamId = _clientTeamRepository.Add(team);
-                    account.TeamId = teamId;
-                }
+               
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
@@ -326,7 +303,6 @@ namespace Service_Billing.Controllers
             }
         }
 
-
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
@@ -342,10 +318,12 @@ namespace Service_Billing.Controllers
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
-
-                foreach (var user in queriedUsers.Value)
+                if(queriedUsers.Value != null)
                 {
-                    contacts.Add(user.DisplayName);
+                    foreach (var user in queriedUsers.Value)
+                    {
+                        contacts.Add(user.DisplayName);
+                    }
                 }
 
                 return new JsonResult(contacts);
@@ -376,10 +354,10 @@ namespace Service_Billing.Controllers
             User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
             IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
 
-            return View("Index", new ClientAccountViewModel(currentUserAccounts, null));
+            return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string ministryUserName = "")
+        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter, string ministryUserName = "")
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (!String.IsNullOrEmpty(ministryFilter))
@@ -407,14 +385,16 @@ namespace Service_Billing.Controllers
             {
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
             }
+            if(!String.IsNullOrEmpty(primaryContactFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) &&  x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
 
             return clients;
         }
 
         [HttpGet]
-        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
-            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter);
             try
             {
                 string fileName = "Client-Accounts";
@@ -494,14 +474,14 @@ namespace Service_Billing.Controllers
         // Right now this just checks if the current user has a last name that matches a contact.
         // It could certainly be improved by having all contact entries match their Azure AD display name,
         // like "Alexander.Carmichael@gov.bc.ca
-        public bool IsUserAccountContact(ClientTeam team, string lastName)
+        public bool IsUserAccountContact(ClientAccount account, string lastName)
         {
             if (!String.IsNullOrEmpty(lastName))
             {
                 if (!String.IsNullOrEmpty(lastName) &&
-                    (!String.IsNullOrEmpty(team.PrimaryContact) && team.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(team.FinancialContact) && team.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(team.Approver) && team.Approver.ToLower().Contains(lastName.ToLower())))
+                    (!String.IsNullOrEmpty(account.PrimaryContact) && account.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(account.FinancialContact) && account.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(account.Approver) && account.Approver.ToLower().Contains(lastName.ToLower())))
                 {
                     return true;
                 }

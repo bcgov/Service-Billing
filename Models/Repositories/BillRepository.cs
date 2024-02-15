@@ -20,8 +20,7 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
-                .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team);
+                .Include(bill => bill.ClientAccount);
 
         public string DetermineCurrentQuarter(DateTime? date = null)
         {
@@ -192,7 +191,7 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).Where(b => b.FiscalPeriod == fiscalPeriod);
+                .Where(b => b.FiscalPeriod == fiscalPeriod);
         }
 
         public string GetPreviousQuarterString()
@@ -265,7 +264,7 @@ namespace Service_Billing.Models.Repositories
                 return _billingContext.Bills.AsNoTracking()
                     .Include(c => c.ServiceCategory)
                     .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).Where(b => b.ServiceCategoryId != null
+                    .Where(b => b.ServiceCategoryId != null
                    && fixedServiceIds.Contains((int)b.ServiceCategoryId)
                    && (b.EndDate == null || b.EndDate > nextQuarterStart));
             }
@@ -283,7 +282,7 @@ namespace Service_Billing.Models.Repositories
                 .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                    .ThenInclude(account => account.Team).FirstOrDefault(b => b.Id == id);
+                .FirstOrDefault(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
@@ -318,9 +317,24 @@ namespace Service_Billing.Models.Repositories
 
         public async Task<int> CreateBill(Bill bill)
         {
-            await _billingContext.AddAsync(bill);
+            Bill newBill = new Bill();
+            newBill.Title = bill.Title;
+            newBill.ServiceCategoryId = bill.ServiceCategoryId;
+            newBill.Amount = bill.Amount;
+            newBill.BillingCycle = bill.BillingCycle;
+            newBill.ClientAccountId = bill.ClientAccountId;
+            newBill.FiscalPeriod = bill.FiscalPeriod;
+            newBill.IdirOrUrl = bill.IdirOrUrl;
+            newBill.StartDate = bill.StartDate;
+            newBill.IsActive = bill.IsActive;
+            newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
+            newBill.Quantity = bill.Quantity;
+            newBill.Notes = bill.Notes;
+
+
+            await _billingContext.AddAsync(newBill);
             await _billingContext.SaveChangesAsync();
-            return bill.Id;
+            return newBill.Id;
         }
 
         public async Task Update(Bill editedBill)
@@ -335,7 +349,6 @@ namespace Service_Billing.Models.Repositories
          //   bill.ServiceCategory = editedBill.ServiceCategory;
             bill.ServiceCategoryId = editedBill.ServiceCategoryId;
             bill.BillingCycle = editedBill.BillingCycle;
-            bill.AggregateGLCode = editedBill.AggregateGLCode;
             bill.Amount = editedBill.Amount;
             bill.EndDate = editedBill.EndDate;
             bill.StartDate = editedBill.StartDate;

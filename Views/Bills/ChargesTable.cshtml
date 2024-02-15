@@ -2,6 +2,23 @@
 @{
 }
 
+@if (Model != null && !Model.Any())
+{ 
+    <h3>
+        No charges matching your search parameters have been found. Try searching in another quarter,
+        or change your filter parameters.
+    </h3>
+}
+
+@if (Model != null)
+{
+    <p> <div>Found @Model.Count() results</div> </p>
+}
+else
+{
+    <p><div>No results were returned</div></p>
+}
+
 <table class="table table-striped">
     <thead>
         <tr>
@@ -11,7 +28,6 @@
             <th scope="col">Fiscal Period</th>
             <th scope="col">URL or IDIR</th>
             <th scope="col">Service Category</th>
-            <th>Fiscal Period</th>
             <th scope="col">Amount</th>
             <th scope="col">Unit Price</th>
             <th scope="col">Quantity</th>

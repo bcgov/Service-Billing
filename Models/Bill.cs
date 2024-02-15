@@ -41,7 +41,6 @@ namespace Service_Billing.Models
         public DateTime? StartDate { get; set; }
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
-        public string? AggregateGLCode { get; set; }
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
 

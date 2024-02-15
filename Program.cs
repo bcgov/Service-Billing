@@ -100,7 +100,6 @@ builder.Services.AddControllersWithViews(options =>
 builder.Services.AddScoped<IBillRepository, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
 builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
-builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGraphApiService, GraphApiService>();
@@ -199,7 +198,6 @@ using (var scope = app.Services.CreateScope())
     await context.Database.MigrateAsync();
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
-    //DbInitializer.SeedTeams(context);
     //DbInitializer.SeedAccounts(context);
     //DbInitializer.SeedCharges(context);
 }
