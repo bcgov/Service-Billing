@@ -95,7 +95,12 @@ namespace Service_Billing.Migrations
                 $"update ClientAccounts " +
                 $"set OrganizationId = 23 " +
                 $"where ClientAccounts.[Name] like 'TRAN%'; " +
-                
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 44 " +
+                $"where ClientAccounts.[Name] like 'TI Corp%'; " +
+
+
                 // Now deal with all the stragglers
                 $"update ClientAccounts " +
                 $"set OrganizationId = 5 " +
@@ -132,9 +137,35 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 46 " +
-                $"where ClientAccounts.[Name] like 'IGRS%'; "
+                $"where ClientAccounts.[Name] like 'IGRS%'; " +
 
-                ) ;
+                $"update ClientAccounts " +
+                $"set OrganizationId = 14 " +
+                $"where ClientAccounts.[Name] like 'HOUS%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 15" +
+                $"where ClientAccounts.[Name] like 'IRR%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 9 " +
+                $"where ClientAccounts.[Name] like 'EMCR%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 6 " +
+                $"where ClientAccounts.[Name] like 'MCF%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 14 " +
+                $"where ClientAccounts.[Name] like 'HOUS%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 32 " +
+                $"where ClientAccounts.[Name] like 'BCAA%';"
+
+
+
+                );
         }
 
 
