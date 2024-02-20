@@ -44,7 +44,7 @@ namespace Service_Billing.Migrations
                 $"where ClientAccounts.[Name] like 'EMLI%'; " +
 
                 $"update ClientAccounts " +
-                $"set OrganizationId = 34 " +
+                $"set OrganizationId = 35 " +
                 $"where ClientAccounts.[Name] like 'ENV%'; " +
 
                 $"update ClientAccounts " +
@@ -65,8 +65,12 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 39 " +
-                $"where ClientAccounts.[Name] like 'LRB%' " +
-                $"or ClientAccounts.[Name] like 'LBR%'; " + // and I curse the inconsistency
+                $"where ClientAccounts.[Name] like 'LRB%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 17 " +
+                $"where ClientAccounts.[Name] like 'LBR%'; " +
+
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 19 " +
@@ -87,6 +91,10 @@ namespace Service_Billing.Migrations
                 $"update ClientAccounts " +
                 $"set OrganizationId = 22 " +
                 $"where ClientAccounts.[Name] like 'SDPR%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 41 " +
+                $"where ClientAccounts.[Name] like 'SDPR - The Q%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 2 " +
@@ -120,12 +128,12 @@ namespace Service_Billing.Migrations
                 $"where ClientAccounts.[Name] like 'AG - JSB Justice Services Branch%'; " +
 
                 $"update ClientAccounts " +
-                $"set OrganizationId = 37 " +
+                $"set OrganizationId = 13 " +
                 $"where ClientAccounts.[Name] like 'HLTH%'; " +
 
                 $"update ClientAccounts " +
-                $"set OrganizationId = 24 " +
-                $"where ClientAccounts.[Name] like 'WLRS%'; " +
+                $"set OrganizationId = 37 " +
+                $"where ClientAccounts.[Name] like 'HLTH - Seniors%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 24 " +
@@ -161,10 +169,43 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 32 " +
-                $"where ClientAccounts.[Name] like 'BCAA%';"
+                $"where ClientAccounts.[Name] like 'BCAA%'; " +
 
+                $"update ClientAccounts " +
+                $"set OrganizationId = 25 " +
+                $"where ClientAccounts.[Name] like 'AG - Inde%'; " +
 
+                $"update ClientAccounts " +
+                $"set OrganizationId = 28 " +
+                $"where ClientAccounts.[Name] like 'AG - Office%'; " +
 
+                $"update ClientAccounts " +
+                $"set OrganizationId = 27 " +
+                $"where ClientAccounts.[Name] like 'AG - Mental%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 31 " +
+                $"where ClientAccounts.[Name] like 'ALC%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 33 " +
+                $"where ClientAccounts.[Name] like 'CLBC%'; " +
+
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 35 " +
+                $"where ClientAccounts.[Name] like 'ENV - Climate%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 10 " +
+                $"where ClientAccounts.[Name] like 'ENV - Environ%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 37 " +
+                $"where ClientAccounts.[Name] like 'HLTH%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 18 " +
+                $"where ClientAccounts.[Name] like 'MMH%';"
                 );
         }
 

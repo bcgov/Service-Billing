@@ -361,7 +361,7 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             if (ministryFilter > 0)
-                clients = clients.Where(x => x.OrganizationId != null && x.OrganizationId > 0);
+                clients = clients.Where(x => x.OrganizationId != null && x.OrganizationId == ministryFilter);
             if (numberFilter > 0)
                 clients = clients.Where(x => x.Id == numberFilter).ToList();
             if (!String.IsNullOrEmpty(responsibilityFilter))
