@@ -32,10 +32,7 @@
                 @Html.DisplayNameFor(model => Model.ClientNumber)
             </td>
             <td>
-                <a asp-controller="Bills"
-                   asp-action="Index"
-                   asp-all-route-data="parms"
-                   title="See charges associated with this account">@Model.ClientNumber</a>
+                @Html.DisplayFor(model => Model.ClientNumber)
             </td>
         </tr>
         <tr>
