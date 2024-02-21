@@ -414,9 +414,21 @@ namespace Service_Billing.Controllers
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".xlsx";
 
+                List<ClientInfoRowEntry> rows = new List<ClientInfoRowEntry>();
+
+                foreach(ClientAccount account in accounts)
+                {
+                    ClientInfoRowEntry row = new ClientInfoRowEntry(account);
+                    if (account.OrganizationId != null && account.OrganizationId.HasValue)
+                    {
+                        row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
+                    }
+                    rows.Add(row);
+                }
+
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
-                ws.Cell("A1").InsertTable(accounts);
+                ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
                 using var stream = new MemoryStream();
@@ -507,6 +519,38 @@ namespace Service_Billing.Controllers
                 }
             }
             return lastName;
+        }
+    }
+
+    public class ClientInfoRowEntry
+    {
+        public int clientId;
+        public string clientName;
+        public string organization;
+        public string aggregateGLCode;
+        public string servicesEnabled;
+        public string primaryContact;
+        public string financialContact;
+        public string approver;
+        public string expenseAuthority;
+        public bool approved;
+        public bool active;
+        public string notes;
+
+
+
+
+        public ClientInfoRowEntry(ClientAccount account)
+        {
+            clientId = account.Id;
+            clientName = account.Name;
+            primaryContact = account.PrimaryContact;
+            financialContact = account.FinancialContact;
+            approver = account.Approver;
+            approved = account.IsApprovedByEA;
+            active = account.IsActive;
+            aggregateGLCode = account.AggregatedGLCode;
+            notes = account.Notes;
         }
     }
 }
