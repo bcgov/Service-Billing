@@ -15,18 +15,58 @@ namespace Service_Billing.Migrations
                 table: "ClientAccounts",
                 type: "int",
                 nullable: true);
-            
+
+            // Give Ministries a proper Id column as auto incrementing primary key
+            //migrationBuilder.Sql($"alter table Ministries " +
+            //    $"add Id_new int NOT NULL Identity(1,1); " 
+            //    );
+            //migrationBuilder.Sql($"update Ministries " +
+            //    $"SET Id_new = Id " +
+            //    $"Alter Table Ministries Drop Column Id; " 
+            //    );
+            //migrationBuilder.Sql($"Exec sp_rename 'Ministries.Id_new', 'Id', 'Column';" 
+            //    );
+            migrationBuilder.Sql($"CREATE TABLE dbo.Tmp_Ministries" +
+                $"(" +
+                $"Id int NOT NULL" +
+                $" IDENTITY(1, 1)," +
+                $" Title varchar(255) NULL," +
+                $"Acronym varchar(20) NULL" +
+                $")" +
+                $"ON  [PRIMARY]");
+
+            migrationBuilder.Sql($"SET IDENTITY_INSERT dbo.Tmp_Ministries ON");
+
+            migrationBuilder.Sql($"IF EXISTS ( SELECT  *" +
+                $"FROM Ministries) " +
+                $"INSERT  INTO dbo.Tmp_Ministries ( Id, Title, Acronym )" +
+                $"SELECT  Id, Title, Acronym " +
+                $"FROM " +
+                $" Ministries TABLOCKX");
+            migrationBuilder.Sql($"SET IDENTITY_INSERT dbo.Tmp_Ministries OFF");
+
             migrationBuilder.Sql($"update Ministries " +
                 $"set Acronym = 'MMHA'"
-                + $"where Acronym = 'MHA';" +
+                + $"where Acronym = 'MHA'; "
+                );
+            migrationBuilder.Sql("drop table Ministries");
+            migrationBuilder.Sql("Exec sp_rename 'Tmp_Ministries', 'Ministries'");
+            migrationBuilder.Sql($"insert into Ministries (Title, Acronym) " +
+                $"values ('Elections BC', 'EBC'); " +
 
-                //awe geez, this is going to be a nightmare...
                 $"update ClientAccounts " +
+                $"set OrganizationId = Scope_Identity() " +
+                $"where Id = 777; "
+                );
+
+            //awe geez, this is going to be a nightmare...
+            migrationBuilder.Sql(
+            $"update ClientAccounts " +
                 $"set OrganizationId = Ministries.Id " +
                 $"from Ministries " +
                 $"where ClientAccounts.[Name] like Ministries.Acronym " +
-                $"and ClientAccounts.[Name] like '%' + Ministries.Title + '%'; " + 
-                
+                $"and ClientAccounts.[Name] like '%' + Ministries.Title + '%'; " +
+
                 $"update ClientAccounts " +
                 $"set OrganizationId = 4 " +
                 $"where ClientAccounts.[Name] like 'AF%'; " +
@@ -37,8 +77,9 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 34 " +
-                $"where ClientAccounts.[Name] like 'ECON%'; " +
-
+                $"where ClientAccounts.[Name] like 'ECON%'; " 
+                );
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 1 " +
                 $"where ClientAccounts.[Name] like 'EMLI%'; " +
@@ -57,11 +98,13 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 36 " +
-                $"where ClientAccounts.[Name] like 'GCPE%'; " +
-
+                $"where ClientAccounts.[Name] like 'GCPE%'; " 
+                );
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 16 " +
-                $"where ClientAccounts.[Name] like 'JEDI%'; " +
+                $"where ClientAccounts.[Name] like '%JEDI%'" +
+                $"or Id = 785; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 39 " +
@@ -69,12 +112,14 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 17 " +
-                $"where ClientAccounts.[Name] like 'LBR%'; " +
+                $"where ClientAccounts.[Name] like 'LBR%'; " 
+                );
 
-
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 19 " +
-                $"where ClientAccounts.[Name] like 'MUNI%'; " +
+                $"where ClientAccounts.[Name] like 'MUNI%' " +
+                $"or [Name] like '%- MUNI%' or Id = 775; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 40 " +
@@ -90,38 +135,37 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 22 " +
-                $"where ClientAccounts.[Name] like 'SDPR%'; " +
-
+                $"where ClientAccounts.[Name] like 'SDPR%'; " 
+                );
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 41 " +
                 $"where ClientAccounts.[Name] like 'SDPR - The Q%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 2 " +
-                $"where ClientAccounts.[Name] like 'TACS%'; " +
+                $"where ClientAccounts.[Name] like 'TACS%' " +
+                $"or ClientAccounts.Id = 780 or ClientAccounts.Id = 778" +
+                $"or Id = 756 or Id = 823; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 23 " +
-                $"where ClientAccounts.[Name] like 'TRAN%'; " +
+                $"where ClientAccounts.[Name] like 'TRAN%' " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 44 " +
-                $"where ClientAccounts.[Name] like 'TI Corp%'; " +
+                $"where ClientAccounts.[Name] like 'TI Corp%'; "
+                );
 
-
-                // Now deal with all the stragglers
-                $"update ClientAccounts " +
+            // Now deal with all the stragglers
+            migrationBuilder.Sql(
+            $"update ClientAccounts " +
                 $"set OrganizationId = 5 " +
-                $"where ClientAccounts.[Name] like 'AG - Hate Crimes BC - Analytics%'; " +
+                $"where ClientAccounts.[Name] like 'AG -%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 45 " +
                 $"where ClientAccounts.[Name] like 'WCAT%'; " +
-
-                $"update ClientAccounts " +
-                $"set OrganizationId = 5 " +
-                $"where ClientAccounts.[Name] like 'AG - Hate Crimes BC - Analytics%' " +
-                $"or ClientAccounts.[Name] like 'AG - Tickets Solutions Explorer Analytics%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 30 " +
@@ -129,15 +173,17 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 13 " +
-                $"where ClientAccounts.[Name] like 'HLTH%'; " +
-
+                $"where ClientAccounts.[Name] like 'HLTH%'; " 
+                );
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 37 " +
                 $"where ClientAccounts.[Name] like 'HLTH - Seniors%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 24 " +
-                $"where ClientAccounts.[Name] like 'WLRS%'; " +
+                $"where ClientAccounts.[Name] like 'WLRS%' " +
+                $"or ClientAccounts.Id = 825; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 8 " +
@@ -149,8 +195,9 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 14 " +
-                $"where ClientAccounts.[Name] like 'HOUS%'; " +
-
+                $"where ClientAccounts.[Name] like 'HOUS%'; " 
+                );
+            migrationBuilder.Sql(
                  $"update ClientAccounts " +
                 $"set OrganizationId = 15" +
                 $"where ClientAccounts.[Name] like 'IRR%'; " +
@@ -169,8 +216,9 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 32 " +
-                $"where ClientAccounts.[Name] like 'BCAA%'; " +
-
+                $"where ClientAccounts.[Name] like 'BCAA%'; " 
+                );
+            migrationBuilder.Sql(
                 $"update ClientAccounts " +
                 $"set OrganizationId = 25 " +
                 $"where ClientAccounts.[Name] like 'AG - Inde%'; " +
@@ -191,22 +239,34 @@ namespace Service_Billing.Migrations
                 $"set OrganizationId = 33 " +
                 $"where ClientAccounts.[Name] like 'CLBC%'; " +
 
-                 $"update ClientAccounts " +
-                $"set OrganizationId = 35 " +
-                $"where ClientAccounts.[Name] like 'ENV - Climate%'; " +
-
                 $"update ClientAccounts " +
                 $"set OrganizationId = 10 " +
-                $"where ClientAccounts.[Name] like 'ENV - Environ%'; " +
+                $"where ClientAccounts.[Name] like 'ENV -%'; "
+                );
+            migrationBuilder.Sql(
+                 $"update ClientAccounts " +
+                $"set OrganizationId = 35 " +
+                $"where ClientAccounts.[Name] like 'ENV - Climat%'; " +
 
                 $"update ClientAccounts " +
-                $"set OrganizationId = 37 " +
+                $"set OrganizationId = 13 " +
                 $"where ClientAccounts.[Name] like 'HLTH%'; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 18 " +
-                $"where ClientAccounts.[Name] like 'MMH%';"
-                );
+                $"where ClientAccounts.[Name] like 'MMH%'; " +
+
+                $"insert into Ministries (Title, Acronym) " +
+                $"values ('Environmental Assessment Office', 'EAO'); " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = Scope_Identity() " +
+                $"where ClientAccounts.[Name] like 'EAO%'; " +
+
+                $"update ClientAccounts " +
+                $"set OrganizationId = 21 " +
+                $"where ClientAccounts.Id = 791; "
+                ); 
         }
 
 
