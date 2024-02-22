@@ -17,15 +17,6 @@ namespace Service_Billing.Migrations
                 nullable: true);
 
             // Give Ministries a proper Id column as auto incrementing primary key
-            //migrationBuilder.Sql($"alter table Ministries " +
-            //    $"add Id_new int NOT NULL Identity(1,1); " 
-            //    );
-            //migrationBuilder.Sql($"update Ministries " +
-            //    $"SET Id_new = Id " +
-            //    $"Alter Table Ministries Drop Column Id; " 
-            //    );
-            //migrationBuilder.Sql($"Exec sp_rename 'Ministries.Id_new', 'Id', 'Column';" 
-            //    );
             migrationBuilder.Sql($"CREATE TABLE dbo.Tmp_Ministries" +
                 $"(" +
                 $"Id int NOT NULL" +
@@ -51,6 +42,8 @@ namespace Service_Billing.Migrations
                 );
             migrationBuilder.Sql("drop table Ministries");
             migrationBuilder.Sql("Exec sp_rename 'Tmp_Ministries', 'Ministries'");
+
+            //insert new row into ministries table
             migrationBuilder.Sql($"insert into Ministries (Title, Acronym) " +
                 $"values ('Elections BC', 'EBC'); " +
 
@@ -261,12 +254,20 @@ namespace Service_Billing.Migrations
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = Scope_Identity() " +
-                $"where ClientAccounts.[Name] like 'EAO%'; " +
+                $"where ClientAccounts.Id = 738 or ClientAccounts.Id = 783; " +
 
                 $"update ClientAccounts " +
                 $"set OrganizationId = 21 " +
                 $"where ClientAccounts.Id = 791; "
-                ); 
+                );
+
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Id",
+                keyValue: 23,
+                column: "Acronym",
+                value: "MOTI"
+                );
         }
 
 
