@@ -277,6 +277,19 @@ namespace Service_Billing.Migrations
             migrationBuilder.DropColumn(
                 name: "OrganizationId",
                 table: "ClientAccounts");
+
+            //delete new rows added to Ministries table
+            migrationBuilder.DeleteData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Elections BC"
+                );
+
+            migrationBuilder.DeleteData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Environmental Assessment Office"
+                );
         }
     }
 }

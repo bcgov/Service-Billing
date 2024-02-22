@@ -423,6 +423,8 @@ namespace Service_Billing.Controllers
                     {
                         row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
                     }
+                    else
+                        row.organization = "NO ORGANIZATION SET";
                     rows.Add(row);
                 }
 
