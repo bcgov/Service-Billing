@@ -33,13 +33,13 @@
                             @{
                                 foreach (string gdxBusinessArea in busAreas)
                                 {
-                                    @if (gdxBusinessArea.Equals(ViewData["AreaFilter"]))
+                                        @if (gdxBusinessArea.Equals(ViewData["AreaFilter"]))
                                     {
-                                        <option selected>@gdxBusinessArea</option>
+                                            <option selected>@gdxBusinessArea</option>
                                     }
                                     else
                                     {
-                                        <option>@gdxBusinessArea</option>
+                                            <option>@gdxBusinessArea</option>
                                     }
                                 }
                             }
@@ -122,11 +122,11 @@
                 </div>
             </div>
         </fieldset>
-        <div class="create-new-button">
-            <input type="submit" value="Create New Service" formaction="/ServiceCategory/Create" formmethod="get" />
-        </div>
         <div class="export-button">
             <input type="submit" value="Export to Excel" formaction="/ServiceCategory/WriteToExcel" formmethod="get" />
+        </div>
+        <div class="create-new-button">
+            <input type="submit" value="Create New Service" formaction="/ServiceCategory/Create" formmethod="get" />
         </div>
     </form>
 </div>
@@ -198,3 +198,13 @@
     </tbody>
 </table>
 
+@section Scripts{
+
+    <script>
+        $(document).ready(() => {
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#service-index-link').addClass("active-nav-link");
+        });
+    </script>
+}

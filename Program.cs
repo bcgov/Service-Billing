@@ -1,17 +1,12 @@
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Service_Billing.Data;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Service_Billing.Models.Repositories;
 using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.AspNetCore.DataProtection;
 using Service_Billing.HostedServices;
 using static Service_Billing.HostedServices.ChargePromotionService;
 using Microsoft.Graph;
@@ -20,8 +15,9 @@ using System.Net;
 using System.Net.Http.Headers;
 using Service_Billing.Services.Email;
 using Service_Billing.Filters;
-using Microsoft.AspNetCore.Mvc.Filters;
 using Service_Billing.Services.GraphApi;
+using System;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 var builder = Microsoft.AspNetCore.Builder.WebApplication.CreateBuilder(args);
 string[] initialScopes = builder.Configuration.GetValue<string>("DownstreamApi:Scopes")?.Split(' ');
@@ -103,8 +99,7 @@ builder.Services.AddControllersWithViews(options =>
 
 builder.Services.AddScoped<IBillRepository, BillRepository>();
 builder.Services.AddScoped<IServiceCategoryRepository, ServiceCategoryRepository>();
-builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepositry>();
-builder.Services.AddScoped<IClientTeamRepository, ClientTeamRepository>();
+builder.Services.AddScoped<IClientAccountRepository, ClientAccountRepository>();
 builder.Services.AddScoped<IMinistryRepository, MinistryRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGraphApiService, GraphApiService>();
@@ -124,7 +119,7 @@ builder.Services.AddMvc();
 
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
-    options.UseLazyLoadingProxies()
+    options
     .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
 
 builder.Services.AddRazorPages().AddMvcOptions(options =>
@@ -133,6 +128,7 @@ builder.Services.AddRazorPages().AddMvcOptions(options =>
                   .RequireAuthenticatedUser()
                   .Build();
     options.Filters.Add(new AuthorizeFilter(policy));
+    options.EnableEndpointRouting = false;
 }).AddMicrosoftIdentityUI();
 
 builder.Services
@@ -202,7 +198,6 @@ using (var scope = app.Services.CreateScope())
     await context.Database.MigrateAsync();
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
-    //DbInitializer.SeedTeams(context);
     //DbInitializer.SeedAccounts(context);
     //DbInitializer.SeedCharges(context);
 }
@@ -216,7 +211,14 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Home}/{action=Index}/{id?}"
+    );
+
+app.MapControllerRoute(
+    name: "addServiceBilling",
+    pattern: "Bills/AddServiceBilling",
+    defaults: new { controller = "Bills", action = "Create" });
+
 app.MapRazorPages();
 
 app.MapHealthChecks("/healthz");

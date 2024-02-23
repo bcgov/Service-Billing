@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20240215193745_ChangeDateTimeToDateTimeOffset")]
+    partial class ChangeDateTimeToDateTimeOffset
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,9 +124,6 @@ namespace Service_Billing.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("int");
 
                     b.Property<string>("PrimaryContact")
                         .HasColumnType("nvarchar(max)");

@@ -3,5 +3,6 @@
     public interface IMinistryRepository
     {
         IEnumerable<Ministry> GetAll();
+        Ministry? GetById(int Id);
     }
 }

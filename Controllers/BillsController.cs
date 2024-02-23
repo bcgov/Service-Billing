@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
+using Microsoft.IdentityModel.Tokens;
 using MimeKit;
 using Service_Billing.Extensions;
 using Service_Billing.Models;
@@ -61,18 +62,8 @@ namespace Service_Billing.Controllers
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
-            if (searchModel != null && searchModel.QuarterFilter == "previous")
-            {
-                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
-                ViewData["FiscalPeriod"] = searchModel.QuarterString;
-            }
-            else if (searchModel != null)
-            {
-                searchModel.QuarterString = string.Empty;
-            }
+          
             if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
@@ -89,20 +80,34 @@ namespace Service_Billing.Controllers
 
             ViewData["searchModel"] = searchModel;
 
-            IEnumerable<Bill> bills = GetFilteredBills(searchModel);
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> GetBillsTable(ChargeIndexSearchParamsModel searchModel)
+        {
+            
+            var isMinistryUser = User.IsInRole("GDXBillingService.User");
+            string? ministryUserName = string.Empty;
+            if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
+
+            IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
             if (bills != null && bills.Any())
-            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class. 
+            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class.
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
-            var authUser = User;
-            if (authUser.IsMinistryClient(_authorizationService))
+            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+            if (searchModel != null && searchModel.QuarterFilter == "previous")
             {
-                var name = authUser?.FindFirst("name");
-                if (name is not null) ViewData["NameClaim"] = name.Value;
+                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+                ViewData["FiscalPeriod"] = searchModel.QuarterString;
             }
-
-            return View(bills);
+            else if (searchModel != null)
+            {
+                searchModel.QuarterString = string.Empty;
+            }
+            return PartialView("ChargesTable", bills);
         }
 
         public ActionResult Details(int id)
@@ -266,9 +271,9 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public void DetermineCurrentQuarter(Bill bill, DateTime? date = null)
+        public void DetermineCurrentQuarter(Bill bill, DateTimeOffset? date = null)
         {
-            DateTime today = DateTime.Today;
+            DateTimeOffset today = DateTimeOffset.Now;
             if (date != null)
                 today = date.Value;
             string quarter = "";
@@ -281,25 +286,25 @@ namespace Service_Billing.Controllers
                 case 5:
                 case 6:
                     quarter = "Quarter 1";
-                    bill.BillingCycle = new DateTime(today.Year, 4, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 4, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 7:
                 case 8:
                 case 9:
                     quarter = "Quarter 2";
-                    bill.BillingCycle = new DateTime(today.Year, 7, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 7, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 10:
                 case 11:
                 case 12:
                     quarter = "Quarter 3";
-                    bill.BillingCycle = new DateTime(today.Year, 10, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 10, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     break;
                 case 1:
                 case 2:
                 case 3:
                     quarter = "Quarter 4";
-                    bill.BillingCycle = new DateTime(today.Year, 1, 1).ToString("yyyy-MM-dd");
+                    bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     bill.FiscalPeriod = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
                     return;
             }
@@ -325,7 +330,7 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams)
+        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
         {
             try
             {
@@ -366,8 +371,10 @@ namespace Service_Billing.Controllers
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
-                if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(searchParams.MinistryFilter.ToLower()));
+                if (searchParams?.MinistryFilter > 0)
+                {
+                    bills = bills.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
+                } 
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
@@ -383,15 +390,15 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())));
+                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
-                  
-                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) 
+
+                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName)
                             && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
                         {
                             filteredBills.Add(bill);
@@ -403,8 +410,24 @@ namespace Service_Billing.Controllers
                 }
                 if (searchParams?.ClientNumber > 0)
                 {
-                    // int clientId = _clientAccountRepository.GetClientIdFromClientNumber(clientNumber);
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
+                }
+
+                if (!String.IsNullOrEmpty(ministryUserName))
+                {
+                    bills = bills.Where(b => b.ClientAccount is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
+                    bills = bills.Where(bill =>
+                        (!String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) &&
+                         bill.ClientAccount.ExpenseAuthorityName.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!String.IsNullOrEmpty(bill.ClientAccount.Approver) &&
+                         bill.ClientAccount.Approver.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
+                        (!String.IsNullOrEmpty(bill.ClientAccount.FinancialContact) &&
+                         bill.ClientAccount.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
+                    ).ToList();
+                }
+                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
+                {
+                    bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
                 return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
@@ -425,7 +448,7 @@ namespace Service_Billing.Controllers
             {
 
                 string fileName = GetFilename(searchParams, "xlsx");
-              
+
 
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
@@ -452,11 +475,11 @@ namespace Service_Billing.Controllers
                     row.Quantity = bill.Quantity;
                     row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
                     if (bill.DateCreated != null)
-                        row.Created = bill.DateCreated.Value.ToShortDateString();
+                        row.Created = bill.DateCreated?.DateTime.ToShortDateString();
                     if (bill.StartDate != null)
-                        row.Start = bill.StartDate.Value.ToShortDateString();
+                        row.Start = bill.StartDate?.DateTime.ToShortDateString();
                     if (bill.EndDate != null)
-                        row.End = bill.EndDate.Value.ToShortDateString();
+                        row.End = bill.EndDate?.DateTime.ToShortDateString();
 
                     row.CreatedBy = bill.CreatedBy;
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
@@ -466,8 +489,8 @@ namespace Service_Billing.Controllers
                     {
                         if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                             row.ExpenseAuthority = account.ExpenseAuthorityName;
-                        if(account.Team != null && !String.IsNullOrEmpty(account.Team.PrimaryContact))
-                            row.PrimaryContact = account.Team.PrimaryContact;
+                        if(!String.IsNullOrEmpty(account.PrimaryContact))
+                            row.PrimaryContact = account.PrimaryContact;
                     }
                     rows.Add(row);
                 }
@@ -502,7 +525,12 @@ namespace Service_Billing.Controllers
             {
                 GeneratedReportViewModel model = new GeneratedReportViewModel();
                 model.BillingQuarter = !String.IsNullOrEmpty(searchParams?.QuarterFilter) ? searchParams.QuarterFilter : string.Empty;
-                model.Ministry = !String.IsNullOrEmpty(searchParams?.MinistryFilter) ? searchParams.MinistryFilter : string.Empty;
+                Ministry? ministry = null;
+                if (searchParams?.MinistryFilter > 0)
+                {
+                    ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
+                }
+                model.Ministry = (ministry != null && !String.IsNullOrEmpty(ministry.Title)) ? ministry.Title : string.Empty;
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
@@ -661,7 +689,12 @@ namespace Service_Billing.Controllers
             //        fileName += $"={bills.First().BillingCycle}";
             //    }
             //}
-            if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
+            Ministry? ministry = null;
+            if (searchParams?.MinistryFilter > 0)
+            {
+                ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
+            }
+            if (ministry != null && !String.IsNullOrEmpty(ministry.Title))
                 fileName += $"-{searchParams.MinistryFilter}";
             if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
                 fileName += $"-{searchParams.TitleFilter}";
@@ -700,7 +733,7 @@ namespace Service_Billing.Controllers
         public string? PrimaryContact { get; set; }
     }
 
-    // For creating the exported quarterly reports. 
+    // For creating the exported quarterly reports.
     public class RecordEntry
     {
         public string ServiceCategory { get; set; }

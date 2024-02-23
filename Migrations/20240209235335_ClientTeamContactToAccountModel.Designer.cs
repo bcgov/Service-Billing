@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20240209235335_ClientTeamContactToAccountModel")]
+    partial class ClientTeamContactToAccountModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -30,6 +33,9 @@ namespace Service_Billing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AggregateGLCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal?>("Amount")
                         .HasColumnType("decimal(18,2)");
 
@@ -42,14 +48,14 @@ namespace Service_Billing.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTimeOffset?>("DateCreated")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime?>("DateCreated")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTimeOffset?>("DateModified")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime?>("DateModified")
+                        .HasColumnType("datetime2");
 
-                    b.Property<DateTimeOffset?>("EndDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("FiscalPeriod")
                         .HasColumnType("nvarchar(max)");
@@ -69,8 +75,8 @@ namespace Service_Billing.Migrations
                     b.Property<int>("ServiceCategoryId")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("StartDate")
-                        .HasColumnType("datetimeoffset");
+                    b.Property<DateTime?>("StartDate")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("TicketNumberAndRequester")
                         .HasColumnType("nvarchar(max)")
@@ -102,6 +108,9 @@ namespace Service_Billing.Migrations
                     b.Property<short?>("ClientNumber")
                         .HasColumnType("smallint");
 
+                    b.Property<string>("ClientTeam")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ExpenseAuthorityName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -121,9 +130,6 @@ namespace Service_Billing.Migrations
 
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int?>("OrganizationId")
-                        .HasColumnType("int");
 
                     b.Property<string>("PrimaryContact")
                         .HasColumnType("nvarchar(max)");
@@ -146,9 +152,39 @@ namespace Service_Billing.Migrations
                     b.Property<string>("ServicesEnabled")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("TeamId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
+                    b.HasIndex("TeamId");
+
                     b.ToTable("ClientAccounts");
+                });
+
+            modelBuilder.Entity("Service_Billing.Models.ClientTeam", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Approver")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FinancialContact")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PrimaryContact")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ClientTeams");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
@@ -248,6 +284,15 @@ namespace Service_Billing.Migrations
                     b.Navigation("ClientAccount");
 
                     b.Navigation("ServiceCategory");
+                });
+
+            modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
+                {
+                    b.HasOne("Service_Billing.Models.ClientTeam", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId");
+
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>

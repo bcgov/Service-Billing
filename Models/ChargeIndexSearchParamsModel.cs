@@ -3,7 +3,7 @@
     public class ChargeIndexSearchParamsModel
     {
         public string? QuarterFilter { get; set; }
-        public string? MinistryFilter { get; set; }
+        public int MinistryFilter { get; set; }
         public string? TitleFilter { get; set; }
         public List<int>? CategoryFilter { get; set; }
         public string? AuthorityFilter { get; set; }
@@ -12,5 +12,6 @@
         public bool? Inactive { get; set; } = false;
         public bool ShouldRestrictToUserOwnedServices { get; set; }
         public string QuarterString {  get; set; } = string.Empty;
+        public string? PrimaryContact { get; set; }
     }
 }

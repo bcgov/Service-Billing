@@ -14,17 +14,11 @@
     string threeFmt = "000";
 }
 
-@{
-    var user = User as ClaimsPrincipal;
-    var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
-    var nameClaim = ViewData["NameClaim"] as string ?? "";
-}
-
 <h1>Manage Client Account Information</h1>
 
 <div class="row row-cols-1 row-cols-md-3 g-4">
 
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !User.IsInRole("GDXBillingService.User"))
     {
         <div class="table-filter-section">
             <form asp-action="Index" method="get">
@@ -39,17 +33,17 @@
                                 {
                                     foreach (Ministry ministry in ministries)
                                     {
-                                        string selectedMinistry = "";
+                                        int selectedMinistry = 0;
                                         if (ViewData["MinistryFilter"] != null)
-                                            selectedMinistry = ViewData["MinistryFilter"].ToString();
+                                            selectedMinistry = int.Parse(ViewData["MinistryFilter"].ToString());
 
-                                        if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                        if (selectedMinistry > 0 && selectedMinistry == ministry.Id)
                                         {
-                                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected="true" value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
-                                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                     }
                                 }
@@ -60,6 +54,8 @@
                         <div>
                             <label for="authorityFilter">Expense Authority</label>
                             <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
+                            <label for="primaryContactFilter">Primary Contact</label>
+                            <input type="text" name="primaryContactFilter" value="@ViewData["PrimaryContactFilter"]" />
                          @*    <label for="servicesEnabled">Services Enabled</label>
                             <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
                             @*    <label for="notes">Notes</label>
@@ -76,15 +72,15 @@
                         </div>
                     </div>
                 </fieldset>
+                <div class="export-button">
+                    <input type="submit" value="Export to Excel" formaction="/ClientAccount/WriteToExcel" formmethod="get" />
+                </div>
                 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
                 {
                     <div class="create-new-button">
                         <input type="submit" value="Create Account" formaction="/ClientAccount/Create" formmethod="get" />
                     </div>
                 }
-                <div class="export-button">
-                    <input type="submit" value="Export to Excel" formaction="/ClientAccount/WriteToExcel" formmethod="get" />
-                </div>
             </form>
         </div>
     }
@@ -96,7 +92,6 @@
                 <th scope="col">CAS Client No.</th>
                 <th scope="col">Expense Authority</th>
                 <th scope="col">Primary Contact</th>
-                <th scope="col">Client Team</th>
                 <th scope="col">Active?</th>
             </tr>
         </thead>
@@ -107,11 +102,8 @@
             {
             { "clientNumber",  account.ClientNumber.ToString()}
             };
-                var hideRow = isMinistryClient
-                    && (!nameClaim.IsContainedIgnoringOrderAndCase(account.ExpenseAuthorityName ?? "")
-                    || !nameClaim.IsContainedIgnoringOrderAndCase(account.Team?.PrimaryContact));
 
-                <tr style="@(hideRow ? "display:none;" : "")">
+                <tr>
                     <td>
                         <a asp-controller="ClientAccount"
                            asp-action="Details"
@@ -119,15 +111,11 @@
                     </td>
                     <td>@account.Name</td>
                     <td>
-                        <a asp-controller="Bills"
-                           asp-action="Index"
-                           asp-all-route-data="parms"
-                           title="See charges associated with this account">@String.Format("{0:000}", account.ClientNumber)</a>
+                        @account.ClientNumber
                     </td>
                     
                     <td>@account.ExpenseAuthorityName</td>
-                    <td>@account.Team?.PrimaryContact</td>
-                    <td>@account.ClientTeam</td>
+                    <td>@account.PrimaryContact</td>
                     <td>@account.IsActive</td>
                     
                 </tr>
@@ -135,3 +123,14 @@
         </tbody>
     </table>
 </div>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(() => {
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#account-index-link').addClass("active-nav-link");
+        });
+    </script>
+}

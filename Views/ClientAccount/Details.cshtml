@@ -2,7 +2,6 @@
 @{
     ViewData["Title"] = "Client Details";
     Layout = "_Layout";
-    ClientTeam? clientTeam = ViewData["clientTeam"] as ClientTeam;
     var parms = new Dictionary<string, string>
 {
 { "clientNumber", Model.ClientNumber.ToString() }
@@ -33,10 +32,7 @@
                 @Html.DisplayNameFor(model => Model.ClientNumber)
             </td>
             <td>
-                <a asp-controller="Bills"
-                   asp-action="Index"
-                   asp-all-route-data="parms"
-                   title="See charges associated with this account">@Model.ClientNumber</a>
+                @Html.DisplayFor(model => Model.ClientNumber)
             </td>
         </tr>
         <tr>
@@ -111,7 +107,7 @@
             </td>
         </tr>
     </table>
-    <partial name="_ClientTeam" model="@Model.Team" />
+    <partial name="_ClientTeam" model="@Model"/>
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
     {
         <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Id)" />
@@ -209,7 +205,7 @@
         <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
         @if (!isMinistryClient)
         {
-            <a href="/Bills/Create?accountId=@Model?.Id">Order a Service</a>
+            <a href="/Bills/AddServiceBilling?accountId=@Model?.Id">Order a Service</a>
             <text> | </text>
         }
         <a asp-action="Index">Back to List</a>

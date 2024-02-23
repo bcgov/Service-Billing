@@ -26,7 +26,6 @@ namespace Service_Billing.Controllers
     public class ClientAccountController : Controller
     {
         private readonly IClientAccountRepository _clientAccountRepository;
-        private readonly IClientTeamRepository _clientTeamRepository;
         private readonly IMinistryRepository _ministryRepository;
         private readonly IBillRepository _billRepository;
         private readonly IServiceCategoryRepository _categoryRepository;
@@ -42,7 +41,6 @@ namespace Service_Billing.Controllers
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
             IClientAccountRepository clientAccountRepository,
-            IClientTeamRepository clientTeamRepository,
             IMinistryRepository ministryRepository,
             IBillRepository billRepository,
             IAuthorizationService authorizationService,
@@ -57,7 +55,6 @@ namespace Service_Billing.Controllers
             _consentHandler = consentHandler;
 
             _clientAccountRepository = clientAccountRepository;
-            _clientTeamRepository = clientTeamRepository;
             _ministryRepository = ministryRepository;
             _billRepository = billRepository;
             _categoryRepository = categoryRepository;
@@ -72,7 +69,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public async Task<ActionResult> Index(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -81,19 +78,17 @@ namespace Service_Billing.Controllers
             ViewData["MinistryFilter"] = ministryFilter;
             ViewData["NumberFilter"] = numberFilter;
             ViewData["AuthorityFilter"] = authorityFilter;
+            ViewData["PrimaryContactFilter"] = primaryContactFilter;
             ViewData["ResponsibilityFilter"] = responsibilityFilter;
             ViewData["TeamFilter"] = teamFilter;
             ViewData["Keyword"] = keyword;
-            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
-            //  IEnumerable<ClientTeam> teams = _clientTeamRepository.AllTeams;
 
-            var authUser = User;
-            if (authUser.IsMinistryClient(_authorizationService))
-            {
-                var name = authUser?.FindFirst("name");
-                if (name is not null) ViewData["NameClaim"] = name.Value;
-            }
+            var isMinistryUser = User.IsInRole("GDXBillingService.User");
+            string? ministryUserName = string.Empty;
+            if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
+            IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter, ministryUserName ?? "");
+ 
             return View(clients);
         }
 
@@ -106,15 +101,13 @@ namespace Service_Billing.Controllers
             if (account == null)
                 return NotFound();
 
-            if (account.Team == null)
-                account.Team = new ClientTeam();
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
                 string userLastName = GetUserLastName();
                 if (!String.IsNullOrEmpty(userLastName))
                 {
-                    if (!IsUserAccountContact(account.Team, userLastName))
+                    if (!IsUserAccountContact(account, userLastName))
                     {
                         if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
                         {
@@ -142,8 +135,7 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-            if(account.Team == null)
-                account.Team = new ClientTeam();
+        
             return View(account);
         }
 
@@ -154,18 +146,6 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if (model.Team != null)
-                {
-                    if (model.Team.Id == 0)
-                    {
-                        model.Team.Name = $"{model.Name} Team";
-                        model.TeamId = _clientTeamRepository.Add(model.Team); // we should probably do away with client teams being a separate table
-                    }
-                    else
-                    {
-                        _clientTeamRepository.Update(model.Team);
-                    }
-                }
                 _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id });
@@ -224,13 +204,7 @@ namespace Service_Billing.Controllers
                 string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
-                if (model.Team != null)
-                {
-                    ClientTeam team = model.Team;
-                    team.Name = $"{model.Account.Name} Team";
-                    int teamId = _clientTeamRepository.Add(team);
-                    account.TeamId = teamId;
-                }
+               
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
@@ -248,24 +222,24 @@ namespace Service_Billing.Controllers
                     var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
                     var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
-                    await _emailService.SendEmail(
-                        eaEmail,
-                        "Please Review: New GDX Service Billing Account Information",
-                        $@"
-                        Hello {eaEmail.Split('@')[0]},
+                    //await _emailService.SendEmail(
+                    //    eaEmail,
+                    //    "Please Review: New GDX Service Billing Account Information",
+                    //    $@"
+                    //    Hello {eaEmail.Split('@')[0]},
                     
-                        We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
+                    //    We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
                     
-                        To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
+                    //    To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
                     
-                        If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
+                    //    If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
                     
-                        We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
+                    //    We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
                     
-                        Warm regards,
+                    //    Warm regards,
                     
-                        GDX Service Billing Team"
-                    );
+                    //    GDX Service Billing Team"
+                    //);
                 }
 
             }
@@ -316,9 +290,9 @@ namespace Service_Billing.Controllers
                     return NotFound();
                 _clientAccountRepository.Approve(account);
 
-                await _emailService.SendEmail("waino.steuber35@ethereal.email",
-                      $"Account {id} approved",
-                       $"<p>Account {id} has been approved.</p>");
+                //await _emailService.SendEmail("waino.steuber35@ethereal.email",
+                //      $"Account {id} approved",
+                //       $"<p>Account {id} has been approved.</p>");
 
                 return RedirectToAction(nameof(Index));
             }
@@ -328,7 +302,6 @@ namespace Service_Billing.Controllers
                 return View();
             }
         }
-
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
@@ -345,10 +318,12 @@ namespace Service_Billing.Controllers
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
-
-                foreach (var user in queriedUsers.Value)
+                if(queriedUsers.Value != null)
                 {
-                    contacts.Add(user.DisplayName);
+                    foreach (var user in queriedUsers.Value)
+                    {
+                        contacts.Add(user.DisplayName);
+                    }
                 }
 
                 return new JsonResult(contacts);
@@ -379,14 +354,14 @@ namespace Service_Billing.Controllers
             User currentUser = _graphServiceClient.Me.Request().GetAsync().Result;
             IEnumerable<ClientAccount> currentUserAccounts = _clientAccountRepository.GetAccountsByContactName(currentUser.DisplayName);
 
-            return View("Index", new ClientAccountViewModel(currentUserAccounts, null));
+            return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        private IEnumerable<ClientAccount> GetFilteredAccounts(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter, string ministryUserName = "")
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
-            if (!String.IsNullOrEmpty(ministryFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter));
+            if (ministryFilter > 0)
+                clients = clients.Where(x => x.OrganizationId != null && x.OrganizationId == ministryFilter);
             if (numberFilter > 0)
                 clients = clients.Where(x => x.Id == numberFilter).ToList();
             if (!String.IsNullOrEmpty(responsibilityFilter))
@@ -406,18 +381,29 @@ namespace Service_Billing.Controllers
                 );
             }
 
+            if (!String.IsNullOrEmpty(ministryUserName))
+            {
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
+            }
+            if(!String.IsNullOrEmpty(primaryContactFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) &&  x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
+
             return clients;
         }
 
         [HttpGet]
-        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword)
+        public IActionResult WriteToExcel(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
-            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword);
+            IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter);
             try
             {
                 string fileName = "Client-Accounts";
-                if (!String.IsNullOrEmpty(ministryFilter))
-                    fileName += $"-Client{numberFilter}";
+                if (ministryFilter > 0)
+                {
+                    Ministry? ministry = _ministryRepository.GetById(ministryFilter);
+                    if(ministry != null)
+                        fileName += $"-Client{ministry.Title}";
+                }
                 if (!String.IsNullOrEmpty(responsibilityFilter))
                     fileName += $"-{responsibilityFilter}";
                 if (!String.IsNullOrEmpty(authorityFilter))
@@ -428,10 +414,23 @@ namespace Service_Billing.Controllers
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".xlsx";
 
+                List<ClientInfoRowEntry> rows = new List<ClientInfoRowEntry>();
+
+                foreach(ClientAccount account in accounts)
+                {
+                    ClientInfoRowEntry row = new ClientInfoRowEntry(account);
+                    if (account.OrganizationId != null && account.OrganizationId.HasValue)
+                    {
+                        row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
+                    }
+                    else
+                        row.organization = "NO ORGANIZATION SET";
+                    rows.Add(row);
+                }
+
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
-                List<ChargeRow> rows = new List<ChargeRow>();
-                ws.Cell("A1").InsertTable(accounts);
+                ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
                 using var stream = new MemoryStream();
@@ -492,14 +491,14 @@ namespace Service_Billing.Controllers
         // Right now this just checks if the current user has a last name that matches a contact.
         // It could certainly be improved by having all contact entries match their Azure AD display name,
         // like "Alexander.Carmichael@gov.bc.ca
-        public bool IsUserAccountContact(ClientTeam team, string lastName)
+        public bool IsUserAccountContact(ClientAccount account, string lastName)
         {
             if (!String.IsNullOrEmpty(lastName))
             {
                 if (!String.IsNullOrEmpty(lastName) &&
-                    (!String.IsNullOrEmpty(team.PrimaryContact) && team.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(team.FinancialContact) && team.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(team.Approver) && team.Approver.ToLower().Contains(lastName.ToLower())))
+                    (!String.IsNullOrEmpty(account.PrimaryContact) && account.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(account.FinancialContact) && account.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
+                    (!String.IsNullOrEmpty(account.Approver) && account.Approver.ToLower().Contains(lastName.ToLower())))
                 {
                     return true;
                 }
@@ -522,6 +521,38 @@ namespace Service_Billing.Controllers
                 }
             }
             return lastName;
+        }
+    }
+
+    public class ClientInfoRowEntry
+    {
+        public int clientId;
+        public string clientName;
+        public string organization;
+        public string aggregateGLCode;
+        public string servicesEnabled;
+        public string primaryContact;
+        public string financialContact;
+        public string approver;
+        public string expenseAuthority;
+        public bool approved;
+        public bool active;
+        public string notes;
+
+
+
+
+        public ClientInfoRowEntry(ClientAccount account)
+        {
+            clientId = account.Id;
+            clientName = account.Name;
+            primaryContact = account.PrimaryContact;
+            financialContact = account.FinancialContact;
+            approver = account.Approver;
+            approved = account.IsApprovedByEA;
+            active = account.IsActive;
+            aggregateGLCode = account.AggregatedGLCode;
+            notes = account.Notes;
         }
     }
 }
