@@ -424,7 +424,7 @@ namespace Service_Billing.Controllers
                         row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
                     }
                     else
-                        row.organization = "NO ORGANIZATION SET";
+                        row.organization = "NO ORGANIZATION SET"; // no one should ever see this.
                     rows.Add(row);
                 }
 
