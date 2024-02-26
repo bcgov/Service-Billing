@@ -34,7 +34,7 @@ namespace Service_Billing.Controllers
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
-        public IActionResult Index(string areaFilter, string nameFilter, string uomFilter, string ownerFilter, string activeFilter = "active")
+        public IActionResult Index(int areaFilter, string nameFilter, string uomFilter, string ownerFilter, string activeFilter = "active")
         {
             ViewData["AreaFilter"] = areaFilter;
             ViewData["NameFilter"] = nameFilter;
@@ -124,14 +124,21 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToExcel(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        public async Task<IActionResult> WriteToExcel(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
             try
             {
                 string fileName = "Service-Categories";
-                if (!String.IsNullOrEmpty(areaFilter))
-                    fileName += $"-{areaFilter}";
+                //if (!String.IsNullOrEmpty(areaFilter)) TODO: get business area acronym based on the id, and add it to the filename
+                //    fileName += $"-{areaFilter}";
+                if(areaFilter > 0)
+                {
+                    BusinessArea area = _businessAreaRepository.GetById(areaFilter);
+                    if (area == null)
+                        throw new Exception($"Somehow an Excel file made to be written based off a business area that doesn't exist. Business area ID: {areaFilter}");
+                    fileName += $"-{area.Acronym}";
+                }
                 if (!String.IsNullOrEmpty(nameFilter))
                     fileName += $"-{nameFilter}";
                 if (!String.IsNullOrEmpty(activeFilter))
@@ -166,12 +173,11 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<ServiceCategory> GetFilteredCategories(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        private IEnumerable<ServiceCategory> GetFilteredCategories(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            // TODO: Need to switch to filtering by BusArea.Id
-            //if (!String.IsNullOrEmpty(areaFilter))
-            //    categories = categories.Where(x => x.GDXBusArea == areaFilter);
+            if (areaFilter > 0)
+                categories = categories.Where(x => x.BusAreaId == areaFilter);
             if (!String.IsNullOrEmpty(nameFilter))
                 categories = categories.Where(x => x.Name.ToLower().Contains(nameFilter.ToLower()));
             if (activeFilter != null)

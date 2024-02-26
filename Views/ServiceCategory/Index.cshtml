@@ -5,10 +5,10 @@
     Layout = "_Layout";
 }
 @{
-    List<string> busAreas = new List<string>();
+    IEnumerable<BusinessArea> busAreas = null;
     if (ViewData["BusAreas"] != null)
     {
-        busAreas = ViewData["BusAreas"] as List<string>;
+        busAreas = ViewData["BusAreas"] as IEnumerable<BusinessArea>;
     }
     bool inactive = ViewData["IsActiveFilter"] == "inactive";
     string uomFilterValue = string.Empty;
@@ -31,15 +31,19 @@
                         <select name="areaFilter">
                             <option></option>
                             @{
-                                foreach (string gdxBusinessArea in busAreas)
+                                int areaFilter = 0;
+                                if(ViewData["AreaFilter"] != null)
+                                    int.TryParse(ViewData["AreaFilter"].ToString(), out areaFilter);
+
+                                foreach (BusinessArea businessArea in busAreas)
                                 {
-                                        @if (gdxBusinessArea.Equals(ViewData["AreaFilter"]))
+                                        @if (areaFilter > 0 && areaFilter.Equals(businessArea.Id))
                                     {
-                                            <option selected>@gdxBusinessArea</option>
+                                            <option selected value="@businessArea.Id">@businessArea.Acronym - @businessArea.Name</option>
                                     }
                                     else
                                     {
-                                            <option>@gdxBusinessArea</option>
+                                        <option value="@businessArea.Id">@businessArea.Acronym - @businessArea.Name</option>
                                     }
                                 }
                             }
