@@ -19,15 +19,18 @@ namespace Service_Billing.Controllers
     {
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IBillRepository _billRepository;
+        private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ILogger<ServiceCategoryController> _logger;
 
         public ServiceCategoryController(ILogger<ServiceCategoryController> logger, 
             IServiceCategoryRepository categoryRepository,
-            IBillRepository billRepository)
+            IBillRepository billRepository,
+            IBusinessAreaRepository businessAreaRepository)
         {
             _categoryRepository = categoryRepository;
             _billRepository = billRepository;
             _logger = logger;
+            _businessAreaRepository = businessAreaRepository;
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
@@ -39,15 +42,8 @@ namespace Service_Billing.Controllers
             ViewData["UOMFilter"] = uomFilter;
             ViewData["OwnerFilter"] = ownerFilter;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            List<string> busAreas = new List<string>();
-            if (categories != null && categories.Any())
-            {
-                foreach (ServiceCategory category in categories)
-                {
-                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
-                        busAreas.Add(category.GDXBusArea);
-                }
-            }
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
+          
 
             ViewData["BusAreas"] = busAreas;
             categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
@@ -92,17 +88,9 @@ namespace Service_Billing.Controllers
         public IActionResult Create()
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            List<string> busAreas = new List<string>();
-            if (categories != null && categories.Any())
-            {
-                foreach (ServiceCategory category in categories)
-                {
-                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
-                        busAreas.Add(category.GDXBusArea);
-                }
-            }
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             CreateServiceViewModel model = new CreateServiceViewModel();
-            model.BusArea = busAreas;
+            model.BusAreas = busAreas;
 
             return View(model);
         }
@@ -181,8 +169,9 @@ namespace Service_Billing.Controllers
         private IEnumerable<ServiceCategory> GetFilteredCategories(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            if (!String.IsNullOrEmpty(areaFilter))
-                categories = categories.Where(x => x.GDXBusArea == areaFilter);
+            // TODO: Need to switch to filtering by BusArea.Id
+            //if (!String.IsNullOrEmpty(areaFilter))
+            //    categories = categories.Where(x => x.GDXBusArea == areaFilter);
             if (!String.IsNullOrEmpty(nameFilter))
                 categories = categories.Where(x => x.Name.ToLower().Contains(nameFilter.ToLower()));
             if (activeFilter != null)

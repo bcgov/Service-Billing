@@ -467,7 +467,7 @@ namespace Service_Billing.Controllers
                     row.Program = bill.Title;
                     if (serviceCategory != null)
                     {
-                        row.GDXBusArea = serviceCategory.GDXBusArea;
+                        row.GDXBusArea = serviceCategory.BusinessArea.Name;
                         row.ServiceCategory = serviceCategory.Name;
                     }
                     row.TicketNumber = bill.TicketNumberAndRequester;
