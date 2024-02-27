@@ -35,9 +35,16 @@ namespace Service_Billing.Models
         [Display(Name = "Ticket Number")]
         public string? TicketNumberAndRequester { get; set; }
 
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
         public DateTimeOffset? DateModified { get; set; }
+
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
         public DateTimeOffset? DateCreated { get; set; }
+
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
         public DateTimeOffset? EndDate { get; set; }
+
+        [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
         public DateTimeOffset? StartDate { get; set; }
         public string? BillingCycle { get; set; }
         public string? CreatedBy { get; set; }
