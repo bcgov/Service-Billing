@@ -33,17 +33,17 @@
                                 {
                                     foreach (Ministry ministry in ministries)
                                     {
-                                        string selectedMinistry = "";
+                                        int selectedMinistry = 0;
                                         if (ViewData["MinistryFilter"] != null)
-                                            selectedMinistry = ViewData["MinistryFilter"].ToString();
+                                            selectedMinistry = int.Parse(ViewData["MinistryFilter"].ToString());
 
-                                        if (!String.IsNullOrEmpty(selectedMinistry) && selectedMinistry == ministry.Acronym)
+                                        if (selectedMinistry > 0 && selectedMinistry == ministry.Id)
                                         {
-                                            <option selected="true" value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected="true" value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
-                                            <option value="@ministry.Acronym">@ministry.Acronym - @ministry.Title</option>
+                                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                     }
                                 }

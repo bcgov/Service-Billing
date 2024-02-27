@@ -16,5 +16,10 @@ namespace Service_Billing.Models.Repositories
         {
             return _billingContext.Ministries.OrderBy(x => x.Acronym);
         }
+
+        public Ministry? GetById(int id)
+        {
+            return _billingContext.Ministries.FirstOrDefault(x => x.Id == id);
+        }
     }
 }

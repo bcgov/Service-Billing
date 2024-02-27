@@ -69,7 +69,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public async Task<ActionResult> Index(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
+        public async Task<ActionResult> Index(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -357,11 +357,11 @@ namespace Service_Billing.Controllers
             return View("Index", new ClientAccountViewModel(currentUserAccounts));
         }
 
-        private IEnumerable<ClientAccount> GetFilteredAccounts(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter, string ministryUserName = "")
+        private IEnumerable<ClientAccount> GetFilteredAccounts(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter, string ministryUserName = "")
         {
             IEnumerable<ClientAccount> clients = _clientAccountRepository.GetAll();
-            if (!String.IsNullOrEmpty(ministryFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.Contains(ministryFilter));
+            if (ministryFilter > 0)
+                clients = clients.Where(x => x.OrganizationId != null && x.OrganizationId == ministryFilter);
             if (numberFilter > 0)
                 clients = clients.Where(x => x.Id == numberFilter).ToList();
             if (!String.IsNullOrEmpty(responsibilityFilter))
@@ -392,14 +392,18 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public IActionResult WriteToExcel(string ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
+        public IActionResult WriteToExcel(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             IEnumerable<ClientAccount> accounts = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter);
             try
             {
                 string fileName = "Client-Accounts";
-                if (!String.IsNullOrEmpty(ministryFilter))
-                    fileName += $"-Client{numberFilter}";
+                if (ministryFilter > 0)
+                {
+                    Ministry? ministry = _ministryRepository.GetById(ministryFilter);
+                    if(ministry != null)
+                        fileName += $"-Client{ministry.Title}";
+                }
                 if (!String.IsNullOrEmpty(responsibilityFilter))
                     fileName += $"-{responsibilityFilter}";
                 if (!String.IsNullOrEmpty(authorityFilter))
@@ -410,10 +414,23 @@ namespace Service_Billing.Controllers
                 fileName += DateTime.Today.ToString("dd-mm-yyyy");
                 fileName += ".xlsx";
 
+                List<ClientInfoRowEntry> rows = new List<ClientInfoRowEntry>();
+
+                foreach(ClientAccount account in accounts)
+                {
+                    ClientInfoRowEntry row = new ClientInfoRowEntry(account);
+                    if (account.OrganizationId != null && account.OrganizationId.HasValue)
+                    {
+                        row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
+                    }
+                    else
+                        row.organization = "NO ORGANIZATION SET";
+                    rows.Add(row);
+                }
+
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
-                List<ChargeRow> rows = new List<ChargeRow>();
-                ws.Cell("A1").InsertTable(accounts);
+                ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
                 using var stream = new MemoryStream();
@@ -504,6 +521,38 @@ namespace Service_Billing.Controllers
                 }
             }
             return lastName;
+        }
+    }
+
+    public class ClientInfoRowEntry
+    {
+        public int clientId;
+        public string clientName;
+        public string organization;
+        public string aggregateGLCode;
+        public string servicesEnabled;
+        public string primaryContact;
+        public string financialContact;
+        public string approver;
+        public string expenseAuthority;
+        public bool approved;
+        public bool active;
+        public string notes;
+
+
+
+
+        public ClientInfoRowEntry(ClientAccount account)
+        {
+            clientId = account.Id;
+            clientName = account.Name;
+            primaryContact = account.PrimaryContact;
+            financialContact = account.FinancialContact;
+            approver = account.Approver;
+            approved = account.IsApprovedByEA;
+            active = account.IsActive;
+            aggregateGLCode = account.AggregatedGLCode;
+            notes = account.Notes;
         }
     }
 }

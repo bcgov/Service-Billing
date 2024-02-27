@@ -60,13 +60,13 @@
                                 {
                                     foreach (Ministry ministry in ministries)
                                     {
-                                        if (!string.IsNullOrEmpty(searchModel?.MinistryFilter) && searchModel?.MinistryFilter == $"{ministry.Acronym} - {ministry.Title}")
+                                        if (searchModel?.MinistryFilter > 0 && searchModel?.MinistryFilter == ministry.Id)
                                         {
-                                            <option selected="true" value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected="true" value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
-                                            <option value="@ministry.Acronym - @ministry.Title">@ministry.Acronym - @ministry.Title</option>
+                                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                     }
                                 }

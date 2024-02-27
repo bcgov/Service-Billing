@@ -371,12 +371,10 @@ namespace Service_Billing.Controllers
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
-                if (!string.IsNullOrEmpty(searchParams?.MinistryFilter))
+                if (searchParams?.MinistryFilter > 0)
                 {
-                    string[] elements = searchParams.MinistryFilter.Split('-');
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().StartsWith(elements[0].ToLower()) 
-                        && x.ClientAccount.Name.ToLower().Contains(elements[1].ToLower()));
-                }
+                    bills = bills.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
+                } 
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
@@ -527,7 +525,12 @@ namespace Service_Billing.Controllers
             {
                 GeneratedReportViewModel model = new GeneratedReportViewModel();
                 model.BillingQuarter = !String.IsNullOrEmpty(searchParams?.QuarterFilter) ? searchParams.QuarterFilter : string.Empty;
-                model.Ministry = !String.IsNullOrEmpty(searchParams?.MinistryFilter) ? searchParams.MinistryFilter : string.Empty;
+                Ministry? ministry = null;
+                if (searchParams?.MinistryFilter > 0)
+                {
+                    ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
+                }
+                model.Ministry = (ministry != null && !String.IsNullOrEmpty(ministry.Title)) ? ministry.Title : string.Empty;
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
@@ -686,7 +689,12 @@ namespace Service_Billing.Controllers
             //        fileName += $"={bills.First().BillingCycle}";
             //    }
             //}
-            if (!String.IsNullOrEmpty(searchParams?.MinistryFilter))
+            Ministry? ministry = null;
+            if (searchParams?.MinistryFilter > 0)
+            {
+                ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
+            }
+            if (ministry != null && !String.IsNullOrEmpty(ministry.Title))
                 fileName += $"-{searchParams.MinistryFilter}";
             if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
                 fileName += $"-{searchParams.TitleFilter}";
