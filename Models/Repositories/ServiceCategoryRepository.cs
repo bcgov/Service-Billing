@@ -1,4 +1,5 @@
-﻿using Service_Billing.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Service_Billing.Data;
 using Service_Billing.Models;
 
 namespace Service_Billing.Models.Repositories

@@ -19,19 +19,22 @@ namespace Service_Billing.Controllers
     {
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IBillRepository _billRepository;
+        private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ILogger<ServiceCategoryController> _logger;
 
         public ServiceCategoryController(ILogger<ServiceCategoryController> logger, 
             IServiceCategoryRepository categoryRepository,
-            IBillRepository billRepository)
+            IBillRepository billRepository,
+            IBusinessAreaRepository businessAreaRepository)
         {
             _categoryRepository = categoryRepository;
             _billRepository = billRepository;
             _logger = logger;
+            _businessAreaRepository = businessAreaRepository;
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
-        public IActionResult Index(string areaFilter, string nameFilter, string uomFilter, string ownerFilter, string activeFilter = "active")
+        public IActionResult Index(int areaFilter, string nameFilter, string uomFilter, string ownerFilter, string activeFilter = "active")
         {
             ViewData["AreaFilter"] = areaFilter;
             ViewData["NameFilter"] = nameFilter;
@@ -39,15 +42,8 @@ namespace Service_Billing.Controllers
             ViewData["UOMFilter"] = uomFilter;
             ViewData["OwnerFilter"] = ownerFilter;
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            List<string> busAreas = new List<string>();
-            if (categories != null && categories.Any())
-            {
-                foreach (ServiceCategory category in categories)
-                {
-                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
-                        busAreas.Add(category.GDXBusArea);
-                }
-            }
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
+          
 
             ViewData["BusAreas"] = busAreas;
             categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
@@ -63,7 +59,7 @@ namespace Service_Billing.Controllers
             {
                 return NotFound();
             }
-
+            serviceCategory.BusArea = _businessAreaRepository.GetById(serviceCategory.BusAreaId); //I don't understand why this isn't handled as a foreign relationship
             return View(serviceCategory);
         }
 
@@ -92,17 +88,9 @@ namespace Service_Billing.Controllers
         public IActionResult Create()
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            List<string> busAreas = new List<string>();
-            if (categories != null && categories.Any())
-            {
-                foreach (ServiceCategory category in categories)
-                {
-                    if (!String.IsNullOrEmpty(category.GDXBusArea) && !busAreas.Contains(category.GDXBusArea))
-                        busAreas.Add(category.GDXBusArea);
-                }
-            }
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             CreateServiceViewModel model = new CreateServiceViewModel();
-            model.BusArea = busAreas;
+            model.BusAreas = busAreas;
 
             return View(model);
         }
@@ -136,14 +124,21 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToExcel(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        public async Task<IActionResult> WriteToExcel(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
             try
             {
                 string fileName = "Service-Categories";
-                if (!String.IsNullOrEmpty(areaFilter))
-                    fileName += $"-{areaFilter}";
+                //if (!String.IsNullOrEmpty(areaFilter)) TODO: get business area acronym based on the id, and add it to the filename
+                //    fileName += $"-{areaFilter}";
+                if(areaFilter > 0)
+                {
+                    BusinessArea area = _businessAreaRepository.GetById(areaFilter);
+                    if (area == null)
+                        throw new Exception($"Somehow an Excel file made to be written based off a business area that doesn't exist. Business area ID: {areaFilter}");
+                    fileName += $"-{area.Acronym}";
+                }
                 if (!String.IsNullOrEmpty(nameFilter))
                     fileName += $"-{nameFilter}";
                 if (!String.IsNullOrEmpty(activeFilter))
@@ -178,11 +173,11 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private IEnumerable<ServiceCategory> GetFilteredCategories(string areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        private IEnumerable<ServiceCategory> GetFilteredCategories(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            if (!String.IsNullOrEmpty(areaFilter))
-                categories = categories.Where(x => x.GDXBusArea == areaFilter);
+            if (areaFilter > 0)
+                categories = categories.Where(x => x.BusAreaId == areaFilter);
             if (!String.IsNullOrEmpty(nameFilter))
                 categories = categories.Where(x => x.Name.ToLower().Contains(nameFilter.ToLower()));
             if (activeFilter != null)

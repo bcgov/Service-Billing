@@ -37,6 +37,7 @@ namespace Service_Billing.Controllers
         private readonly IGraphApiService _graphApiService;
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _configuration;
+        private readonly IBusinessAreaRepository _businessAreaRepository;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -45,6 +46,7 @@ namespace Service_Billing.Controllers
             IBillRepository billRepository,
             IAuthorizationService authorizationService,
             IServiceCategoryRepository categoryRepository,
+            IBusinessAreaRepository businessAreaRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -64,6 +66,7 @@ namespace Service_Billing.Controllers
             _graphApiService = graphApiService;
             _authorizationService = authorizationService;
             _configuration = configuration;
+            _businessAreaRepository = businessAreaRepository;
         }
 
         // GET: ClientAccountController
@@ -201,7 +204,13 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
-                string accountName = $"{model.MinistryAcronym} - {model.DivisionOrBranch}";
+                if(!model.Account.OrganizationId.HasValue)
+                    throw new Exception("Somehow and account with no organization Id was submitted");
+                Ministry org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
+                if (org == null)
+                    throw new Exception($"No ministry or organization was found with an ID matching {model.Account.OrganizationId.Value}");
+               // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
+                string accountName = $"{org.Acronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
                
@@ -419,12 +428,12 @@ namespace Service_Billing.Controllers
                 foreach(ClientAccount account in accounts)
                 {
                     ClientInfoRowEntry row = new ClientInfoRowEntry(account);
-                    if (account.OrganizationId != null && account.OrganizationId.HasValue)
+                    if (account.OrganizationId.HasValue)
                     {
                         row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
                     }
                     else
-                        row.organization = "NO ORGANIZATION SET";
+                        row.organization = "NO ORGANIZATION SET"; // no one should ever see this.
                     rows.Add(row);
                 }
 

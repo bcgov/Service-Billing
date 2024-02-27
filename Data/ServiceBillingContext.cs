@@ -15,5 +15,6 @@ namespace Service_Billing.Data
         public DbSet<ServiceCategory> ServiceCategories { get; set; }
         public DbSet<Ministry> Ministries { get; set; }
         public DbSet<FiscalPeriod> FiscalPeriod { get; set; }
+        public DbSet<BusinessArea> BusAreas { get; set; }
     }
 }
