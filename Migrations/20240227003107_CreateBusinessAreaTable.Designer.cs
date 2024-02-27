@@ -12,8 +12,8 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    [Migration("20240222212049_CreateBusAreaTableAndGroupServiceCatsByThem")]
-    partial class CreateBusAreaTableAndGroupServiceCatsByThem
+    [Migration("20240227003107_CreateBusinessAreaTable")]
+    partial class CreateBusinessAreaTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -89,6 +89,27 @@ namespace Service_Billing.Migrations
                     b.HasIndex("ServiceCategoryId");
 
                     b.ToTable("Bills");
+                });
+
+            modelBuilder.Entity("Service_Billing.Models.BusinessArea", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Acronym")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BusAreas");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
@@ -206,21 +227,19 @@ namespace Service_Billing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServiceId"));
 
+                    b.Property<int>("BusAreaId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Costs")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("GDXBusArea")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ServiceOwner")
@@ -230,6 +249,8 @@ namespace Service_Billing.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ServiceId");
+
+                    b.HasIndex("BusAreaId");
 
                     b.ToTable("ServiceCategories");
                 });
@@ -264,9 +285,25 @@ namespace Service_Billing.Migrations
                     b.Navigation("Charge");
                 });
 
+            modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
+                {
+                    b.HasOne("Service_Billing.Models.BusinessArea", "BusArea")
+                        .WithMany("Categories")
+                        .HasForeignKey("BusAreaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("BusArea");
+                });
+
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>
                 {
                     b.Navigation("fiscalPeriods");
+                });
+
+            modelBuilder.Entity("Service_Billing.Models.BusinessArea", b =>
+                {
+                    b.Navigation("Categories");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>

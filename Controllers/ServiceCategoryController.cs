@@ -59,7 +59,7 @@ namespace Service_Billing.Controllers
             {
                 return NotFound();
             }
-
+            serviceCategory.BusArea = _businessAreaRepository.GetById(serviceCategory.BusAreaId); //I don't understand why this isn't handled as a foreign relationship
             return View(serviceCategory);
         }
 

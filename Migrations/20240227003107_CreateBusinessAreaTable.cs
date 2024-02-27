@@ -1,58 +1,54 @@
-﻿using DocumentFormat.OpenXml.Office2016.Drawing.Command;
-using DocumentFormat.OpenXml.Wordprocessing;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Graph;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace Service_Billing.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateBusAreaTableAndGroupServiceCatsByThem : Migration
+    public partial class CreateBusinessAreaTable : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            /* The purpose of this migration is to create a table of business areas to group service categories into.
-             * Before this migration, we have (had?) one table of service categories for creating charges, with multiple
-             service categories falling under analytics, as one example. The idea here have a table containing  business
-            areas like "analytics", and "Wordpress" to group services by. */
+            migrationBuilder.DropColumn(
+                name: "GDXBusArea",
+                table: "ServiceCategories");
 
-            // First, make a table for business area data
-            //migrationBuilder.CreateTable(
-            //     name: "BusAreas",
-            //     columns: table => new
-            //     {
-            //         Id = table.Column<int>(nullable: false).Annotation(),
-            //         Acronym = table.Column<string>(nullable: true),
-            //         Name = table.Column<string>(nullable: true)
-            //     },
-            //     constraints: table =>
-            //     {
-            //         table.PrimaryKey("PK_BusAreas", x => x.Id);
-            //     });
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "ServiceCategories",
+                type: "nvarchar(max)",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)");
 
-            migrationBuilder.Sql(@"CREATE TABLE BusAreas(
-               Id int IDENTITY(1,1) PRIMARY KEY,
-                Acronym varchar(20) NOT NULL,
-                Name varchar(100)); "
-            );
-
-            // Add a column to ServiceCategories to track which business area the service falls under
             migrationBuilder.AddColumn<int>(
                 name: "BusAreaId",
                 table: "ServiceCategories",
                 type: "int",
-                nullable: true); //this really ought never to be null
+                nullable: false,
+                defaultValue: 0);
 
-            // make the column a foreign key
-            migrationBuilder.AddForeignKey(
-                name: "FK_ServiceCategories_BusAreas_Id",
+            migrationBuilder.CreateTable(
+                name: "BusAreas",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Acronym = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_BusAreas", x => x.Id);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServiceCategories_BusAreaId",
                 table: "ServiceCategories",
-                column: "BusAreaId",
-                principalTable: "BusAreas"
-                );
+                column: "BusAreaId");
+
+            
 
             //// for each business area, add the data to the table, then use Scope_Identity() to tie the relevant services to it
             //// Analytics
@@ -110,29 +106,51 @@ namespace Service_Billing.Migrations
                $"set BusAreaId = Scope_Identity() " +
                $"where GDXBusArea = 'OSS'; "
                );
-            // done
 
+            migrationBuilder.AddForeignKey(
+                name: "FK_ServiceCategories_BusAreas_BusAreaId",
+                table: "ServiceCategories",
+                column: "BusAreaId",
+                principalTable: "BusAreas",
+                principalColumn: "Id",
+                onDelete: ReferentialAction.Cascade);
+            // done
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            //remove ServiceCategories -> BusArea FK constraint
             migrationBuilder.DropForeignKey(
                 name: "FK_ServiceCategories_BusAreas_BusAreaId",
-                table: "ServiceCategories"
-                );
+                table: "ServiceCategories");
 
-            // drop the BusArea Id column form ServiceCategories
+            migrationBuilder.DropTable(
+                name: "BusAreas");
+
+            migrationBuilder.DropIndex(
+                name: "IX_ServiceCategories_BusAreaId",
+                table: "ServiceCategories");
+
             migrationBuilder.DropColumn(
                 name: "BusAreaId",
                 table: "ServiceCategories");
 
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "ServiceCategories",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "",
+                oldClrType: typeof(string),
+                oldType: "nvarchar(max)",
+                oldNullable: true);
 
-            //drop BusAreas table
-            migrationBuilder.DropTable(
-                name: "BusAreas");
-
+            migrationBuilder.AddColumn<string>(
+                name: "GDXBusArea",
+                table: "ServiceCategories",
+                type: "nvarchar(max)",
+                nullable: false,
+                defaultValue: "");
         }
     }
 }
