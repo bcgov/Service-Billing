@@ -87,8 +87,7 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public IActionResult Create()
         {
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
+            List<BusinessArea> busAreas = _businessAreaRepository.GetAll().ToList();
             CreateServiceViewModel model = new CreateServiceViewModel();
             model.BusAreas = busAreas;
 
@@ -101,10 +100,14 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                if(ModelState.IsValid)
+                if(model.Service.ServiceId <= 0 && !String.IsNullOrEmpty(model.NewBusAreaAcronym) 
+                    && !String.IsNullOrEmpty(model.NewBusAreaName)) //Oh boy; a new business area!
                 {
-                    int id = _categoryRepository.Add(model.Service);
+                    BusinessArea businessArea = new BusinessArea(model.NewBusAreaAcronym, model.NewBusAreaName);
+                    model.Service.BusAreaId = _businessAreaRepository.Add(businessArea);
                 }
+
+                int id = _categoryRepository.Add(model.Service);
             }
             catch (DbUpdateException ex)
             {
@@ -112,7 +115,8 @@ namespace Service_Billing.Controllers
 
             }
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
-
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
+            ViewData["BusAreas"] = busAreas;
             return View("index", categories);
         }
 

@@ -19,5 +19,12 @@ namespace Service_Billing.Models.Repositories
         {
             return _context.BusAreas.FirstOrDefault(x => x.Id == id);
         }
+
+        public int Add(BusinessArea businessArea)
+        {
+            _context.BusAreas.Add(businessArea);
+            _context.SaveChanges();
+            return businessArea.Id;
+        }
     }
 }

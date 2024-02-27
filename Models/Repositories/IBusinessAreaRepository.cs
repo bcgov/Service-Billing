@@ -4,5 +4,7 @@
     {
         IEnumerable<BusinessArea> GetAll();
         BusinessArea? GetById(int id);
+
+        int Add(BusinessArea businessArea);
     }
 }
