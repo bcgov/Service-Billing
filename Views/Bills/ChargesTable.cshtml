@@ -105,10 +105,10 @@ else
                     @bill.ClientAccount?.AggregatedGLCode
                 </td>
                 <td>
-                    @bill.StartDate
+                    @($"{bill.StartDate:MM/dd/yyyy hh:mm:ss tt}")
                 </td>
                 <td>
-                    @bill.EndDate
+                    @($"{bill.EndDate:MM/dd/yyyy hh:mm:ss tt}")
                 </td>
                 <td>
                     @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
