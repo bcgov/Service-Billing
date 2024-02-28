@@ -129,7 +129,12 @@ namespace Service_Billing.Controllers
 
         public ActionResult Edit(int id)
         {
-            Bill? bill = _billRepository.GetBill(id);
+            if (User.IsInRole("GDXBillingService.User"))
+            {
+                return View("Unauthorized");
+            }
+
+                Bill? bill = _billRepository.GetBill(id);
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
