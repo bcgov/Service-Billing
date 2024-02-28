@@ -105,10 +105,16 @@ else
                     @bill.ClientAccount?.AggregatedGLCode
                 </td>
                 <td>
-                    @($"{bill.StartDate:MM/dd/yyyy hh:mm:ss tt}")
+                    @if(bill.StartDate != null)
+                    {
+                        @DateTimeOffsetExtensions.FormatDateTimeOffsetInPst(bill.StartDate.Value);
+                    }
                 </td>
                 <td>
-                    @($"{bill.EndDate:MM/dd/yyyy hh:mm:ss tt}")
+                    @if (bill.EndDate != null)
+                    {
+                        @DateTimeOffsetExtensions.FormatDateTimeOffsetInPst(bill.EndDate.Value);
+                    }
                 </td>
                 <td>
                     @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
