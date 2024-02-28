@@ -1,4 +1,7 @@
-﻿@model Service_Billing.Models.Bill
+﻿@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+
+@model Service_Billing.Models.Bill
 @{
     ViewData["Title"] = "Charge Details";
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
@@ -182,6 +185,9 @@
     </table>
 </div>
 <div class="bottom-nav">
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    @if (!User.IsInRole("GDXBillingService.User"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
+    }
     <a asp-action="Index">Back to List</a>
 </div>
