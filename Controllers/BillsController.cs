@@ -35,6 +35,7 @@ namespace Service_Billing.Controllers
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<BillsController> _logger;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IBusinessAreaRepository _businessAreaRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -42,6 +43,7 @@ namespace Service_Billing.Controllers
             IClientAccountRepository clientAccountRepository,
             IMinistryRepository ministryRepository,
             IAuthorizationService authorizationService,
+            IBusinessAreaRepository businessAreaRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -54,7 +56,7 @@ namespace Service_Billing.Controllers
             _ministryRepository = ministryRepository;
             _logger = logger;
             _authorizationService = authorizationService;
-
+            _businessAreaRepository = businessAreaRepository;
         }
 
         [Authorize]
@@ -62,6 +64,7 @@ namespace Service_Billing.Controllers
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
           
             if (ministries != null && ministries.Any())
@@ -77,7 +80,7 @@ namespace Service_Billing.Controllers
                 }
                 ViewBag.ServiceCategories = categories.ToList();
             }
-
+            ViewBag.BusAreas = busareas.ToList();
             ViewData["searchModel"] = searchModel;
 
             return View();

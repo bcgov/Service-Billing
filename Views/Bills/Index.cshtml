@@ -20,12 +20,16 @@
     bool next = searchModel.QuarterFilter == "next";
     bool all = searchModel.QuarterFilter == "All Quarters";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
-
+    List<SelectListItem> businessAreas = new List<SelectListItem>();
     foreach (ServiceCategory serviceCategory in ViewBag.ServiceCategories)
     {
         serviceCategories.Add(new SelectListItem
                 { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name, Selected = (searchModel.CategoryFilter != null && searchModel.CategoryFilter.Contains(serviceCategory.ServiceId)) }
         );
+    }
+    foreach(BusinessArea businessArea in ViewBag.BusAreas)
+    {
+        businessAreas.Add(new SelectListItem { Value = businessArea.Id.ToString(), Text = businessArea.Name });
     }
 
 }
@@ -76,6 +80,11 @@
                         </div>
                         <div>
 
+                            <label for="busAreaFitler">Business Area</label>
+                            <select name="busAreaFilter" id="busAreaFitler" value="@searchModel?.BusAreaFilter">
+                                <option> </option>
+        
+                            </select>
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
                                 <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
