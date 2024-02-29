@@ -21,6 +21,9 @@
     bool all = searchModel.QuarterFilter == "All Quarters";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
     List<SelectListItem> businessAreas = new List<SelectListItem>();
+
+
+    /* I'm not sure if these will get used. Not quite sure how to filter by business area, and service category yet.*/
     foreach (ServiceCategory serviceCategory in ViewBag.ServiceCategories)
     {
         serviceCategories.Add(new SelectListItem
@@ -80,10 +83,21 @@
                         </div>
                         <div>
 
-                            <label for="busAreaFitler">Business Area</label>
-                            <select name="busAreaFilter" id="busAreaFitler" value="@searchModel?.BusAreaFilter">
-                                <option> </option>
-        
+                            <label for="busAreaFilter">Business Area</label>
+                            <select name="busAreaFilter" id="busAreaFilter" value="@searchModel?.BusAreaFilter">
+                                <option></option>
+                                @foreach (BusinessArea businessArea in ViewBag.BusAreas)
+                                {
+                                    if(searchModel?.BusAreaFilter != null && searchModel.BusAreaFilter == businessArea.Id)
+                                    {
+                                        <option value="@businessArea.Id" selected>@businessArea.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@businessArea.Id">@businessArea.Name</option>
+                                    }
+                                }
+
                             </select>
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
@@ -95,11 +109,11 @@
                                         {
                                             if (searchModel?.CategoryFilter != null && searchModel.CategoryFilter.Contains(category.ServiceId))
                                             {
-                                                <option value="@category.ServiceId" selected>@category.Name</option>
+                                                <option value="@category.ServiceId" selected areaId="@category.BusAreaId">@category.Name</option>
                                             }
                                             else
                                             {
-                                                <option value="@category.ServiceId">@category.Name</option>
+                                                <option value="@category.ServiceId" areaId="@category.BusAreaId">@category.Name</option>
                                             }
                                         }
                                     }
@@ -181,6 +195,19 @@
             $("div.table-loading-overlay").addClass("show");
         });
 
-
+        $("#busAreaFilter").on("change", () => {
+            var busAreaId = $("#busAreaFilter").val();
+                if (busAreaId) { 
+                    if (element.getAttribute('areaId') === busAreaId) {
+                        element.hidden = false;
+                    } else {
+                        element.selected = false;
+                        element.hidden = true;
+                    }
+                } else {
+                    element.hidden = false;
+                }
+            });
+        });
     </script>
 }
