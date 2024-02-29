@@ -81,6 +81,7 @@ namespace Service_Billing.Controllers
                 ViewBag.ServiceCategories = categories.ToList();
             }
             ViewBag.BusAreas = busareas.ToList();
+            ViewData["FiscalPeriod"] = !String.IsNullOrEmpty(searchModel?.QuarterFilter) ? searchModel?.QuarterFilter : _billRepository.DetermineCurrentQuarter();
             ViewData["searchModel"] = searchModel;
 
             return View();
