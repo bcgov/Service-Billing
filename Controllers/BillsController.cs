@@ -142,7 +142,11 @@ namespace Service_Billing.Controllers
             if (bill == null)
                 return NotFound();
 
-            bill.DateModified = DateTime.Now;
+            DateTime utcDate = DateTime.UtcNow;
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+            bill.DateModified = pacificTime;
+
             if (String.IsNullOrEmpty(bill.FiscalPeriod) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
@@ -183,6 +187,12 @@ namespace Service_Billing.Controllers
             ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
+
+            DateTime utcDate = DateTime.UtcNow;
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+            bill.StartDate = pacificTime;
+
             DetermineCurrentQuarter(bill, bill.DateCreated);
             if (accountId > 0)
             {
