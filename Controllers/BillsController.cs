@@ -81,7 +81,22 @@ namespace Service_Billing.Controllers
                 ViewBag.ServiceCategories = categories.ToList();
             }
             ViewBag.BusAreas = busareas.ToList();
-            ViewData["FiscalPeriod"] = !String.IsNullOrEmpty(searchModel?.QuarterFilter) ? searchModel?.QuarterFilter : _billRepository.DetermineCurrentQuarter();
+            switch (searchModel?.QuarterFilter)
+            {
+                case "current":
+                default:
+                    ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+                    break;
+                case "previous":
+                    ViewData["FiscalPeriod"] = _billRepository.GetPreviousQuarterString();
+                    break;
+                case "next":
+                    ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                    break;
+                case "all":
+                    ViewData["FiscalPeriod"] = "All Quarters";
+                    break;
+            }
             ViewData["searchModel"] = searchModel;
 
             return View();
@@ -106,6 +121,10 @@ namespace Service_Billing.Controllers
             {
                 searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
                 ViewData["FiscalPeriod"] = searchModel.QuarterString;
+            }
+            if (searchModel != null && searchModel.QuarterFilter == "next")
+            {
+                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
             }
             else if (searchModel != null)
             {
@@ -369,6 +388,7 @@ namespace Service_Billing.Controllers
                         break;
                     case "next":
                         bills = _billRepository.GetNextQuarterBills();
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                         break;
                     case "all":
                         bills = _billRepository.AllBills;

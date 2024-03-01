@@ -83,7 +83,7 @@ namespace Service_Billing.Models.Repositories
                     return DateTime.Today;
             }
         }
-        private DateTime DetermineStartOfNextQuarter()
+        public DateTime DetermineStartOfNextQuarter()
         {
             DateTime quarter = DateTime.Today;
             switch (quarter.Month)

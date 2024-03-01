@@ -21,5 +21,7 @@ namespace Service_Billing.Models.Repositories
         Task UpdateAllChargesForServiceCategory(int serviceCategoryId);
         string GetPreviousQuarterString();
         string DetermineCurrentQuarter(DateTime? date = null);
+
+        DateTime DetermineStartOfNextQuarter();
     }
 }
