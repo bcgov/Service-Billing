@@ -17,6 +17,7 @@
             <div class="form-group">
                 <label class="control-label">Business Area</label>
                 <input asp-for="BusArea.Acronym" class="form-control" readonly="true" />
+                <input asp-for="BusAreaId" hidden />
                 <span asp-validation-for="BusArea.Acronym" class="text-danger"></span>
             </div>
             <div class="form-group">

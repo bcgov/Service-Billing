@@ -68,6 +68,7 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                serviceCategory.BusArea = _businessAreaRepository.GetById(serviceCategory.BusAreaId);
                 _categoryRepository.Update(serviceCategory);
                 if(serviceCategory.UpdateCharges)
                 {
@@ -80,6 +81,9 @@ namespace Service_Billing.Controllers
                 _logger.LogError(ex.Message);
             }
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
+            ViewData["BusAreas"] = busAreas;
+
             return View("index", categories);
         }
 

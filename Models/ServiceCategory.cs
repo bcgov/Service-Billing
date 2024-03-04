@@ -17,7 +17,7 @@ namespace Service_Billing.Models
 
         public int BusAreaId { get; set; }
         [ForeignKey("BusAreaId")]
-        public virtual BusinessArea BusArea { get; set; }
+        public virtual BusinessArea? BusArea { get; set; }
         public string? Name { get; set; }
 
         [Display(Name = "Unit Price")]
