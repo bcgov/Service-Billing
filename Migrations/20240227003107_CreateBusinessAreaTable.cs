@@ -81,7 +81,7 @@ namespace Service_Billing.Migrations
 
             migrationBuilder.Sql($"insert into BusAreas " +
                $"(Acronym, [Name]) " +
-               $"values ('DMS', 'Delivery Management Solutions'); "
+               $"values ('DMS', 'Delivery Management Services'); "
                 );
 
             migrationBuilder.Sql($"insert into BusAreas " +
