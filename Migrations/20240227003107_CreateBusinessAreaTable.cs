@@ -10,9 +10,9 @@ namespace Service_Billing.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropColumn(
-                name: "GDXBusArea",
-                table: "ServiceCategories");
+            //migrationBuilder.DropColumn(
+            //    name: "GDXBusArea",
+            //    table: "ServiceCategories");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
