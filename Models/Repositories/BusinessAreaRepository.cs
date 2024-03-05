@@ -12,7 +12,7 @@ namespace Service_Billing.Models.Repositories
         }
         public IEnumerable<BusinessArea> GetAll()
         {
-            return _context.BusAreas;
+            return _context.BusAreas.OrderBy(x => x.Acronym);
         }
 
         public BusinessArea? GetById(int id)

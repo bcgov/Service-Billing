@@ -90,11 +90,11 @@
                                 {
                                     if(searchModel?.BusAreaFilter != null && searchModel.BusAreaFilter == businessArea.Id)
                                     {
-                                        <option value="@businessArea.Id" selected>@businessArea.Name</option>
+                                        <option value="@businessArea.Id" selected>@businessArea.Acronym - @businessArea.Name</option>
                                     }
                                     else
                                     {
-                                        <option value="@businessArea.Id">@businessArea.Name</option>
+                                        <option value="@businessArea.Id">@businessArea.Acronym - @businessArea.Name</option>
                                     }
                                 }
 
