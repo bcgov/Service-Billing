@@ -67,7 +67,7 @@ namespace Service_Billing.Migrations
 
                $"update ServiceCategories " +
                $"set BusAreaId = Scope_Identity() " +
-               $"where GDXBusArea = 'Any'; "
+               $"where GDXBusArea = 'Any' or [Name] = 'Client Credit'; "
                );
 
             migrationBuilder.Sql($"insert into BusAreas " +
