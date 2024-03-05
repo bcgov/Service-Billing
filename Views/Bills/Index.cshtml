@@ -195,11 +195,11 @@
             $("div.table-loading-overlay").addClass("show");
         });
 
-        $("#busAreaFilter").on("change", () => {
+        const filterServiceCategories = (() => {
             var busAreaId = $("#busAreaFilter").val();
             console.log(busAreaId);
             $("#categoryFilter").children('option').each((index, element) => {
-                if (busAreaId) { 
+                if (busAreaId) {
                     if (element.getAttribute('areaId') === busAreaId) {
                         element.hidden = false;
                     } else {
@@ -211,5 +211,9 @@
                 }
             });
         });
+        $("#busAreaFilter").on("change", () => {
+            filterServiceCategories();
+        });
+        filterServiceCategories();
     </script>
 }

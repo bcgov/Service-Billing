@@ -416,6 +416,10 @@ namespace Service_Billing.Controllers
                 } 
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+                if(searchParams?.BusAreaFilter > 0)
+                {
+                    bills = bills.Where(x => x.ServiceCategory.BusAreaId ==  searchParams.BusAreaFilter);
+                }
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
                     List<Bill> categoryBills = new List<Bill>();
