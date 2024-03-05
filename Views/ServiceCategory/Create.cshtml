@@ -63,11 +63,15 @@
                 <span asp-validation-for="@Model.Service.ServiceOwner" class="text-danger"></span>
             </div>
             <div id="new-business-area-dialog" title="Create a new business area?">
-                <p>This typically should not be needed.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 Make sure you really want to do this, and that there isn't an existing business area that your service should fall under</p>
-                <label class="control-label">Acronym or short name</label>
-                <input asp-for="@Model.NewBusAreaAcronym" id="acronym" />
-                <label class="control-label">Name</label>
-                <input asp-for="@Model.NewBusAreaName" id="name" />
+                <p>This typically should not be needed. Make sure you really want to do this, and that there isn't an existing business area that your service should fall under</p>
+                <div class="dialog-input-section">
+                    <label class="control-label">Acronym or short name</label>
+                    <input asp-for="@Model.NewBusAreaAcronym" id="acronym" />
+                </div>
+                <div class ="dialog-input-section">
+                    <label class="control-label">Name</label>
+                    <input asp-for="@Model.NewBusAreaName" id="name" />
+                </div>
             </div>
                 <input asp-for="@Model.NewBusAreaAcronym" id="acronymHidden" hidden="true"/>
                 <input asp-for="@Model.NewBusAreaName" id="nameHidden" hidden="true"/>
