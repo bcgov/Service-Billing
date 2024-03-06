@@ -345,24 +345,27 @@ namespace Service_Billing.Models.Repositories
             {
                 throw new Exception("could not retrieve bill from database");
             }
-            bill.Title = editedBill.Title;
-         //   bill.ServiceCategory = editedBill.ServiceCategory;
-            bill.ServiceCategoryId = editedBill.ServiceCategoryId;
-            bill.BillingCycle = editedBill.BillingCycle;
-            bill.Amount = editedBill.Amount;
-            bill.EndDate = editedBill.EndDate;
-            bill.StartDate = editedBill.StartDate;
-            bill.CreatedBy = editedBill.CreatedBy;
-            bill.ClientAccountId = editedBill.ClientAccountId;
-            bill.FiscalPeriod = editedBill.FiscalPeriod;
-            bill.IdirOrUrl = editedBill.IdirOrUrl;
-            bill.IsActive = editedBill.IsActive;
-            bill.Quantity = editedBill.Quantity;
-            bill.BillingCycle = editedBill?.BillingCycle;
-            bill.TicketNumberAndRequester = editedBill?.TicketNumberAndRequester;
-            bill.Notes = editedBill?.Notes;
-            _billingContext.Update(bill);
-            await _billingContext.SaveChangesAsync();
+            if(editedBill != null)
+            {
+                bill.Title = editedBill.Title;
+                bill.ServiceCategoryId = editedBill.ServiceCategoryId;
+                bill.ServiceCategory = editedBill.ServiceCategory;
+                bill.BillingCycle = editedBill.BillingCycle;
+                bill.Amount = editedBill.Amount;
+                bill.EndDate = editedBill.EndDate;
+                bill.StartDate = editedBill.StartDate;
+                bill.CreatedBy = editedBill.CreatedBy;
+                bill.ClientAccountId = editedBill.ClientAccountId;
+                bill.FiscalPeriod = editedBill.FiscalPeriod;
+                bill.IdirOrUrl = editedBill.IdirOrUrl;
+                bill.IsActive = editedBill.IsActive;
+                bill.Quantity = editedBill.Quantity;
+                bill.BillingCycle = editedBill?.BillingCycle;
+                bill.TicketNumberAndRequester = editedBill?.TicketNumberAndRequester;
+                bill.Notes = editedBill?.Notes;
+                _billingContext.Update(bill);
+                await _billingContext.SaveChangesAsync();
+            }
         }
 
         public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)

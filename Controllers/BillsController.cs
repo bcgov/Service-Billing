@@ -184,6 +184,7 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 await _billRepository.Update(bill);
                 //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
@@ -418,7 +419,7 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if(searchParams?.BusAreaFilter > 0)
                 {
-                    bills = bills.Where(x => x.ServiceCategory.BusAreaId ==  searchParams.BusAreaFilter);
+                    bills = bills.Where(x => x.ServiceCategory.BusAreaId.Equals(searchParams.BusAreaFilter));
                 }
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
