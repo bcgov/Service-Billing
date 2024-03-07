@@ -111,13 +111,13 @@ else
                 <td>
                     @if(bill.StartDate != null)
                     {
-                        @DateTimeOffsetExtensions.FormatDateTimeOffsetInPst(bill.StartDate.Value, String.Format("MM/dd/yyyy"));                      
+                        @bill.StartDate.Value.ToString("MM/dd/yyyy");                      
                     }
                 </td>
                 <td>
                     @if (bill.EndDate != null)
                     {
-                        @DateTimeOffsetExtensions.FormatDateTimeOffsetInPst(bill.EndDate.Value, String.Format("MM/dd/yyyy"));
+                        @bill.EndDate.Value.ToString("MM/dd/yyyy");
                     }
                 </td>
                 <td>
