@@ -26,12 +26,12 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<ServiceCategory> GetAll()
         {
-            return _context.ServiceCategories.OrderBy(s => s.Name);
+            return _context.ServiceCategories.OrderBy(s => s.Name).Include(s => s.BusArea);
         }
 
         public ServiceCategory? GetById(int? id)
         {
-            return _context.ServiceCategories.FirstOrDefault(s => s.ServiceId == id);
+            return _context.ServiceCategories.Include(s => s.BusArea).FirstOrDefault(s => s.ServiceId == id);
         }
 
         public IEnumerable<ServiceCategory> Search(string queryString)
