@@ -419,14 +419,14 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
                 if(searchParams?.BusAreaFilter > 0)
                 {
-                    bills = bills.Where(x => x.ServiceCategory.BusAreaId.Equals(searchParams.BusAreaFilter));
+                    bills = bills.Where(x => x.ServiceCategory.BusAreaId == searchParams.BusAreaFilter);
                 }
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
                     List<Bill> categoryBills = new List<Bill>();
                     foreach (int catId in searchParams.CategoryFilter)
                     {
-                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId.Equals(catId)));
+                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId == catId));
                     }
                     bills = categoryBills;
                 }
