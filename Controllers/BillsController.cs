@@ -35,6 +35,7 @@ namespace Service_Billing.Controllers
         private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
         private readonly ILogger<BillsController> _logger;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IBusinessAreaRepository _businessAreaRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -42,6 +43,7 @@ namespace Service_Billing.Controllers
             IClientAccountRepository clientAccountRepository,
             IMinistryRepository ministryRepository,
             IAuthorizationService authorizationService,
+            IBusinessAreaRepository businessAreaRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -54,7 +56,7 @@ namespace Service_Billing.Controllers
             _ministryRepository = ministryRepository;
             _logger = logger;
             _authorizationService = authorizationService;
-
+            _businessAreaRepository = businessAreaRepository;
         }
 
         [Authorize]
@@ -62,6 +64,7 @@ namespace Service_Billing.Controllers
         public IActionResult Index(ChargeIndexSearchParamsModel searchModel)
         {
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
           
             if (ministries != null && ministries.Any())
@@ -77,7 +80,23 @@ namespace Service_Billing.Controllers
                 }
                 ViewBag.ServiceCategories = categories.ToList();
             }
-
+            ViewBag.BusAreas = busareas.ToList();
+            switch (searchModel?.QuarterFilter)
+            {
+                case "current":
+                default:
+                    ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+                    break;
+                case "previous":
+                    ViewData["FiscalPeriod"] = _billRepository.GetPreviousQuarterString();
+                    break;
+                case "next":
+                    ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                    break;
+                case "all":
+                    ViewData["FiscalPeriod"] = "All Quarters";
+                    break;
+            }
             ViewData["searchModel"] = searchModel;
 
             return View();
@@ -103,6 +122,10 @@ namespace Service_Billing.Controllers
                 searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
                 ViewData["FiscalPeriod"] = searchModel.QuarterString;
             }
+            if (searchModel != null && searchModel.QuarterFilter == "next")
+            {
+                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+            }
             else if (searchModel != null)
             {
                 searchModel.QuarterString = string.Empty;
@@ -126,7 +149,12 @@ namespace Service_Billing.Controllers
 
         public ActionResult Edit(int id)
         {
-            Bill? bill = _billRepository.GetBill(id);
+            if (User.IsInRole("GDXBillingService.User"))
+            {
+                return View("Unauthorized");
+            }
+
+                Bill? bill = _billRepository.GetBill(id);
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
@@ -134,7 +162,11 @@ namespace Service_Billing.Controllers
             if (bill == null)
                 return NotFound();
 
-            bill.DateModified = DateTime.Now;
+            DateTime utcDate = DateTime.UtcNow;
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+            bill.DateModified = pacificTime;
+
             if (String.IsNullOrEmpty(bill.FiscalPeriod) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
@@ -152,6 +184,7 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 await _billRepository.Update(bill);
                 //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
@@ -175,6 +208,12 @@ namespace Service_Billing.Controllers
             ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
             bill.DateCreated = DateTime.Now;
+
+            DateTime utcDate = DateTime.UtcNow;
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+            bill.StartDate = pacificTime;
+
             DetermineCurrentQuarter(bill, bill.DateCreated);
             if (accountId > 0)
             {
@@ -350,6 +389,7 @@ namespace Service_Billing.Controllers
                         break;
                     case "next":
                         bills = _billRepository.GetNextQuarterBills();
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                         break;
                     case "all":
                         bills = _billRepository.AllBills;
@@ -377,12 +417,16 @@ namespace Service_Billing.Controllers
                 } 
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+                if(searchParams?.BusAreaFilter > 0)
+                {
+                    bills = bills.Where(x => x.ServiceCategory.BusAreaId == searchParams.BusAreaFilter);
+                }
                 if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
                 {
                     List<Bill> categoryBills = new List<Bill>();
                     foreach (int catId in searchParams.CategoryFilter)
                     {
-                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId.Equals(catId)));
+                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId == catId));
                     }
                     bills = categoryBills;
                 }
@@ -467,7 +511,7 @@ namespace Service_Billing.Controllers
                     row.Program = bill.Title;
                     if (serviceCategory != null)
                     {
-                        row.GDXBusArea = serviceCategory.GDXBusArea;
+                        row.GDXBusArea = serviceCategory.BusArea.Name;
                         row.ServiceCategory = serviceCategory.Name;
                     }
                     row.TicketNumber = bill.TicketNumberAndRequester;

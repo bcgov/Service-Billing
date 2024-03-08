@@ -49,10 +49,14 @@ else
                 <td>
                     <a asp-controller="ClientAccount"
                        asp-action="Details"
-                       asp-route-id="@bill.ClientAccountId">@bill.ClientAccountId</a>
+                       asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
                 </td>
                 <td>@bill.ClientAccount?.Name</td>
-                <td>@bill.Title</td>
+                <td>
+                    <a asp-controller="Bills"
+                    asp-action="Details"
+                       asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
+                </td>
                 <td>@ViewData["FiscalPeriod"]</td>
                 <td>@bill.IdirOrUrl</td>
                 <td>
@@ -105,10 +109,16 @@ else
                     @bill.ClientAccount?.AggregatedGLCode
                 </td>
                 <td>
-                    @bill.StartDate
+                    @if(bill.StartDate != null)
+                    {
+                        @bill.StartDate.Value.ToString("MM/dd/yyyy");                      
+                    }
                 </td>
                 <td>
-                    @bill.EndDate
+                    @if (bill.EndDate != null)
+                    {
+                        @bill.EndDate.Value.ToString("MM/dd/yyyy");
+                    }
                 </td>
                 <td>
                     @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))

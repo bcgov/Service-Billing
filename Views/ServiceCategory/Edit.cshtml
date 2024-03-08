@@ -15,9 +15,10 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="ServiceId" />
             <div class="form-group">
-                <label asp-for="GDXBusArea" class="control-label"></label>
-                <input asp-for="GDXBusArea" class="form-control" readonly="true" />
-                <span asp-validation-for="GDXBusArea" class="text-danger"></span>
+                <label class="control-label">Business Area</label>
+                <input asp-for="BusArea.Acronym" class="form-control" readonly="true" />
+                <input asp-for="BusAreaId" hidden />
+                <span asp-validation-for="BusArea.Acronym" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Name" class="control-label"></label>

@@ -14,9 +14,18 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="@Model.Service.GDXBusArea" class="control-label"></label>
-                <input asp-for="@Model.Service.GDXBusArea" class="form-control" id="busArea"/>
-                <span asp-validation-for="@Model.Service.GDXBusArea" class="text-danger"></span>
+                <label class="control-label">Business Area</label>
+               @*  <input asp-for="@Model.Service.BusArea.Acronym" class="form-control" id="busArea" /> *@
+                <select asp-for="@Model.Service.BusAreaId" class="form-control" id="areaSelect">
+                    <option value="-1"></option>
+                    @foreach(BusinessArea busArea in Model.BusAreas)
+                    {
+                        <option value="@busArea.Id">@busArea.Acronym  (@busArea.Name)</option>
+                    }
+
+                </select>
+                <span asp-validation-for="@Model.Service.BusArea.Acronym" class="text-danger"></span>
+                <a onclick="openBusAreaDialog()">Create a new Business Area?</a>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Service.Name" class="control-label">Program Name</label>
@@ -53,6 +62,19 @@
                 <input asp-for="@Model.Service.ServiceOwner" class="form-control" id="owner" />
                 <span asp-validation-for="@Model.Service.ServiceOwner" class="text-danger"></span>
             </div>
+            <div id="new-business-area-dialog" title="Create a new business area?">
+                <p>This typically should not be needed. Make sure you really want to do this, and that there isn't an existing business area that your service should fall under</p>
+                <div class="dialog-input-section">
+                    <label class="control-label">Acronym or short name</label>
+                    <input asp-for="@Model.NewBusAreaAcronym" id="acronym" />
+                </div>
+                <div class ="dialog-input-section">
+                    <label class="control-label">Name</label>
+                    <input asp-for="@Model.NewBusAreaName" id="name" />
+                </div>
+            </div>
+                <input asp-for="@Model.NewBusAreaAcronym" id="acronymHidden" hidden="true"/>
+                <input asp-for="@Model.NewBusAreaName" id="nameHidden" hidden="true"/>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
             </div>
@@ -70,6 +92,24 @@
     }
 
     <script>
+        const openBusAreaDialog = ((val) => {
+            $("#new-business-area-dialog").dialog("open");
+        });
+
+        const setNewBusinessArea = (() => {
+            var option = document.createElement("option");
+            var text1 = $("#acronym").val();
+            $("#acronymHidden").val(text1);
+            var text2 = $("#name").val();
+            $("#nameHidden").val(text2);
+            option.text = `${text1} (${text2})`;
+            option.value = -1;
+            option.selected = true;
+            var select = document.getElementById("areaSelect");
+            select.appendChild(option);
+            $("#new-business-area-dialog").dialog("close");
+        });
+
         $(document).ready(function () {
             // nav link highlighting
             $('li').removeClass("active-nav-link");
@@ -81,10 +121,22 @@
                 delay: 500
             });
 
-            const busAreas = @Html.Raw(Json.Serialize(Model.BusArea));
-            $("#busArea").autocomplete({
-                source: busAreas,
-                delay: 500
+            $(function () {
+                $("#new-business-area-dialog").dialog({
+                    resizable: false,
+                    height: "auto",
+                    width: 400,
+                    autoOpen: false,
+                    buttons: {
+                        "Create new Business Area": function () {
+                            $(this).dialog("close");
+                            setNewBusinessArea();
+                        },
+                        Cancel: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                });
             });
         });
 

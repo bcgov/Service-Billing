@@ -19,7 +19,7 @@
             <div asp-validation-summary="All" class="text-danger"></div>
             <div class="form-group">
                 <label for="orgSelect" class="control-label">Organization</label>
-                <select asp-for="@Model.MinistryAcronym" class="form-control" id="orgSelect">
+                <select asp-for="@Model.Account.OrganizationId" class="form-control" id="orgSelect">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
                     @if (ministries != null)
                     {
