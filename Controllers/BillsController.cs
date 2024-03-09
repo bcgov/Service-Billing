@@ -66,7 +66,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-          
+
             if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
@@ -105,7 +105,7 @@ namespace Service_Billing.Controllers
         [HttpPost]
         public async Task<ActionResult> GetBillsTable(ChargeIndexSearchParamsModel searchModel)
         {
-            
+
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
@@ -154,7 +154,7 @@ namespace Service_Billing.Controllers
                 return View("Unauthorized");
             }
 
-                Bill? bill = _billRepository.GetBill(id);
+            Bill? bill = _billRepository.GetBill(id);
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
@@ -414,10 +414,10 @@ namespace Service_Billing.Controllers
                 if (searchParams?.MinistryFilter > 0)
                 {
                     bills = bills.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
-                } 
+                }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-                if(searchParams?.BusAreaFilter > 0)
+                if (searchParams?.BusAreaFilter > 0)
                 {
                     bills = bills.Where(x => x.ServiceCategory.BusAreaId == searchParams.BusAreaFilter);
                 }
@@ -456,20 +456,11 @@ namespace Service_Billing.Controllers
                 {
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
-
                 if (!String.IsNullOrEmpty(ministryUserName))
                 {
-                    bills = bills.Where(b => b.ClientAccount is not null).ToList(); // we can only filter against client team if there is a client team, so remove bills without one
-                    bills = bills.Where(bill =>
-                        (!String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName) &&
-                         bill.ClientAccount.ExpenseAuthorityName.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (!String.IsNullOrEmpty(bill.ClientAccount.Approver) &&
-                         bill.ClientAccount.Approver.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0) ||
-                        (!String.IsNullOrEmpty(bill.ClientAccount.FinancialContact) &&
-                         bill.ClientAccount.FinancialContact.IndexOf(ministryUserName, StringComparison.OrdinalIgnoreCase) >= 0)
-                    ).ToList();
+                    bills = FilterChargesForCurrentMinistryUser(ministryUserName, bills);
                 }
-                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
+                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact)) //Note: not if current user is primary contact, rather searching for charges by an arbitrary primary contat.
                 {
                     bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
@@ -479,6 +470,32 @@ namespace Service_Billing.Controllers
             catch (Exception ex)
             {
                 _logger.LogError("An error occurred while trying to filter charges in Index view");
+                _logger.LogError(ex.Message);
+                return null;
+            }
+        }
+
+        private bool IsAccountContact(string ministryUserName, ClientAccount account)
+        {/*carmichael, alexander: CITZ"*/
+            string[] nameElements = ministryUserName.Split(',');
+            string surname = nameElements[0].ToLower();
+            nameElements[1] = nameElements[1].TrimStart();
+            string firstName = nameElements[1].Substring(0, nameElements[1].IndexOf(" ")).ToLower();
+
+            return (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && (account.ExpenseAuthorityName.ToLower().Contains(surname) && account.ExpenseAuthorityName.ToLower().Contains(firstName)) ||
+                !String.IsNullOrEmpty(account.Approver) && (account.Approver.ToLower().Contains(surname) && account.Approver.ToLower().Contains(firstName)) ||
+                !String.IsNullOrEmpty(account.FinancialContact) && (account.FinancialContact.ToLower().Contains(surname) && account.FinancialContact.ToLower().Contains(firstName)) ||
+                !String.IsNullOrEmpty(account.PrimaryContact) && (account.PrimaryContact.ToLower().Contains(surname) && account.PrimaryContact.ToLower().Contains(firstName)));
+        }
+        private IEnumerable<Bill> FilterChargesForCurrentMinistryUser(string ministryUserName, IEnumerable<Bill> bills)
+        {
+            try
+            {
+                return bills.Where(b => (IsAccountContact(ministryUserName, b.ClientAccount)));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("An error occurred while trying to filter charges based on ministry user contacts");
                 _logger.LogError(ex.Message);
                 return null;
             }
