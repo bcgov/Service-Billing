@@ -116,7 +116,6 @@ namespace Service_Billing.Controllers
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-           // IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
             IEnumerable<Bill> bills = QueryForCharges(searchModel, ministryUserName);
             if (bills != null && bills.Any())
             { 
@@ -461,8 +460,7 @@ namespace Service_Billing.Controllers
                     query = query.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
-                string x = query.ToQueryString();
-                query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
+                query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
 
                 return query.ToList<Bill>();
             }
