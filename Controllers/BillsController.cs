@@ -462,7 +462,7 @@ namespace Service_Billing.Controllers
 
                 query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
 
-                return query.ToList<Bill>();
+                return query.AsNoTracking().ToList<Bill>();
             }
             
             catch (Exception ex)
