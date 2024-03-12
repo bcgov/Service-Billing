@@ -12,6 +12,7 @@ namespace Service_Billing.Models.Repositories
         IEnumerable<Bill> GetBillsByAuthority(string expenseAuthority);
         IEnumerable<Bill> GetBillsByBillingCycle(DateOnly billingCycle);
         IEnumerable<Bill> GetBillsByDateRange(DateTime start, DateTime end);
+        List<int> GetFixedServices();
         IEnumerable<Bill> GetCurrentQuarterBills();
         IEnumerable<Bill> GetPreviousQuarterBills();
         IEnumerable<Bill> GetNextQuarterBills();
@@ -23,5 +24,7 @@ namespace Service_Billing.Models.Repositories
         string DetermineCurrentQuarter(DateTime? date = null);
 
         DateTime DetermineStartOfNextQuarter();
+
+        Dictionary<int, decimal?> GetPreviousQuarterBillIds();
     }
 }

@@ -231,6 +231,18 @@ namespace Service_Billing.Models.Repositories
             return string.Empty;
         }
 
+        public Dictionary<int, decimal?> GetPreviousQuarterBillIds()
+        {
+            try
+            {
+                return  _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
+            }
+            catch(Exception ex)
+            {
+                //Todo: Add error logging.
+                return null;
+            }
+        }
         public IEnumerable<Bill> GetPreviousQuarterBills()
         {
             try
@@ -254,12 +266,12 @@ namespace Service_Billing.Models.Repositories
             return null;
         }
 
+        //This method can is deprecated. Use GetNextQuarterBillIds instead, and user it to build a query
         public IEnumerable<Bill> GetNextQuarterBills()
         {
             try
             {
                 DateTime nextQuarterStart = DetermineStartOfNextQuarter();
-                string currentFiscalPeriod = DetermineCurrentQuarter();
                 List<int> fixedServiceIds = GetFixedServices();
                 return _billingContext.Bills.AsNoTracking()
                     .Include(c => c.ServiceCategory)

@@ -1,7 +1,9 @@
 ﻿using ClosedXML.Excel;
 using CsvHelper;
 using CsvHelper.Configuration;
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -14,6 +16,7 @@ using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Tokens;
 using MimeKit;
+using Service_Billing.Data;
 using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
@@ -36,6 +39,7 @@ namespace Service_Billing.Controllers
         private readonly ILogger<BillsController> _logger;
         private readonly IAuthorizationService _authorizationService;
         private readonly IBusinessAreaRepository _businessAreaRepository;
+        private readonly ServiceBillingContext _serviceBillingContext;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -44,6 +48,7 @@ namespace Service_Billing.Controllers
             IMinistryRepository ministryRepository,
             IAuthorizationService authorizationService,
             IBusinessAreaRepository businessAreaRepository,
+            ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
@@ -57,6 +62,7 @@ namespace Service_Billing.Controllers
             _logger = logger;
             _authorizationService = authorizationService;
             _businessAreaRepository = businessAreaRepository;
+            _serviceBillingContext = serviceBillingContext;
         }
 
         [Authorize]
@@ -110,9 +116,10 @@ namespace Service_Billing.Controllers
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-            IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
+           // IEnumerable<Bill> bills = GetFilteredBills(searchModel, ministryUserName);
+            IEnumerable<Bill> bills = QueryForCharges(searchModel, ministryUserName);
             if (bills != null && bills.Any())
-            {  //TODO: Have a look and see if we can get a performance increase by doing this in the repository class.
+            { 
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
                 bills = bills.Where(b => b.ClientAccount.IsActive);
             }
@@ -369,6 +376,106 @@ namespace Service_Billing.Controllers
             }
         }
 
+        // This is great! Much faster than getting all records, then filtering. 
+        private IEnumerable<Bill> QueryForCharges(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
+        {
+            try
+            {
+                IQueryable<Bill> query = _serviceBillingContext.Bills.Include(b => b.ClientAccount).Include(b => b.ServiceCategory);
+                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && User.IsInRole("GDXBillingService.Owner"));
+               
+                switch (searchParams?.QuarterFilter)
+                {
+                    case "current":
+                    default:
+                        string fiscalPeriod = _billRepository.DetermineCurrentQuarter();
+                        query = query.Where(b => b.FiscalPeriod == fiscalPeriod);
+                        break;
+   
+                    case "previous":
+                        Dictionary<int, decimal?> previousQuarterChargeIds = _billRepository.GetPreviousQuarterBillIds();
+                        query = query.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
+                        break;
+                    case "next":
+                        List<int> idsOfFixedServices = _billRepository.GetFixedServices();
+                        DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
+                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                        break;
+                    case "all":
+                        // Just break. Effectively it's just one less Where clause
+                        break;
+                }
+                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                {
+                    IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
+                    query = query.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
+                }
+                if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
+                    query = query.Where(x => x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+
+                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
+                {
+                    query = query.Where(b => b.IsActive);
+                }
+                if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
+                { //user is service owner, and we should only show services for charges they own
+                    List<int> serviceIds = GetUserOwnedServiceIds();
+                    query = query.Where(b => serviceIds.Contains(b.ServiceCategoryId));
+                }
+                if (!String.IsNullOrEmpty(ministryUserName))
+                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
+                    query = query.Where(b => IsAccountContact(ministryUserName, b.ClientAccount));
+                }
+                if (searchParams?.MinistryFilter > 0)
+                {
+                    query = query.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
+                }
+                if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
+                    query = query.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
+                if (searchParams?.BusAreaFilter > 0)
+                {
+                    query = query.Where(x => x.ServiceCategory.BusAreaId == searchParams.BusAreaFilter);
+                }
+                if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
+                {
+                    query = query.Where(b => searchParams.CategoryFilter.Contains(b.ServiceCategoryId));
+                }
+                if (!string.IsNullOrEmpty(searchParams?.Keyword))
+                    query = query.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                       (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
+                if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
+                {
+                    query = query.Where(b => !String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName) && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()));
+                }
+                if (searchParams?.ClientNumber > 0)
+                {
+                    query = query.Where(x => x.ClientAccountId == searchParams.ClientNumber);
+                }
+                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact)) //Note: not if current user is primary contact, rather searching for charges by an arbitrary primary contat.
+                {
+                    query = query.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
+                }
+
+                string x = query.ToQueryString();
+                query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
+
+                return query.ToList<Bill>();
+            }
+            
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return Enumerable.Empty<Bill>();
+            }
+        }
+
+
+        // DEPRECATED! Use the much faster QueryForCharges method above. We'll get rid of this, I think.
         private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
         {
             try
@@ -407,9 +514,13 @@ namespace Service_Billing.Controllers
                     bills = bills.Where(b => b.IsActive);
                 }
                 if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
-                {
+                { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
+                }
+                if (!String.IsNullOrEmpty(ministryUserName))
+                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
+                    bills = FilterChargesForCurrentMinistryUser(ministryUserName, bills);
                 }
                 if (searchParams?.MinistryFilter > 0)
                 {
@@ -438,12 +549,13 @@ namespace Service_Billing.Controllers
                         (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
+                  //  bills = bills.Where(b => !String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName) && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()));
                     List<Bill> filteredBills = new List<Bill>();
                     foreach (Bill bill in bills)
                     {
 
                         if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName)
-                            && bill.ClientAccount.ExpenseAuthorityName.Contains(searchParams.AuthorityFilter))
+                            && bill.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()))
                         {
                             filteredBills.Add(bill);
                         }
@@ -455,10 +567,6 @@ namespace Service_Billing.Controllers
                 if (searchParams?.ClientNumber > 0)
                 {
                     bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
-                }
-                if (!String.IsNullOrEmpty(ministryUserName))
-                {
-                    bills = FilterChargesForCurrentMinistryUser(ministryUserName, bills);
                 }
                 if (!String.IsNullOrEmpty(searchParams?.PrimaryContact)) //Note: not if current user is primary contact, rather searching for charges by an arbitrary primary contat.
                 {
