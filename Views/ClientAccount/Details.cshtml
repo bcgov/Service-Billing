@@ -217,7 +217,7 @@
         <p>This charge will be made active. It will be counted in quarterly reporting, and included in future billing cycles if appropriate.</p>
     </div>
     <div id="deactivate-client-dialog" title="Whoa, Really?">
-        <p>This client will be set to inactive, and as well all it's associated charges.</p>
+        <p>This client will be set to inactive, and as well all its associated charges.</p>
     </div>
     <div id="reactivate-client-dialog" title="Reactivate Client?">
         <p>This client will be set to active, and can be billed for new charges.</p>
@@ -227,7 +227,23 @@
 @section Scripts
 {
     <script>
-        
+        $(function () {
+            $("#dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Set Inactive": function () {
+                        $(this).dialog("close");
+                        setIsActiveForCharge($(this).dialog("option", "id"), false);
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
         const confirmInactive = ((val) => {
             $("#dialog").dialog("option", "id", val);
             $("#dialog").dialog("open");

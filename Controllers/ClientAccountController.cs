@@ -472,11 +472,13 @@ namespace Service_Billing.Controllers
                     account.IsActive = active;
                     if (!active) //deactivate all charges associates with this client;
                     {
-                        IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
-                        foreach (Bill charge in charges)
+                        if(account.Bills != null && account.Bills.Any())
                         {
-                            charge.IsActive = false;
-                            _billRepository.Update(charge);
+                            foreach (Bill charge in account.Bills)
+                            {
+                                charge.IsActive = false;
+                                _billRepository.Update(charge);
+                            }
                         }
                     }
                     _clientAccountRepository.Update(account);
@@ -493,7 +495,6 @@ namespace Service_Billing.Controllers
                 _logger.LogError(ex.ToString());
                 return StatusCode(500);
             }
-
         }
 
 
