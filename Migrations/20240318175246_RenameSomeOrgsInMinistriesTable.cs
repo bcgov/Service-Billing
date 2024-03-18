@@ -40,13 +40,41 @@ namespace Service_Billing.Migrations
                 keyValue: "Transportation and Infrastructure Corporation",
                 column: "Title",
                 value: "Transportation and Investment Corporation");
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Mental Health & Addictions",
+                column: "Acronym",
+                value: "MHA");
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "JEDI – Small Business and Round Table",
+                column: "Acronym",
+                value: "ECON");
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "JEDI – Small Business and Round Table",
+                column: "Title",
+                value: "JEDI – Small Business and Round Table");
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Public Safety & Solicitor General & Emergency B.C.",
+                column: "Title",
+                value: "Public Safety & Solicitor General & Emergency B.C.");
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Transportation and Infrastructure Corporation",
+                column: "Title",
+                value: "Transportation and Infrastructure Corporation");
         }
     }
 }
