@@ -28,7 +28,7 @@ namespace Service_Billing.Migrations
                 keyColumn: "Title",
                 keyValue: "JEDI – Small Business and Round Table",
                 column: "Title",
-                value: "Small Business and Round Table");
+                value: "Small Business Round Table");
             migrationBuilder.UpdateData(
                 table: "Ministries",
                 keyColumn: "Title",
@@ -41,6 +41,12 @@ namespace Service_Billing.Migrations
                 keyValue: "Transportation and Infrastructure Corporation",
                 column: "Title",
                 value: "Transportation and Investment Corporation");
+            migrationBuilder.UpdateData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "Children & Family Development",
+                column: "Acronym",
+                value: "CFD");
         }
 
         /// <inheritdoc />
