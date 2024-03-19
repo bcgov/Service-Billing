@@ -1,9 +1,4 @@
 ﻿using ClosedXML.Excel;
-using CsvHelper;
-using CsvHelper.Configuration;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
