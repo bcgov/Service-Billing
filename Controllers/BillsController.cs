@@ -1,25 +1,15 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
-using MimeKit;
 using Service_Billing.Data;
-using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
 using System.Data;
-using System.IO;
-using System.Security.Claims;
 
 namespace Service_Billing.Controllers
 {
@@ -264,13 +254,13 @@ namespace Service_Billing.Controllers
             {
                 if (serviceId == null || quantity == null)
                     throw new Exception("Cannot calculate bill amount because categoryId or quantity is null");
-                ServiceCategory category = _categoryRepository.GetById(serviceId);
+                ServiceCategory? category = _categoryRepository.GetById(serviceId);
                 if (category == null)
                 {
                     throw new Exception($"Service category with id: {serviceId} not found!");
                 }
                 decimal newAmount;
-                string cost = category.Costs;
+                string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
                 if (!string.IsNullOrEmpty(cost) && cost.Contains('$'))
                 {
                     cost = cost.Replace('$', ' ');
@@ -280,10 +270,10 @@ namespace Service_Billing.Controllers
                 {
                     newAmount = 0;
                 }
-                if (category.ServiceId == 5)
+                if (category?.ServiceId == 5)
                     newAmount = 85;
-                string? UOM = !string.IsNullOrEmpty(category.UOM) ? category.UOM : "n/a";
-                RecordEntry recordEntry = new RecordEntry(category.Name, newAmount * quantity);
+                string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
+                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity);
                 recordEntry.UOM = UOM;
 
                 return new JsonResult(recordEntry);
