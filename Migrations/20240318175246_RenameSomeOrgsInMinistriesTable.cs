@@ -2,6 +2,7 @@
 
 #nullable disable
 
+/* This fixes up a few names and acronyms in the Organizations table */
 namespace Service_Billing.Migrations
 {
     /// <inheritdoc />
