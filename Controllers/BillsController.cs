@@ -376,7 +376,8 @@ namespace Service_Billing.Controllers
             try
             {
                 IQueryable<Bill> query = _serviceBillingContext.Bills.Include(b => b.ClientAccount).Include(b => b.ServiceCategory);
-                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+               
+                bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
                
                 switch (searchParams?.QuarterFilter)
@@ -413,7 +414,7 @@ namespace Service_Billing.Controllers
                 {
                     query = query.Where(b => b.IsActive);
                 }
-                if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
+                if (shouldRestrictToUserOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     query = query.Where(b => serviceIds.Contains(b.ServiceCategoryId));
@@ -494,7 +495,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
+        public IActionResult WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
         {
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             try
@@ -520,8 +521,8 @@ namespace Service_Billing.Controllers
                     row.Program = bill.Title;
                     if (serviceCategory != null)
                     {
-                        row.GDXBusArea = serviceCategory.BusArea.Name;
-                        row.ServiceCategory = serviceCategory.Name;
+                        row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                        row.ServiceCategory = serviceCategory?.Name;
                     }
                     row.TicketNumber = bill.TicketNumberAndRequester;
                     row.Amount = @String.Format("${0:.##}", bill.Amount);
@@ -570,7 +571,7 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
+        public IActionResult ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
         {
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
@@ -611,7 +612,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ReportToExcel(GeneratedReportViewModel model)
+        public IActionResult ReportToExcel(GeneratedReportViewModel model)
         {
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;
@@ -730,7 +731,7 @@ namespace Service_Billing.Controllers
             return new List<int>();
         }
 
-        private string GetFilename(ChargeIndexSearchParamsModel searchParams, string extension = "csv")
+        private string GetFilename(ChargeIndexSearchParamsModel? searchParams, string extension = "csv")
         {
             string fileName = "Charges";
             //if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
@@ -748,7 +749,7 @@ namespace Service_Billing.Controllers
                 ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
             }
             if (ministry != null && !String.IsNullOrEmpty(ministry.Title))
-                fileName += $"-{searchParams.MinistryFilter}";
+                fileName += $"-{searchParams?.MinistryFilter}";
             if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
                 fileName += $"-{searchParams.TitleFilter}";
 
@@ -791,7 +792,7 @@ namespace Service_Billing.Controllers
     {
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
-        public string UOM { get; set; }
+        public string? UOM { get; set; }
 
         public RecordEntry(string serviceCategory, decimal? amount)
         {
