@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.Graph.Search;
 
 #nullable disable
 
@@ -47,6 +48,20 @@ namespace Service_Billing.Migrations
                 keyValue: "Children & Family Development",
                 column: "Acronym",
                 value: "CFD");
+
+            //using sql command, 'cause I need that Scope_Identity bit
+            migrationBuilder.Sql(@"insert into Ministries (Title, Acronym)
+                    values ('INBCInvest', 'JEDI');
+               update ClientAccounts
+                set OrganizationId = SCOPE_IDENTITY()
+                where [Name] = 'JEDI - Invest in BC WordPress';"
+            );
+
+            migrationBuilder.DeleteData(
+                table: "Ministries",
+                keyColumn: "Title",
+                keyValue: "inbcInvestment");
+
         }
 
         /// <inheritdoc />
