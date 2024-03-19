@@ -105,6 +105,13 @@ namespace Service_Billing.Migrations
                 keyValues: nullOrgClients,
                 column: "OrganizationId",
                 values: nullOrgClientValues);
+
+            migrationBuilder.UpdateData(
+                table: "ClientAccounts",
+                keyColumn: "Id",
+                keyValue: 780,
+                column: "OrganizationId",
+                value: 42);
         }
 
         /// <inheritdoc />
