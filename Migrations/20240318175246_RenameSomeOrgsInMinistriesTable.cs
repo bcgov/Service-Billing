@@ -50,11 +50,12 @@ namespace Service_Billing.Migrations
                 value: "CFD");
 
             //using sql command, 'cause I need that Scope_Identity bit
-            migrationBuilder.Sql(@"insert into Ministries (Title, Acronym)
-                    values ('INBCInvest', 'JEDI');
-               update ClientAccounts
-                set OrganizationId = SCOPE_IDENTITY()
-                where [Name] = 'JEDI - Invest in BC WordPress';"
+            migrationBuilder.Sql($"insert into Ministries (Title, Acronym)" +
+                    "values ('INBCInvest', 'JEDI'); " +
+
+               "update ClientAccounts " +
+                "set OrganizationId = Scope_Identity() " +
+                "where Id = 824;"
             );
 
             migrationBuilder.DeleteData(
