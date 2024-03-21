@@ -11,7 +11,6 @@ using Azure.Security.KeyVault.Secrets;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-//using Microsoft.Graph.Models;
 using Microsoft.Identity.Client;
 
 using System;

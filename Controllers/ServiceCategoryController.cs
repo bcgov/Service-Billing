@@ -132,7 +132,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToExcel(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
+        public IActionResult WriteToExcel(int areaFilter, string nameFilter, string activeFilter, string uomFilter, string ownerFilter)
         {
             IEnumerable<ServiceCategory> categories = GetFilteredCategories(areaFilter, nameFilter, activeFilter, uomFilter, ownerFilter);
             try
@@ -142,7 +142,7 @@ namespace Service_Billing.Controllers
                 //    fileName += $"-{areaFilter}";
                 if(areaFilter > 0)
                 {
-                    BusinessArea area = _businessAreaRepository.GetById(areaFilter);
+                    BusinessArea? area = _businessAreaRepository.GetById(areaFilter);
                     if (area == null)
                         throw new Exception($"Somehow an Excel file made to be written based off a business area that doesn't exist. Business area ID: {areaFilter}");
                     fileName += $"-{area.Acronym}";
@@ -187,7 +187,7 @@ namespace Service_Billing.Controllers
             if (areaFilter > 0)
                 categories = categories.Where(x => x.BusAreaId == areaFilter);
             if (!String.IsNullOrEmpty(nameFilter))
-                categories = categories.Where(x => x.Name.ToLower().Contains(nameFilter.ToLower()));
+                categories = categories.Where(x => !String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(nameFilter.ToLower()));
             if (activeFilter != null)
             {
                 if (activeFilter == "active")

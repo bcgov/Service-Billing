@@ -97,8 +97,8 @@ namespace Service_Billing.Migrations
                 column: "OrganizationId",
                 value: 37);
             // Client accounts with NULL organization Ids
-            object[] nullOrgClients = { 626, 659, 661, 683, 687, 691, 699, 721, 723, 746, 751, 761, 762, 789, 794, 795, 798, 801, 805, 857, 863, 865};
-            object[] nullOrgClientValues = { 10, 10, 15, 5, 6, 29, 6, 14, 18, 10, 7, 39, 7, 7, 7, 33, 5, 31, 24, 10, 24, 41 };
+            object[] nullOrgClients = { 626, 659, 661, 683, 687, 691, 699, 721, 723, 746, 751, 761, 762, 789, 794, 795, 798, 801, 805, 857, 863, 865, 2115 };
+            object[] nullOrgClientValues = { 10, 10, 15, 5, 6, 29, 6, 14, 18, 10, 7, 39, 7, 7, 7, 33, 5, 31, 24, 10, 24, 41, 20 };
             migrationBuilder.UpdateData(
                 table: "ClientAccounts",
                 keyColumn: "Id",
