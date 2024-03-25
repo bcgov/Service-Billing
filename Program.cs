@@ -106,7 +106,6 @@ builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
 
-//builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));

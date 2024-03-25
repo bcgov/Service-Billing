@@ -162,7 +162,6 @@ namespace Service_Billing.Models.Repositories
             DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
             // list which services are fixed consumptions. Ignore charges where UOM is not month
             List<int> fixedServiceIds = GetFixedServices();
-            List<int> oneTimeServiceIds = GetOneTimeServices();
             string newQuarter = DetermineCurrentQuarter();
 
             IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
