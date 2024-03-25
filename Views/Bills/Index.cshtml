@@ -61,7 +61,7 @@
                             </div>
 
                             <label for="ministryFilter">Organization</label>
-                            <select name="ministryFilter">
+                            <select name="ministryFilter" title="Ministry or other organization charges">
                                 <option value="" disabled selected hidden></option>
                                 @if (ministries != null)
                                 {
@@ -79,7 +79,7 @@
                                 }
                             </select>
                             <label for="titleFilter">Program</label>
-                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
+                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" title="Name of charge"/>
                         </div>
                         <div>
 
@@ -101,7 +101,7 @@
                             </select>
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
-                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
+                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple title="Multiple services can be selected from this list">
                                     <option value="-1"></option>
                                     @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                                     {
@@ -122,11 +122,11 @@
 
                             <div>
                                 <label for="authorityFilter">Expense Authority</label>
-                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
+                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" title="Filter for charges related to a particular expense authority"/>
                                 <label for="primaryContact">Primary Contact</label>
-                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" />
+                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" title="Filter for charges by Primary Contact"/>
                                 <label for="clientNumber">GDX Client No.</label>
-                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
+                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" title="Filter for charges from a specific client"/>
                             </div>
                             <div>
                                 <label for="keyword">Keyword</label>
