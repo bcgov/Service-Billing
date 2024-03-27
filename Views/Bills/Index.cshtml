@@ -101,7 +101,7 @@
                             </select>
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
-                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple title="Multiple services can be selected from this list">
+                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple title="Multiple services can be selected for filtering from this list">
                                     <option value="-1"></option>
                                     @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                                     {
