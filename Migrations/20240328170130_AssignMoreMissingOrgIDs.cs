@@ -25,8 +25,9 @@ namespace Service_Billing.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            object[] clientsMissingOrgs = { };
-            object[] orgIDsToAssign = { };
+            object[] clientsMissingOrgs = { 818, 2009, 835, 2053, 744, 705, 797, 859, 2111, 815, 854, 845, 675, 633, 2048, 2049, 812, 769,
+            747, 862, 2110, 826, 837, 849, 621, 752, 681, 784, 820, 848, 750, 806, 802, 2079 };
+            object[] orgIDsToAssign = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
             migrationBuilder.UpdateData(
                 table: "ClientAccounts",
                 keyColumn: "Id",
