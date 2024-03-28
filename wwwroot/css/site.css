@@ -375,7 +375,7 @@ select {
     float: right;
 }
 .bottom-nav{
-    padding-top: 6px;
+    padding-top: 36px;
 }
 #categoryFilter{
     margin-bottom: 6px;
@@ -537,4 +537,7 @@ input[type=number]::-webkit-outer-spin-button {
 
 .dialog-input-section {
     display: inline-block;
+}
+.entity-details-buttons{
+    padding: 12px;
 }
