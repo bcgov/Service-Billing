@@ -490,16 +490,13 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             try
             {
-
                 string fileName = GetFilename(searchParams, "xlsx");
-
-
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
                 var dataTable = new DataTable();
                 List<ChargeRow> rows = new List<ChargeRow>();
                 // Inserts the collection to Excel as a table with a header row.
-                //ws.Cell("A1").InsertTable(bills);
+
                 foreach (Bill bill in bills)
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);

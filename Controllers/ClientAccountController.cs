@@ -368,8 +368,6 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
             if (!String.IsNullOrEmpty(authorityFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
-            //if (!String.IsNullOrEmpty(teamFilter))
-            //    clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
             if (!String.IsNullOrEmpty(keyword))
             {
                 clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
@@ -377,7 +375,6 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
-                // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
@@ -546,6 +543,7 @@ namespace Service_Billing.Controllers
     {
         public int clientId;
         public string clientName;
+        public short? casClientNumber;
         public string organization;
         public string aggregateGLCode;
         public string servicesEnabled;
@@ -561,6 +559,7 @@ namespace Service_Billing.Controllers
         {
             clientId = account.Id;
             clientName = !String.IsNullOrEmpty(account.Name)? account.Name : String.Empty;
+            casClientNumber = account.ClientNumber;
             primaryContact = !String.IsNullOrEmpty(account.PrimaryContact)? account.PrimaryContact : String.Empty;
             financialContact = !String.IsNullOrEmpty(account.FinancialContact)? account.FinancialContact : String.Empty;
             approver = !String.IsNullOrEmpty(account.Approver)? account.Approver : String.Empty;
