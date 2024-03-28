@@ -541,3 +541,13 @@ input[type=number]::-webkit-outer-spin-button {
 .entity-details-buttons{
     padding: 12px;
 }
+
+/*overwriting jquery-ui stuff*/
+.ui-state-active {
+    color: #2e6e9e !important;
+}
+.ui-accordion .ui-accordion-header .ui-icon {
+    display: inline-block;
+    position: relative !important;
+    margin-right: 12px;
+}
