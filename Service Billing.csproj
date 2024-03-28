@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20240321210951_ImprovementToFiscalPeriodTracking.cs" />
+    <Compile Remove="Migrations\20240321210951_ImprovementToFiscalPeriodTracking.Designer.cs" />
     <Compile Remove="Startup.cs" />
   </ItemGroup>
 
