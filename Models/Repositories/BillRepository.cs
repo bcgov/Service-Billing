@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
+using Service_Billing.Controllers;
 using Service_Billing.Data;
 using Service_Billing.Models;
 using System.Linq;
@@ -12,10 +13,12 @@ namespace Service_Billing.Models.Repositories
     {
         private readonly ServiceBillingContext _billingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
-        public BillRepository  (ServiceBillingContext billingContext, IFiscalPeriodRepository fiscalPeriodRepository)
+        private readonly ILogger<BillRepository> _logger;
+        public BillRepository  (ServiceBillingContext billingContext, IFiscalPeriodRepository fiscalPeriodRepository, ILogger<BillRepository> logger)
         {
             _billingContext = billingContext;
-            _fiscalPeriodRepository = fiscalPeriodRepository;  
+            _fiscalPeriodRepository = fiscalPeriodRepository; 
+            _logger = logger;
         }
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
@@ -157,32 +160,44 @@ namespace Service_Billing.Models.Repositories
         }
         public async Task PromoteChargesToNewQuarter()
         {
-            // determine limits of current fiscal quarter
-            DateTime quarterStart = DetermineStartOfCurrentQuarter();
-            DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
-            // list which services are fixed consumptions. Ignore charges where UOM is not month
-            List<int> fixedServiceIds = GetFixedServices();
-            List<int> oneTimeServiceIds = GetOneTimeServices();
-            string newQuarter = DetermineCurrentQuarter();
-
-            IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
-            && fixedServiceIds.Contains((int)b.ServiceCategoryId)
-            && (b.EndDate == null || b.EndDate > quarterStart)
-            && b.IsActive);
-            
-            foreach (Bill bill in billsToPromote)
+            try
             {
-                List<string> recordedPeriods = _fiscalPeriodRepository.GetPeriodsByChargeId(bill.Id).Select(b => b.Period).ToList();
-                if(!String.IsNullOrEmpty(bill.FiscalPeriod) && recordedPeriods.Contains(bill.FiscalPeriod))
+                _logger.LogInformation("Promoting charges to new quarter...");
+                // determine limits of current fiscal quarter
+                DateTime quarterStart = DetermineStartOfCurrentQuarter();
+                _logger.LogInformation($"quarter start date: {quarterStart.ToShortDateString()}");
+                DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
+                _logger.LogInformation($"quarter end date: {quarterEnd.ToShortDateString()}");
+                // list which services are fixed consumptions. Ignore charges where UOM is not month
+                List<int> fixedServiceIds = GetFixedServices();
+                List<int> oneTimeServiceIds = GetOneTimeServices();
+                string newQuarter = DetermineCurrentQuarter();
+                _logger.LogInformation($"new quarter string is \"{newQuarter}\"");
+                IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
+                && fixedServiceIds.Contains((int)b.ServiceCategoryId)
+                && (b.EndDate == null || b.EndDate > quarterStart)
+                && b.IsActive);
+            
+                foreach (Bill bill in billsToPromote)
                 {
-                    continue; //don't add anything more than once.
+                    List<string> recordedPeriods = _fiscalPeriodRepository.GetPeriodsByChargeId(bill.Id).Select(b => b.Period).ToList();
+                    if(!String.IsNullOrEmpty(bill.FiscalPeriod) && recordedPeriods.Contains(bill.FiscalPeriod))
+                    {
+                        continue; //don't add anything more than once.
+                    }
+                    _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
+                    bill.FiscalPeriod = newQuarter;
+                    _billingContext.Update(bill);
                 }
-                _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
-                bill.FiscalPeriod = newQuarter;
-                _billingContext.Update(bill);
-            }
 
-            await _billingContext.SaveChangesAsync();
+                await _billingContext.SaveChangesAsync();
+                _logger.LogInformation("Charges promoted to new quarter!");
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError($"error while trying to promote charges to new quarter!");
+                _logger.LogError(ex.ToString());
+            }
         }
 
         public IEnumerable<Bill> GetCurrentQuarterBills()
