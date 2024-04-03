@@ -117,7 +117,7 @@ namespace Service_Billing.Models.Repositories
                 case 4:
                 case 5:
                 case 6:
-                    return new DateTime(quarterStart.Year, 6, 31);
+                    return new DateTime(quarterStart.Year, 6, 30);
                 case 7:
                 case 8:
                 case 9:
