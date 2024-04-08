@@ -195,53 +195,47 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
-                if(!model.Account.OrganizationId.HasValue)
-                    throw new Exception("Somehow and account with no organization Id was submitted");
-                Ministry? org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
-                if (org == null)
-                    throw new Exception($"No ministry or organization was found with an ID matching {model.Account.OrganizationId.Value}");
-               // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
-                string accountName = $"{org.Acronym} - {model.DivisionOrBranch}";
-                model.Account.Name = accountName;
-                ClientAccount account = model.Account;
-               
-                _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
-
-                int accountId = _clientAccountRepository.AddClientAccount(account);
-
-                var cca = ConfidentialClientApplicationBuilder
-                   .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                    .Build();
-
-                var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
-                if (expenseAuthority is not null)
+                if (ModelState.IsValid)
                 {
-                    var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
-                    var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
-                    var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                    ClientAccount account = model.Account;
+                    _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
+                    int accountId = _clientAccountRepository.AddClientAccount(account);
 
-                    //await _emailService.SendEmail(
-                    //    eaEmail,
-                    //    "Please Review: New GDX Service Billing Account Information",
-                    //    $@"
-                    //    Hello {eaEmail.Split('@')[0]},
-                    
-                    //    We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
-                    
-                    //    To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
-                    
-                    //    If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
-                    
-                    //    We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
-                    
-                    //    Warm regards,
-                    
-                    //    GDX Service Billing Team"
-                    //);
+                    var cca = ConfidentialClientApplicationBuilder
+                       .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                       .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                       .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                        .Build();
+
+                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                    if (expenseAuthority is not null)
+                    {
+                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+
+                        //await _emailService.SendEmail(
+                        //    eaEmail,
+                        //    "Please Review: New GDX Service Billing Account Information",
+                        //    $@"
+                        //    Hello {eaEmail.Split('@')[0]},
+
+                        //    We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
+
+                        //    To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
+
+                        //    If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
+
+                        //    We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
+
+                        //    Warm regards,
+
+                        //    GDX Service Billing Team"
+                        //);
+                    }
+                    return RedirectToAction("details", new { model.Account.Id });
                 }
-
+                
             }
             catch (DbUpdateException ex)
             {
@@ -253,10 +247,10 @@ namespace Service_Billing.Controllers
                 _logger.LogError($"An error occured while trying to add a client account: {ex.InnerException}");
             }
 
-            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
+            ViewData["Ministries"] = ministries;
 
-            return RedirectToAction("details", new { model.Account.Id });
+            return View(new ClientCreateViewModel());
         }
 
         private short GetNextClientNumber()
@@ -484,7 +478,6 @@ namespace Service_Billing.Controllers
                 return StatusCode(500);
             }
         }
-
 
         // Right now this just checks if the current user has a last name and first name that are both included in a contact string.
         // It could certainly be improved by having all contact entries match their Azure AD display name,

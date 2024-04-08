@@ -69,5 +69,10 @@ namespace Service_Billing.Models.Repositories
         {
             return _context.ClientAccounts.Where(x => !x.IsActive);
         }
+
+        public ClientAccount? GetAccountByName(string name)
+        {
+            return _context.ClientAccounts.FirstOrDefault(x => x.Name == name); 
+        }
     }
 }

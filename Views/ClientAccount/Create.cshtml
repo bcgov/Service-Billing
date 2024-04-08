@@ -1,4 +1,5 @@
 ﻿@using Microsoft.Graph;
+@using System.Web.Helpers
 
 @model Service_Billing.ViewModels.ClientCreateViewModel
 
@@ -8,6 +9,12 @@
 }
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+    Dictionary<int, string?> orgsDict = new Dictionary<int, string?>();
+    if(ministries != null)
+        foreach (Ministry min in ministries)
+        {
+            orgsDict.Add(min.Id, min.Acronym);
+        }
 }
 
 <h1>Create Client Account</h1>
@@ -34,6 +41,7 @@
                 <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
                 <input asp-for="@Model.DivisionOrBranch" id="clientInput" class="form-control" />
                 <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.Account.Name" id="accountName"/>
             </div>
             <div class="form-group" id="intake-contacts">
                 <h3>Contacts</h3>
@@ -115,7 +123,10 @@
     }
 
     <script>
+   
         $(document).ready(function () {
+            var orgs = @Html.Raw(Json.Serialize(orgsDict));
+
              // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#create-account-link').addClass("active-nav-link");
@@ -152,6 +163,19 @@
                 if ($("#casServiceLine").val().length > 3) {
                     $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
                 }
+            });
+
+            const updateAccountName = (() => {
+               // $('#accountName').val(`${orgs[$("#orgSelect").val()` - ${"$(#clientInput.val())"})
+                var index = $("#orgSelect option:selected").val();
+                $("#accountName").val(orgs[index] + ' - ' + $("#clientInput").val());
+                console.log($("#accountName").val());
+            });
+            $("#orgSelect").on('change', () => {
+                updateAccountName();
+            });
+            $("#clientInput").on('change', () => {
+                updateAccountName();
             });
         });
     </script>
