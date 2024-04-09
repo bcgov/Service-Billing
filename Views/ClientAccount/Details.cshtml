@@ -308,7 +308,7 @@
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
 {
     <div class="bottom-nav">
-        <a asp-action="Index" class="btn btn-primary" type="button">Back to List</a>
+        <a asp-action="Index" class="btn btn-primary" type="button">View Client Accounts</a>
     </div>
     <div id="dialog" title="Set this charge to Inactive?">
         <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>
