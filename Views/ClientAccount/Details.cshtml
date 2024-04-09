@@ -106,6 +106,13 @@
                 @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
+        <tfoot>
+            <tr>
+                <td>
+
+                </td>
+            </tr>
+        </tfoot>
     </table>
     <partial name="_ClientTeam" model="@Model"/>
     <div class="entity-details-buttons">
@@ -119,197 +126,94 @@
             <input type="submit" value="Reactivate" class="btn btn-primary" onclick="confirmReactivateClient(@Model.Id)" />
         }
     </div>
-    <h3>Active Charges</h3>
-     <div id="accordion">
-     @foreach (Bill charge in Model.Bills)
-     {
-        @if (charge.IsActive)
-        {
-                <h4>@charge.Title - @charge.ServiceCategory.Name</h4>
-                <div>
-                    <table>
-                        <tr>
-                            <td class="table-right">
-                               URL or IDIR
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.IdirOrUrl)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Unit of Measure
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.ServiceCategory.UOM)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Quantity
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.Quantity)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Amount
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.Amount)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Fiscal Period
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.FiscalPeriod)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Start Date
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.StartDate)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                End Date
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.EndDate)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Created By
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.CreatedBy)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="table-right">
-                                Notes
-                            </td>
-                            <td>
-                                @Html.DisplayFor(Bill => charge.Notes)
-                            </td>
-                        </tr>
-                        <tr>
-                            <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see charge details</a></td>
-                            @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
-                            {
-                                <td><input type="submit" value="Deactivate this Charge" class="btn btn-primary" onclick="confirmInactive(@charge.Id)" /></td>
-                            }
-                        </tr>
-                    </table>
-                </div>
-        }
-     }
-     </div>
-
+    <table class="table table-striped">
+        <thead>
+        <tr>
+        <th scope="col">Title</th>
+        <th scope="col">Service Category</th>
+        <th scope="col">Amount</th>
+        <th scope="col">Start Date</th>
+        <th scope="col">End Date</th>
+        <th scope="col">Details</th>
+        </tr>
+        </thead>
+        <tbody>
+            @foreach (Bill charge in Model.Bills)
+            {
+                @if (charge.IsActive)
+                {
+                <tr>
+                <td>@charge.Title</td>
+                <td>@charge.ServiceCategory.Name</td>
+                <td>@charge.Amount</td>
+                <td>@charge.StartDate</td>
+                        @if (charge.EndDate == null)
+                        {
+                    <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                        }
+                        else
+                        {
+                    <td>@charge.EndDate</td>
+                        }
+                <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
+                        {
+                    <td><input type="submit" value="Deactivate" class="btn btn-primary" onclick="confirmInactive(@charge.Id)" /></td>
+                        }
+                </tr>
+                }
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>
+                    <a asp-action="AddServiceBilling" asp-controller="Bills" asp-route-accountId="@Model?.Id" class="btn btn-primary" type="button">Order A Service</a>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
     @if (Model.Bills.FirstOrDefault(x => !x.IsActive) != null)
     {
-        <h3>Inactive Charges</h3>
+        <h4>Inactive Charges</h4>
         <p>These are old or cancelled charges, and are not factored into quarterly reporting.</p>
-        <div id="inactive-accordion">
-       
+        <table class="table table-striped">
+            <thead>
+            <tr>
+            <th scope="col">Title</th>
+            <th scope="col">Service Category</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Start Date</th>
+            <th scope="col">End Date</th>
+            <th scope="col">Details</th>
+            </tr>
+            </thead>
+            <tbody>
                 @foreach (Bill charge in Model.Bills)
                 {
                     if (charge.IsActive)
                         continue;
-
-                        <h4>@charge.Title - @charge.ServiceCategory.Name</h4>
-                        <div>
-                            <table>
-                                <tr>
-                                    <td class="table-right">
-                                        URL or IDIR
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.IdirOrUrl)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Unit of Measure
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.ServiceCategory.UOM)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Quantity
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.Quantity)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Amount
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.Amount)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Fiscal Period
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.FiscalPeriod)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Start Date
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.StartDate)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        End Date
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.EndDate)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Created By
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.CreatedBy)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="table-right">
-                                        Notes
-                                    </td>
-                                    <td>
-                                        @Html.DisplayFor(Bill => charge.Notes)
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see charge details</a></td>
-                                    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
-                                    {
-                                        <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
-                                    }
-                                </tr>
-                            </table>
-                        </div>
+                <tr>
+                <td>@charge.Title</td>
+                <td>@charge.ServiceCategory.Name</td>
+                <td>@charge.Amount</td>
+                <td>@charge.StartDate</td>
+                        @if (charge.EndDate == null)
+                        {
+                    <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                        }
+                        else
+                        {
+                    <td>@charge.EndDate</td>
+                        }
+                <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive)
+                        {
+                    <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
+                        }
+                </tr>
                 }
-        </div>
+            </tbody>
+        </table>
     }
 </div>
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
@@ -445,12 +349,6 @@
             };
             xhr.open('post', url);
             xhr.send();
-        });
-        $(function () {
-            $("#accordion").accordion({
-                collapsible: true
-            });
-            $("#inactive-accordion").accordion({ collapsible: true });
         });
     </script>
 }
