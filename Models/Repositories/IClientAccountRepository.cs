@@ -8,7 +8,6 @@
         int AddClientAccount(ClientAccount account);
         int GetClientIdFromClientNumber(int clientNumber);
         IEnumerable<ClientAccount> GetAccountsByContactName(string contactName);
-        ClientAccount? GetAccountByName(string name);
         void Update(ClientAccount account);
         void Approve(ClientAccount account);
         IEnumerable<ClientAccount> GetInactiveAccounts();

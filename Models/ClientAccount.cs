@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using NuGet.Configuration;
-using Service_Billing.Validation;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -17,7 +16,6 @@ o	Note: not all naming convention components are required. The naming convention
 */
         [Required(ErrorMessage = "Add a client name")]
         [Display(Name = "Name")]
-        [ClientNameValidation]
         public string? Name { get; set; }
 
         [BindRequired]
@@ -91,8 +89,6 @@ o	Note: not all naming convention components are required. The naming convention
                 return $"{ClientNumber}.{ResponsibilityCentre}.{ServiceLine}.{STOB}.{Project}";
             }
         }
-
-        [BindRequired]
         public int? OrganizationId { get; set; } = 0;//for ministry/organization tracking
     }
 }
