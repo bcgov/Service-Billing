@@ -17,14 +17,6 @@
 <h1>Client Account Information</h1>
 <div>
     <h4>@Model.Id-@Model.Name</h4>
-    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
-    {
-        <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-primary" onclick="confirmDeactivateClient(@Model.Id)" title="Set this client and all associated charges to inactive. This action is reversible." />
-    }
-    else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-    {
-        <input type="submit" value="Reactivate" class="btn btn-primary" onclick="confirmReactivateClient(@Model.Id)" title="Reactivate this client. Associated charges must be reactivated separately."/>
-    }
     <hr />
     <table>
         <tr>
@@ -118,6 +110,14 @@
     <partial name="_ClientTeam" model="@Model"/>
     <div class="entity-details-buttons">
         <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary" type="button">Edit Account</a>
+        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
+        {
+            <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-primary" onclick="confirmDeactivateClient(@Model.Id)" />
+        }
+        else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+        {
+            <input type="submit" value="Reactivate" class="btn btn-primary" onclick="confirmReactivateClient(@Model.Id)" />
+        }
     </div>
     <h3>Active Charges</h3>
      <div id="accordion">
@@ -425,14 +425,14 @@
             });
         });
 
-        const confirmReactivateClient = ((val) => {
-            $("#reactivate-client-dialog").dialog("option", "id", val);
-            $("#reactivate-client-dialog").dialog("open");
-        });
-        const confirmDeactivateClient = ((val) => {
-            $("#deactivate-client-dialog").dialog("option", "id", val);
-            $("#deactivate-client-dialog").dialog("open");
-        });
+        // const confirmReactivateClient = ((val) => {
+        //     $("#reactivate-client-dialog").dialog("option", "id", val);
+        //     $("#reactivate-client-dialog").dialog("open");
+        // });
+        // const confirmDeactivateClient = ((val) => {
+        //     $("#deactivate-client-dialog").dialog("option", "id", val);
+        //     $("#deactivate-client-dialog").dialog("open");
+        // });
 
         const setIsActiveForClient = ((id, active) => {
             var url = "../../ClientAccount/SetIsActiveForClient?id=" + id + "&active=" + active;
