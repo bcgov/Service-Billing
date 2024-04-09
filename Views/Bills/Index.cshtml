@@ -9,6 +9,7 @@
     Layout = "_Layout";
 }
 
+
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
     ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
@@ -21,6 +22,7 @@
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
     List<SelectListItem> businessAreas = new List<SelectListItem>();
 
+
     /* I'm not sure if these will get used. Not quite sure how to filter by business area, and service category yet.*/
     foreach (ServiceCategory serviceCategory in ViewBag.ServiceCategories)
     {
@@ -32,6 +34,7 @@
     {
         businessAreas.Add(new SelectListItem { Value = businessArea.Id.ToString(), Text = businessArea.Name });
     }
+
 }
 
 <h1>Service Billing Charges</h1>
