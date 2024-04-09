@@ -194,9 +194,9 @@
                             </td>
                         </tr>
                         <tr>
+                            <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see charge details</a></td>
                             @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
                             {
-                                <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Edit this charge</a></td>
                                 <td><input type="submit" value="Deactivate this Charge" class="btn btn-primary" onclick="setIsActiveForCharge(@charge.Id, false)" /></td>
                             }
                         </tr>
