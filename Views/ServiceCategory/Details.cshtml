@@ -64,16 +64,9 @@
                 @Html.DisplayFor(model => model.ServiceOwner)
             </td>
         </tr>
-        <tfoot>
-            <tr>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@Model?.ServiceId" class="btn btn-primary" type="button">Edit Service</a>
-                </td>
-            </tr>
-        </tfoot>
     </table>
 </div>
-
 <div class="bottom-nav">
-    <a asp-action="Index" class="btn btn-primary" type="button">Back to List</a>
+    <a asp-action="Edit" asp-route-id="@Model?.ServiceId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
 </div>

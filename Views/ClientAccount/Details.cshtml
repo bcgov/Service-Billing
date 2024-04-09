@@ -106,26 +106,16 @@
                 @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
-        <tfoot>
-            <tr>
-                <td>
-
-                </td>
-            </tr>
-        </tfoot>
     </table>
     <partial name="_ClientTeam" model="@Model"/>
-    <div class="entity-details-buttons">
-        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary" type="button">Edit Account</a>
-        @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
-        {
-            <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-primary" onclick="confirmDeactivateClient(@Model.Id)" />
-        }
-        else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
-        {
-            <input type="submit" value="Reactivate" class="btn btn-primary" onclick="confirmReactivateClient(@Model.Id)" />
-        }
-    </div>
+    @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
+    {
+        <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Id)" />
+    }
+    else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
+    {
+        <input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateClient(@Model.Id)" />
+    }
     <table class="table table-striped">
         <thead>
         <tr>
@@ -158,19 +148,12 @@
                 <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
                         {
-                    <td><input type="submit" value="Deactivate" class="btn btn-primary" onclick="confirmInactive(@charge.Id)" /></td>
+                    <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
                         }
                 </tr>
                 }
             }
         </tbody>
-        <tfoot>
-            <tr>
-                <td>
-                    <a asp-action="AddServiceBilling" asp-controller="Bills" asp-route-accountId="@Model?.Id" class="btn btn-primary" type="button">Order A Service</a>
-                </td>
-            </tr>
-        </tfoot>
     </table>
     @if (Model.Bills.FirstOrDefault(x => !x.IsActive) != null)
     {
@@ -219,7 +202,13 @@
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
 {
     <div class="bottom-nav">
-        <a asp-action="Index" class="btn btn-primary" type="button">Back to List</a>
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+        @if (!isMinistryClient)
+        {
+            <a href="/Bills/AddServiceBilling?accountId=@Model?.Id">Order a Service</a>
+            <text> | </text>
+        }
+        <a asp-action="Index">Back to List</a>
     </div>
     <div id="dialog" title="Set this charge to Inactive?">
         <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>

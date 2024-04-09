@@ -12,7 +12,6 @@
     <h4>@Model.Id - @Model.Title</h4>
     <hr />
     <table>
-     
         <tr>
             <td class="table-right">
                 Client Account
@@ -183,18 +182,12 @@
                 @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
-        <tfoot>
-            <tr>
-                <td>
-                    @if (!User.IsInRole("GDXBillingService.User"))
-                    {
-                        <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary" type="button">Edit Charge</a>
-                    }
-                </td>
-            </tr>
-        </tfoot>
     </table>
 </div>
 <div class="bottom-nav">
-    <a asp-action="Index" class="btn btn-primary" type="button">Back to List</a>
+    @if (!User.IsInRole("GDXBillingService.User"))
+    {
+        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> @:|
+    }
+    <a asp-action="Index">Back to List</a>
 </div>
