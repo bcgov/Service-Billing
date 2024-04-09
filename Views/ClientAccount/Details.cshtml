@@ -118,7 +118,6 @@
     <partial name="_ClientTeam" model="@Model"/>
     <div class="entity-details-buttons">
         <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary" type="button">Edit Account</a>
-        <a asp-action="AddServiceBilling" asp-controller="Bills" asp-route-accountId="@Model?.Id" class="btn btn-primary" type="button">Order A Service</a>
     </div>
     <h3>Active Charges</h3>
      <div id="accordion">
@@ -171,10 +170,18 @@
                         </tr>
                         <tr>
                             <td class="table-right">
-                                Date Range
+                                Start Date
                             </td>
                             <td>
-                                @Html.DisplayFor(Bill => charge.StartDate) to @Html.DisplayFor(Bill => charge.EndDate)
+                                @Html.DisplayFor(Bill => charge.StartDate)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="table-right">
+                                End Date
+                            </td>
+                            <td>
+                                @Html.DisplayFor(Bill => charge.EndDate)
                             </td>
                         </tr>
                         <tr>
