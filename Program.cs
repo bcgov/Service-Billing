@@ -196,6 +196,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ServiceBillingContext>();
     await context.Database.MigrateAsync();
+    //DbInitializer.SeedPeople(context);
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
     //DbInitializer.SeedAccounts(context);
