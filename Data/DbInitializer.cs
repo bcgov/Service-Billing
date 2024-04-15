@@ -1,5 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.EntityFrameworkCore;
 using Service_Billing.Models;
+using System.Linq;
 using System.Text.Json;
 using File = System.IO.File;
 
@@ -115,5 +117,45 @@ namespace Service_Billing.Data
                 transaction.Commit();
             }
         }
+
+        public static void SeedPeople(ServiceBillingContext context)
+        {
+            if (context.People.Any())
+            {
+                context.People.RemoveRange(context.People);
+                context.SaveChanges();
+                context.ChangeTracker.Clear(); // Clear the change tracker
+            }
+
+            var peopleData = File.ReadAllText("./Data/PeopleSeedData.json");
+            var people = JsonSerializer.Deserialize<List<Person>>(peopleData);
+
+            var processedIds = new HashSet<string>(); // To keep track of processed IDs
+
+            using (var transaction = context.Database.BeginTransaction())
+            {
+                foreach (var person in people!)
+                {
+                    if (person == null || processedIds.Contains(person.Id.ToString()))
+                        continue;
+
+                    var existingEntity = context.People.AsNoTracking().FirstOrDefault(p => p.Id == person.Id);
+
+                    if (existingEntity == null)
+                    {
+                        context.People.Add(person);
+                        processedIds.Add(person.Id.ToString()); // Mark this ID as processed
+                    }
+                    else
+                    {
+                        // Handle updates or simply skip if exact duplicates are not needed
+                    }
+                }
+
+                context.SaveChanges();
+                transaction.Commit();
+            }
+        }
+
     }
 }
