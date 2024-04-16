@@ -105,6 +105,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
+builder.Services.AddScoped<IFiscalHistoryRepository, FiscalHistoryRepository>();
 
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
