@@ -105,8 +105,8 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
+builder.Services.AddScoped<IFiscalHistoryRepository, FiscalHistoryRepository>();
 
-//builder.Services.AddHostedService<ChargePromotionService>();
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
@@ -197,6 +197,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ServiceBillingContext>();
     await context.Database.MigrateAsync();
+    //DbInitializer.SeedPeople(context);
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
     //DbInitializer.SeedAccounts(context);

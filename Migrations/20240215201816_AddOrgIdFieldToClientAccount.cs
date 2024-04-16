@@ -36,10 +36,6 @@ namespace Service_Billing.Migrations
                 $" Ministries TABLOCKX");
             migrationBuilder.Sql($"SET IDENTITY_INSERT dbo.Tmp_Ministries OFF");
 
-            migrationBuilder.Sql($"update Ministries " +
-                $"set Acronym = 'MMHA'"
-                + $"where Acronym = 'MHA'; "
-                );
             migrationBuilder.Sql("drop table Ministries");
             migrationBuilder.Sql("Exec sp_rename 'Tmp_Ministries', 'Ministries'");
 

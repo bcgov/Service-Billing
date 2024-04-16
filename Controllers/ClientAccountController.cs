@@ -6,20 +6,12 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Models.Repositories;
-using CsvHelper;
 using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
-using Service_Billing.Extensions;
 using Service_Billing.Filters;
-using System.Net.Http.Headers;
-using System.Text.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 using Service_Billing.Services.GraphApi;
-using Microsoft.Graph.TermStore;
-using System.Security.Principal;
 using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Vml;
 
 namespace Service_Billing.Controllers
 {
@@ -72,7 +64,7 @@ namespace Service_Billing.Controllers
         // GET: ClientAccountController
         [Authorize]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public async Task<ActionResult> Index(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
+        public ActionResult Index(int ministryFilter, int numberFilter, string responsibilityFilter, string authorityFilter, string teamFilter, string keyword, string primaryContactFilter)
         {
             // TODO: Add filtering options or Services Enabled and Notes
             // "Add “Notes” field (this section will allow admins to update to identify service ticket number or changes made to client account)"
@@ -107,14 +99,13 @@ namespace Service_Billing.Controllers
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
-                string userLastName = GetUserLastName();
-                if (!String.IsNullOrEmpty(userLastName))
+                
+                if (!String.IsNullOrEmpty(User.GetDisplayName()))
                 {
-                    if (!IsUserAccountContact(account, userLastName))
+                    if (!IsUserAccountContact(account))
                     {
-                        if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(userLastName.ToLower()))
+                        if (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && !account.ExpenseAuthorityName.ToLower().Contains(GetUserLastName().ToLower()))
                         {
-
                             return View("Unauthorized");
                         }
                     }
@@ -186,7 +177,7 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpGet]
-        public async Task<ActionResult> Create()
+        public ActionResult Create()
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
@@ -206,7 +197,7 @@ namespace Service_Billing.Controllers
             {
                 if(!model.Account.OrganizationId.HasValue)
                     throw new Exception("Somehow and account with no organization Id was submitted");
-                Ministry org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
+                Ministry? org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
                 if (org == null)
                     throw new Exception($"No ministry or organization was found with an ID matching {model.Account.OrganizationId.Value}");
                // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
@@ -290,7 +281,7 @@ namespace Service_Billing.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Approve(int id, IFormCollection collection)
+        public ActionResult Approve(int id, IFormCollection collection)
         {
             try
             {
@@ -377,8 +368,6 @@ namespace Service_Billing.Controllers
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ResponsibilityCentre) && x.ResponsibilityCentre.ToLower().Contains(responsibilityFilter.ToLower()));
             if (!String.IsNullOrEmpty(authorityFilter))
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(authorityFilter.ToLower()));
-            //if (!String.IsNullOrEmpty(teamFilter))
-            //    clients = clients.Where(x => !String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(teamFilter.ToLower()));
             if (!String.IsNullOrEmpty(keyword))
             {
                 clients = clients.Where(x => (!String.IsNullOrEmpty(x.Name) && x.Name.ToLower().Contains(keyword.ToLower())) ||
@@ -386,7 +375,6 @@ namespace Service_Billing.Controllers
                 (!String.IsNullOrEmpty(x.Project) && x.Project.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ServicesEnabled) && x.ServicesEnabled.ToLower().Contains(keyword.ToLower())) ||
                 (!String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(keyword.ToLower())))
-                // || (!String.IsNullOrEmpty(x.ClientTeam) && x.ClientTeam.ToLower().Contains(keyword.ToLower())))
                 );
             }
 
@@ -428,7 +416,7 @@ namespace Service_Billing.Controllers
                 foreach(ClientAccount account in accounts)
                 {
                     ClientInfoRowEntry row = new ClientInfoRowEntry(account);
-                    if (account.OrganizationId.HasValue)
+                    if (account.OrganizationId.HasValue && account.OrganizationId.Value > 0)
                     {
                         row.organization = _ministryRepository.GetById(account.OrganizationId.Value).Title;
                     }
@@ -498,17 +486,34 @@ namespace Service_Billing.Controllers
         }
 
 
-        // Right now this just checks if the current user has a last name that matches a contact.
+        // Right now this just checks if the current user has a last name and first name that are both included in a contact string.
         // It could certainly be improved by having all contact entries match their Azure AD display name,
-        // like "Alexander.Carmichael@gov.bc.ca
-        public bool IsUserAccountContact(ClientAccount account, string lastName)
+        // like "Alexander.Carmichael@gov.bc.ca, or by taking advantage of a "people table" identity lookup scheme.
+        public bool IsUserAccountContact(ClientAccount account)
         {
+            string? userName = User.GetDisplayName();
+            string lastName = string.Empty;
+            string firstName = string.Empty;
+            if (!String.IsNullOrEmpty(userName)) //Firstname.Lastname@Gov.bc.ca
+            {
+                string[] nameElements = userName.Split('.');
+                if (nameElements.Length > 1)
+                {
+                    lastName = nameElements[1].Substring(0, nameElements[1].IndexOf('@'));
+                    lastName = lastName.Trim();
+                    firstName = nameElements[0];
+                }
+            }
             if (!String.IsNullOrEmpty(lastName))
             {
                 if (!String.IsNullOrEmpty(lastName) &&
-                    (!String.IsNullOrEmpty(account.PrimaryContact) && account.PrimaryContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(account.FinancialContact) && account.FinancialContact.ToLower().Contains(lastName.ToLower())) ||
-                    (!String.IsNullOrEmpty(account.Approver) && account.Approver.ToLower().Contains(lastName.ToLower())))
+                        (!String.IsNullOrEmpty(account.PrimaryContact) && 
+                        (account.PrimaryContact.ToLower().Contains(lastName.ToLower()) && account.PrimaryContact.ToLower().Contains(firstName.ToLower()))) ||
+                        (!String.IsNullOrEmpty(account.FinancialContact) && 
+                        (account.FinancialContact.ToLower().Contains(lastName.ToLower()) && account.FinancialContact.ToLower().Contains(firstName.ToLower()))) ||
+                        (!String.IsNullOrEmpty(account.Approver) && 
+                        (account.Approver.ToLower().Contains(lastName.ToLower()) && account.Approver.ToLower().Contains(firstName.ToLower())))
+                    )
                 {
                     return true;
                 }
@@ -538,6 +543,7 @@ namespace Service_Billing.Controllers
     {
         public int clientId;
         public string clientName;
+        public short? casClientNumber;
         public string organization;
         public string aggregateGLCode;
         public string servicesEnabled;
@@ -549,20 +555,18 @@ namespace Service_Billing.Controllers
         public bool active;
         public string notes;
 
-
-
-
         public ClientInfoRowEntry(ClientAccount account)
         {
             clientId = account.Id;
-            clientName = account.Name;
-            primaryContact = account.PrimaryContact;
-            financialContact = account.FinancialContact;
-            approver = account.Approver;
+            clientName = !String.IsNullOrEmpty(account.Name)? account.Name : String.Empty;
+            casClientNumber = account.ClientNumber;
+            primaryContact = !String.IsNullOrEmpty(account.PrimaryContact)? account.PrimaryContact : String.Empty;
+            financialContact = !String.IsNullOrEmpty(account.FinancialContact)? account.FinancialContact : String.Empty;
+            approver = !String.IsNullOrEmpty(account.Approver)? account.Approver : String.Empty;
             approved = account.IsApprovedByEA;
             active = account.IsActive;
             aggregateGLCode = account.AggregatedGLCode;
-            notes = account.Notes;
+            notes = !String.IsNullOrEmpty(account.Notes)? account.Notes : String.Empty;
         }
     }
 }

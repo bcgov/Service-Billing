@@ -61,7 +61,7 @@
                             </div>
 
                             <label for="ministryFilter">Organization</label>
-                            <select name="ministryFilter">
+                            <select name="ministryFilter" title="Ministry or other organization charges">
                                 <option value="" disabled selected hidden></option>
                                 @if (ministries != null)
                                 {
@@ -79,7 +79,7 @@
                                 }
                             </select>
                             <label for="titleFilter">Program</label>
-                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" />
+                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" title="Search by digital asset"/>
                         </div>
                         <div>
 
@@ -101,7 +101,7 @@
                             </select>
                             <div id="category-multiselect">
                                 <label for="categoryFilter">Service Category</label>
-                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple>
+                                <select name="categoryFilter" id="categoryFilter" value="@searchModel?.CategoryFilter" multiple title="Multiple services can be selected for filtering from this list">
                                     <option value="-1"></option>
                                     @foreach (ServiceCategory category in ViewBag.ServiceCategories)
                                     {
@@ -122,16 +122,16 @@
 
                             <div>
                                 <label for="authorityFilter">Expense Authority</label>
-                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" />
+                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" title="Search by ministry expense authority's first or last name"/>
                                 <label for="primaryContact">Primary Contact</label>
-                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" />
+                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" title="Search for ministry contact's first or last name"/>
                                 <label for="clientNumber">GDX Client No.</label>
-                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" />
+                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" title="Search by GDX client number"/>
                             </div>
                             <div>
                                 <label for="keyword">Keyword</label>
                                 <input type="text" name="keyword" value="@searchModel.Keyword"
-                                       title="Search program names, URLs, IDIRs, contact names and / or notes" />
+                                       title="Search program names, URLs or notes" />
                             </div>
                             @* <label for="inactive">Include Inactive</label>
                         <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />

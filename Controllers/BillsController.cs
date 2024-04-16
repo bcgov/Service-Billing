@@ -1,30 +1,15 @@
 ﻿using ClosedXML.Excel;
-using CsvHelper;
-using CsvHelper.Configuration;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Humanizer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
-using Microsoft.Graph.Search;
 using Microsoft.Identity.Web;
-using Microsoft.IdentityModel.Tokens;
-using MimeKit;
 using Service_Billing.Data;
-using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
 using System.Data;
-using System.IO;
-using System.Security.Claims;
 
 namespace Service_Billing.Controllers
 {
@@ -269,13 +254,13 @@ namespace Service_Billing.Controllers
             {
                 if (serviceId == null || quantity == null)
                     throw new Exception("Cannot calculate bill amount because categoryId or quantity is null");
-                ServiceCategory category = _categoryRepository.GetById(serviceId);
+                ServiceCategory? category = _categoryRepository.GetById(serviceId);
                 if (category == null)
                 {
                     throw new Exception($"Service category with id: {serviceId} not found!");
                 }
                 decimal newAmount;
-                string cost = category.Costs;
+                string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
                 if (!string.IsNullOrEmpty(cost) && cost.Contains('$'))
                 {
                     cost = cost.Replace('$', ' ');
@@ -285,10 +270,10 @@ namespace Service_Billing.Controllers
                 {
                     newAmount = 0;
                 }
-                if (category.ServiceId == 5)
+                if (category?.ServiceId == 5)
                     newAmount = 85;
-                string? UOM = !string.IsNullOrEmpty(category.UOM) ? category.UOM : "n/a";
-                RecordEntry recordEntry = new RecordEntry(category.Name, newAmount * quantity);
+                string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
+                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity);
                 recordEntry.UOM = UOM;
 
                 return new JsonResult(recordEntry);
@@ -376,12 +361,13 @@ namespace Service_Billing.Controllers
         }
 
         // This is great! Much faster than getting all records, then filtering. 
-        private IEnumerable<Bill> QueryForCharges(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
+        private IEnumerable<Bill> QueryForCharges(ChargeIndexSearchParamsModel? searchParams, string ministryUserName = "")
         {
             try
             {
                 IQueryable<Bill> query = _serviceBillingContext.Bills.Include(b => b.ClientAccount).Include(b => b.ServiceCategory);
-                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+               
+                bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
                
                 switch (searchParams?.QuarterFilter)
@@ -418,7 +404,7 @@ namespace Service_Billing.Controllers
                 {
                     query = query.Where(b => b.IsActive);
                 }
-                if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
+                if (shouldRestrictToUserOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     query = query.Where(b => serviceIds.Contains(b.ServiceCategoryId));
@@ -472,115 +458,6 @@ namespace Service_Billing.Controllers
             }
         }
 
-
-        // DEPRECATED! Use the much faster QueryForCharges method above. We'll get rid of this, I think.
-        private IEnumerable<Bill> GetFilteredBills(ChargeIndexSearchParamsModel searchParams, string ministryUserName = "")
-        {
-            try
-            {
-                // restrict items based on user's privileges
-                searchParams.ShouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
-                    && User.IsInRole("GDXBillingService.Owner"));
-
-                IEnumerable<Bill> bills;
-                switch (searchParams?.QuarterFilter)
-                {
-                    case "current":
-                    default:
-                        bills = _billRepository.GetCurrentQuarterBills();
-                        break;
-                    case "previous":
-                        bills = _billRepository.GetPreviousQuarterBills();
-                        break;
-                    case "next":
-                        bills = _billRepository.GetNextQuarterBills();
-                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
-                        break;
-                    case "all":
-                        bills = _billRepository.AllBills;
-                        break;
-                }
-                // now filter the results
-                //filter out charges from inactive clients
-                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
-                {
-                    IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
-                    bills = bills.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
-                }
-                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
-                {
-                    bills = bills.Where(b => b.IsActive);
-                }
-                if (searchParams?.ShouldRestrictToUserOwnedServices != null && searchParams.ShouldRestrictToUserOwnedServices)
-                { //user is service owner, and we should only show services for charges they own
-                    List<int> serviceIds = GetUserOwnedServiceIds();
-                    bills = bills.Where(b => serviceIds.Contains(b.ServiceCategoryId));
-                }
-                if (!String.IsNullOrEmpty(ministryUserName))
-                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
-                    bills = FilterChargesForCurrentMinistryUser(ministryUserName, bills);
-                }
-                if (searchParams?.MinistryFilter > 0)
-                {
-                    bills = bills.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
-                }
-                if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
-                    bills = bills.Where(x => !String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-                if (searchParams?.BusAreaFilter > 0)
-                {
-                    bills = bills.Where(x => x.ServiceCategory.BusAreaId == searchParams.BusAreaFilter);
-                }
-                if (searchParams?.CategoryFilter != null && searchParams?.CategoryFilter.Count > 0)
-                {
-                    List<Bill> categoryBills = new List<Bill>();
-                    foreach (int catId in searchParams.CategoryFilter)
-                    {
-                        categoryBills.AddRange(bills.Where(x => x.ServiceCategoryId == catId));
-                    }
-                    bills = categoryBills;
-                }
-                if (!string.IsNullOrEmpty(searchParams?.Keyword))
-                    bills = bills.Where(x => (!String.IsNullOrEmpty(x.Title) && x.Title.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                       (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())) ||
-                        (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
-                if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
-                {
-                  //  bills = bills.Where(b => !String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName) && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()));
-                    List<Bill> filteredBills = new List<Bill>();
-                    foreach (Bill bill in bills)
-                    {
-
-                        if (bill.ClientAccount != null && !String.IsNullOrEmpty(bill.ClientAccount.ExpenseAuthorityName)
-                            && bill.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()))
-                        {
-                            filteredBills.Add(bill);
-                        }
-                    }
-
-                    bills = filteredBills;
-
-                }
-                if (searchParams?.ClientNumber > 0)
-                {
-                    bills = bills.Where(x => x.ClientAccountId == searchParams.ClientNumber);
-                }
-                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact)) //Note: not if current user is primary contact, rather searching for charges by an arbitrary primary contat.
-                {
-                    bills = bills.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
-                }
-
-                return bills.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("An error occurred while trying to filter charges in Index view");
-                _logger.LogError(ex.Message);
-                return null;
-            }
-        }
-
         private bool IsAccountContact(string ministryUserName, ClientAccount account)
         {/*carmichael, alexander: CITZ"*/
             string[] nameElements = ministryUserName.Split(',');
@@ -608,21 +485,18 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
+        public IActionResult WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
+            IEnumerable<Bill> bills = QueryForCharges(searchParams);
             try
             {
-
                 string fileName = GetFilename(searchParams, "xlsx");
-
-
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
                 var dataTable = new DataTable();
                 List<ChargeRow> rows = new List<ChargeRow>();
                 // Inserts the collection to Excel as a table with a header row.
-                //ws.Cell("A1").InsertTable(bills);
+
                 foreach (Bill bill in bills)
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
@@ -634,8 +508,8 @@ namespace Service_Billing.Controllers
                     row.Program = bill.Title;
                     if (serviceCategory != null)
                     {
-                        row.GDXBusArea = serviceCategory.BusArea.Name;
-                        row.ServiceCategory = serviceCategory.Name;
+                        row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                        row.ServiceCategory = serviceCategory?.Name;
                     }
                     row.TicketNumber = bill.TicketNumberAndRequester;
                     row.Amount = @String.Format("${0:.##}", bill.Amount);
@@ -684,9 +558,9 @@ namespace Service_Billing.Controllers
             }
         }
 
-        public async Task<IActionResult> ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
+        public IActionResult ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
         {
-            IEnumerable<Bill> bills = GetFilteredBills(searchParams);
+            IEnumerable<Bill> bills = QueryForCharges(searchParams);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try
             {
@@ -725,7 +599,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ReportToExcel(GeneratedReportViewModel model)
+        public IActionResult ReportToExcel(GeneratedReportViewModel model)
         {
             List<RecordEntry> records = new List<RecordEntry>();
             decimal? total = 0;
@@ -844,7 +718,7 @@ namespace Service_Billing.Controllers
             return new List<int>();
         }
 
-        private string GetFilename(ChargeIndexSearchParamsModel searchParams, string extension = "csv")
+        private string GetFilename(ChargeIndexSearchParamsModel? searchParams, string extension = "csv")
         {
             string fileName = "Charges";
             //if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
@@ -862,7 +736,7 @@ namespace Service_Billing.Controllers
                 ministry = _ministryRepository.GetById(searchParams.MinistryFilter);
             }
             if (ministry != null && !String.IsNullOrEmpty(ministry.Title))
-                fileName += $"-{searchParams.MinistryFilter}";
+                fileName += $"-{searchParams?.MinistryFilter}";
             if (!String.IsNullOrEmpty(searchParams?.TitleFilter))
                 fileName += $"-{searchParams.TitleFilter}";
 
@@ -905,7 +779,7 @@ namespace Service_Billing.Controllers
     {
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
-        public string UOM { get; set; }
+        public string? UOM { get; set; }
 
         public RecordEntry(string serviceCategory, decimal? amount)
         {

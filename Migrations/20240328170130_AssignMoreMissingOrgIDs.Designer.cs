@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20240328170130_AssignMoreMissingOrgIDs")]
+    partial class AssignMoreMissingOrgIDs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,32 +175,6 @@ namespace Service_Billing.Migrations
                     b.ToTable("ClientAccounts");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("BillId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("PeriodId")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("UnitPriceAtFiscal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("BillId");
-
-                    b.HasIndex("PeriodId");
-
-                    b.ToTable("FiscalHistory");
-                });
-
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
                 {
                     b.Property<int>("Id")
@@ -242,18 +219,31 @@ namespace Service_Billing.Migrations
                     b.ToTable("Ministries");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.Person", b =>
+            modelBuilder.Entity("Service_Billing.Models.PreviousQuarterChargeData", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("int");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("BillId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ChargeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PeriodId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("People");
+                    b.HasIndex("BillId");
+
+                    b.ToTable("PreviousQuarterChargeData");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
@@ -311,25 +301,6 @@ namespace Service_Billing.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
-                {
-                    b.HasOne("Service_Billing.Models.Bill", "Bill")
-                        .WithMany()
-                        .HasForeignKey("BillId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Service_Billing.Models.FiscalPeriod", "FiscalPeriod")
-                        .WithMany()
-                        .HasForeignKey("PeriodId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Bill");
-
-                    b.Navigation("FiscalPeriod");
-                });
-
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
                 {
                     b.HasOne("Service_Billing.Models.Bill", "Charge")
@@ -339,6 +310,13 @@ namespace Service_Billing.Migrations
                         .IsRequired();
 
                     b.Navigation("Charge");
+                });
+
+            modelBuilder.Entity("Service_Billing.Models.PreviousQuarterChargeData", b =>
+                {
+                    b.HasOne("Service_Billing.Models.Bill", null)
+                        .WithMany("PreviousQuarterData")
+                        .HasForeignKey("BillId");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
@@ -354,6 +332,8 @@ namespace Service_Billing.Migrations
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>
                 {
+                    b.Navigation("PreviousQuarterData");
+
                     b.Navigation("fiscalPeriods");
                 });
 

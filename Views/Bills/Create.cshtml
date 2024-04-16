@@ -109,6 +109,7 @@
     }
     <script>
         $(document).ready(function () {
+            var userSetQuantity = false;
             // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
@@ -124,11 +125,11 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
-                        if ($('#uom').val() == 'Month') {
+                        if ($('#uom').val() == 'Month' && userSetQuantity === false) {
+                            console.log(userSetQuantity);
                             $('#quantity').val(3);
-                        } else {
-                             $('#quantity').val(1);
-                        }
+                            $("#amount").val($('#amount').val() * 3);
+                        } 
                     }
                 };
                 xhr.open('get', url);
@@ -145,6 +146,7 @@
                 calculateAmount();
             });
             $("#quantity").on("change", (e) => {
+                userSetQuantity = true;
                 calculateAmount();
             });
 
