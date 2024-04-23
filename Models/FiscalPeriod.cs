@@ -1,7 +1,10 @@
-﻿namespace Service_Billing.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Service_Billing.Models
 {
     public class FiscalPeriod
     {
+        [Key]
         public int Id { get; set; }
         public int ChargeId { get; set; }
         public string Period { get; set; }

@@ -34,7 +34,7 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
         // This causes the signin to prompt the user for which
         // account to use - useful when there are multiple accounts signed
         // into the browser
-      
+
         options.Events.OnTokenValidated = async context =>
         {
             var tokenAcquisition = context.HttpContext.RequestServices
@@ -105,6 +105,7 @@ builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
+builder.Services.AddScoped<IFiscalHistoryRepository, FiscalHistoryRepository>();
 builder.Services.AddScoped<IPeopleRepository, PeopleRepository>();
 
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
