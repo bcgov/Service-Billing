@@ -6,9 +6,11 @@ namespace Service_Billing.Models
     {
         [Key]
         public int Id { get; set; }
-        public int ChargeId { get; set; }
         public string Period { get; set; }
-        public decimal? Amount { get; set; }
-        public virtual Bill Charge { get; set; } = null!; // "Required reference navigation to principal", says EF documentation
+    //    public virtual Bill Charge { get; set; } = null!; // "Required reference navigation to principal", says EF documentation
+        public FiscalPeriod(string period)
+        {
+            Period = period;
+        }
     }
 }

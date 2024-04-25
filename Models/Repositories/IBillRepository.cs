@@ -14,8 +14,6 @@ namespace Service_Billing.Models.Repositories
         IEnumerable<Bill> GetBillsByDateRange(DateTime start, DateTime end);
         List<int> GetFixedServices();
         IEnumerable<Bill> GetCurrentQuarterBills();
-        IEnumerable<Bill> GetPreviousQuarterBills();
-        IEnumerable<Bill> GetNextQuarterBills();
         Task<int> CreateBill(Bill bill);
         Task PromoteChargesToNewQuarter();
         Task Update(Bill bill);
@@ -25,6 +23,6 @@ namespace Service_Billing.Models.Repositories
 
         DateTime DetermineStartOfNextQuarter();
 
-        Dictionary<int, decimal?> GetPreviousQuarterBillIds();
+        IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory();
     }
 }

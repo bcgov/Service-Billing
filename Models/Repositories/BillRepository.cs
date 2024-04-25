@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Logging;
@@ -13,12 +14,17 @@ namespace Service_Billing.Models.Repositories
     {
         private readonly ServiceBillingContext _billingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
+        private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
         private readonly ILogger<BillRepository> _logger;
-        public BillRepository  (ServiceBillingContext billingContext, IFiscalPeriodRepository fiscalPeriodRepository, ILogger<BillRepository> logger)
+        public BillRepository  (ServiceBillingContext billingContext,
+            IFiscalPeriodRepository fiscalPeriodRepository,
+            ILogger<BillRepository> logger,
+            IFiscalHistoryRepository fiscalHistoryRepository)
         {
             _billingContext = billingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository; 
             _logger = logger;
+            _fiscalHistoryRepository = fiscalHistoryRepository;
         }
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
@@ -173,21 +179,55 @@ namespace Service_Billing.Models.Repositories
                 List<int> oneTimeServiceIds = GetOneTimeServices();
                 string newQuarter = DetermineCurrentQuarter();
                 _logger.LogInformation($"new quarter string is \"{newQuarter}\"");
+                // see if we have an entry in the DB for this fiscal period (we shouldn't), and create it if it doesn't exist
+                FiscalPeriod newFiscalPeriod = _fiscalPeriodRepository.GetByFiscalQuarterString(newQuarter);
+                if (newFiscalPeriod == null)
+                {
+                    newFiscalPeriod = new FiscalPeriod(newQuarter);
+                    _fiscalPeriodRepository.SaveFiscalPeriod(newFiscalPeriod);
+                }
+                else
+                    _logger.LogWarning($"Promoting charges to new quarter, but there already seems to be an entry for {newQuarter}. That's weird...");
+                if(newFiscalPeriod == null)
+                {
+                    throw new Exception("An error occurred while creating a new Fiscal Period database entry.");
+                }
                 IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
                 && fixedServiceIds.Contains((int)b.ServiceCategoryId)
                 && (b.EndDate == null || b.EndDate > quarterStart)
                 && b.IsActive);
-            
+
                 foreach (Bill bill in billsToPromote)
                 {
-                    List<string> recordedPeriods = _fiscalPeriodRepository.GetPeriodsByChargeId(bill.Id).Select(b => b.Period).ToList();
-                    if(!String.IsNullOrEmpty(bill.FiscalPeriod) && recordedPeriods.Contains(bill.FiscalPeriod))
+                    List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
+                    if ((!string.IsNullOrEmpty(bill.FiscalPeriodString) && bill.FiscalPeriodString == newQuarter)) // make sure charge has no fiscal history for the new quarter
                     {
                         continue; //don't add anything more than once.
                     }
-                    _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
-                    bill.FiscalPeriod = newQuarter;
-                    _billingContext.Update(bill);
+                    //   _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
+                    bill.FiscalPeriodString = newQuarter;
+                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity);
+                    decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart);
+                    if (bill.Quantity != newQuantityForCharge)
+                    {
+                        bill.Quantity = newQuantityForCharge;
+                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                        {
+                            decimal unitPrice;
+                            if(!decimal.TryParse(bill.ServiceCategory.Costs, out unitPrice))
+                            {
+                                _logger.LogError($"No unit Price found for bill with ID: {bill.Id}. The service category {bill.ServiceCategory.Name} has no unit price set.");
+                            }
+                            else
+                                bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
+                        }
+                        else
+                            _logger.LogError($"No sevice category found for charge with ID: {bill.Id}! Could not update charge amount!");
+
+                        _billingContext.Update(bill);
+                    }
+                    _billingContext.FiscalHistory.Add(fiscalHistory);
+            //        await _billingContext.SaveChangesAsync();
                 }
 
                 await _billingContext.SaveChangesAsync();
@@ -200,13 +240,33 @@ namespace Service_Billing.Models.Repositories
             }
         }
 
+        private decimal GetBillQuantityForNewQuarter(Bill bill, DateTime quarterStart)
+        {
+            if (bill.EndDate == null)
+                return (decimal)3.0;
+
+            else //find out how many months they should be billed for
+            {
+                int billEndMonth = bill.EndDate.Value.Month;
+                int quarterStartMonth = quarterStart.Month;
+                if(bill.EndDate.Value.Year > quarterStart.Year)
+                {
+                    int monthsScalar = bill.EndDate.Value.Year - quarterStart.Year;
+                    billEndMonth *= (monthsScalar * 12);
+                }
+                int duration = billEndMonth - quarterStartMonth + 1;
+
+                return duration < 3 ? (decimal)duration : (decimal)3.0;
+            }
+        }
+
         public IEnumerable<Bill> GetCurrentQuarterBills()
         {
             string fiscalPeriod = DetermineCurrentQuarter();
             return _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                .Where(b => b.FiscalPeriod == fiscalPeriod);
+                .Where(b => b.FiscalPeriodString == fiscalPeriod);
         }
 
         public string GetPreviousQuarterString()
@@ -246,61 +306,23 @@ namespace Service_Billing.Models.Repositories
             return string.Empty;
         }
 
-        public Dictionary<int, decimal?> GetPreviousQuarterBillIds()
+        public IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory()
         {
             try
             {
-                return  _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
+                string previousQuarterString = GetPreviousQuarterString();
+                FiscalPeriod? previousQuarter = _fiscalPeriodRepository.GetByFiscalQuarterString(previousQuarterString);
+                if(previousQuarter == null)
+                {
+                    throw new Exception($"No fiscal period entry was found for {previousQuarterString}");
+                }
+                return  _fiscalHistoryRepository.GetFiscalHistoryByFiscalPeriodId(previousQuarter.Id);
             }
             catch(Exception ex)
             {
-                //Todo: Add error logging.
+                _logger.LogError(ex.Message);
                 return null;
             }
-        }
-        public IEnumerable<Bill> GetPreviousQuarterBills()
-        {
-            try
-            {
-                Dictionary<int, decimal?> previousQuarterChargeIds = _fiscalPeriodRepository.ChargeIdsAndCostByFiscalPeriod(GetPreviousQuarterString());
-                List<Bill> bills = new List<Bill>();
-                foreach (int key in previousQuarterChargeIds.Keys)
-                {
-                    bills.Add(GetBill(key));
-                }
-
-                return bills;
-                //IEnumerable<Bill> previousQuarterBills = _billingContext.Bills.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
-                
-            }
-            catch(Exception e) 
-            {
-                //Todo: Add error logging.
-            }
-
-            return null;
-        }
-
-        //This method can is deprecated. Use GetNextQuarterBillIds instead, and user it to build a query
-        public IEnumerable<Bill> GetNextQuarterBills()
-        {
-            try
-            {
-                DateTime nextQuarterStart = DetermineStartOfNextQuarter();
-                List<int> fixedServiceIds = GetFixedServices();
-                return _billingContext.Bills.AsNoTracking()
-                    .Include(c => c.ServiceCategory)
-                    .Include(bill => bill.ClientAccount)
-                    .Where(b => b.ServiceCategoryId != null
-                   && fixedServiceIds.Contains((int)b.ServiceCategoryId)
-                   && (b.EndDate == null || b.EndDate > nextQuarterStart));
-            }
-            catch (Exception e)
-            {
-                // Todo: this interface could really use some good old logging. 
-            }
-
-            return null;
         }
 
         public Bill? GetBill(int id)
@@ -350,14 +372,17 @@ namespace Service_Billing.Models.Repositories
             newBill.Amount = bill.Amount;
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
-            newBill.FiscalPeriod = bill.FiscalPeriod;
+            newBill.FiscalPeriodString = bill.FiscalPeriodString;
             newBill.IdirOrUrl = bill.IdirOrUrl;
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
             newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
             newBill.Quantity = bill.Quantity;
             newBill.Notes = bill.Notes;
-
+            newBill.StartDate = bill.StartDate;
+            newBill.EndDate = bill.EndDate;
+            newBill.DateModified = bill.DateModified;
+            newBill.CreatedBy = bill.CreatedBy;
 
             await _billingContext.AddAsync(newBill);
             await _billingContext.SaveChangesAsync();
@@ -383,13 +408,14 @@ namespace Service_Billing.Models.Repositories
                 bill.StartDate = editedBill.StartDate;
                 bill.CreatedBy = editedBill.CreatedBy;
                 bill.ClientAccountId = editedBill.ClientAccountId;
-                bill.FiscalPeriod = editedBill.FiscalPeriod;
+                bill.FiscalPeriodString = editedBill.FiscalPeriodString;
                 bill.IdirOrUrl = editedBill.IdirOrUrl;
                 bill.IsActive = editedBill.IsActive;
                 bill.Quantity = editedBill.Quantity;
                 bill.BillingCycle = editedBill?.BillingCycle;
                 bill.TicketNumberAndRequester = editedBill?.TicketNumberAndRequester;
                 bill.Notes = editedBill?.Notes;
+                bill.DateModified = editedBill?.DateModified;
                 _billingContext.Update(bill);
                 await _billingContext.SaveChangesAsync();
             }

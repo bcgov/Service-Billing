@@ -13,24 +13,31 @@ namespace Service_Billing.Models.Repositories
         }
 
         // note that records are updated here, but changes aren't saved to database. See IBillRepository.PromoteChargesToNewQuarter
-        public async void UpdateRecord(int chargeId, string fiscalPeriod, decimal? amount)
-        {
-            FiscalPeriod record = new FiscalPeriod();
-            record.ChargeId = chargeId;
-            record.Period = fiscalPeriod;
-            record.Amount = amount;
+          //  public async void UpdateRecord(int chargeId, string fiscalPeriod, decimal? amount)
+          //  {
+          //      FiscalPeriod record = new FiscalPeriod();
+          ////      record.ChargeId = chargeId;
+          //      record.Period = fiscalPeriod;
+          ////      record.Amount = amount;
        
-            await _billingContext.AddAsync(record);
+          //      await _billingContext.AddAsync(record);
+          //  }
+
+        public FiscalPeriod? GetByFiscalQuarterString(string fiscalPeriod)
+        {
+            return _billingContext.FiscalPeriods.FirstOrDefault(x => x.Period == fiscalPeriod);
         }
 
-        public Dictionary<int, decimal?> ChargeIdsAndCostByFiscalPeriod(string fiscalPeriod)
+        public int SaveFiscalPeriod(FiscalPeriod fiscalPeriod)
         {
-            return _billingContext.FiscalPeriod.Where(p => p.Period == fiscalPeriod).ToDictionary(p => p.ChargeId, p => p.Amount);
+            _billingContext.FiscalPeriods.Add(fiscalPeriod);
+            _billingContext.SaveChanges();
+            return fiscalPeriod.Id;
         }
 
-        public IEnumerable<FiscalPeriod> GetPeriodsByChargeId(int chargeId)
-        {
-           return _billingContext.FiscalPeriod.Where(p => p.ChargeId == chargeId);
-        }
+        //public IEnumerable<FiscalPeriod> GetPeriodsByChargeId(int chargeId)
+        //{
+        //   return _billingContext.FiscalPeriod.Where(p => p.ChargeId == chargeId);
+        //}
     }
 }

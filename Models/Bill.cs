@@ -27,7 +27,8 @@ namespace Service_Billing.Models
         public decimal? Amount { get; set; }
 
         [Display(Name = "Fiscal Period")]
-        public string? FiscalPeriod { get; set; }
+        [Column("FiscalPeriod")]
+        public string? FiscalPeriodString { get; set; }
       //  public decimal Unit_Price; //comes from service category lookup
         public decimal? Quantity { get; set; }
 
@@ -51,7 +52,7 @@ namespace Service_Billing.Models
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
 
-        public virtual ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
+        public virtual ICollection<FiscalHistory>? previousFiscalRecords { get; set; }
 
 
         public Bill()
@@ -60,7 +61,7 @@ namespace Service_Billing.Models
             this.DateCreated = DateTimeOffset.UtcNow;
             this.StartDate = DateTimeOffset.UtcNow;
             this.IsActive = true;
-            fiscalPeriods = new Collection<FiscalPeriod>();
+            previousFiscalRecords = new Collection<FiscalHistory>();
         }
     }
 }

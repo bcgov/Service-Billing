@@ -158,7 +158,7 @@ namespace Service_Billing.Controllers
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.DateModified = pacificTime;
 
-            if (String.IsNullOrEmpty(bill.FiscalPeriod) || String.IsNullOrEmpty(bill.BillingCycle))
+            if (String.IsNullOrEmpty(bill.FiscalPeriodString) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
             ViewData["Categories"] = categories;
@@ -176,6 +176,7 @@ namespace Service_Billing.Controllers
             try
             {
                 bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                bill.DateModified = DateTime.Now;
                 await _billRepository.Update(bill);
                 //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
@@ -229,6 +230,9 @@ namespace Service_Billing.Controllers
             {
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
+                if(string.IsNullOrEmpty(bill.CreatedBy))
+                    bill.CreatedBy = GetMyName().Result;
+                bill.DateModified = DateTime.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
                 _logger.LogInformation($"New charge is valid");
@@ -335,11 +339,11 @@ namespace Service_Billing.Controllers
                 case 3:
                     quarter = "Quarter 4";
                     bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
-                    bill.FiscalPeriod = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    bill.FiscalPeriodString = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
                     return;
             }
 
-            bill.FiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            bill.FiscalPeriodString = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
         }
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
@@ -375,12 +379,12 @@ namespace Service_Billing.Controllers
                     case "current":
                     default:
                         string fiscalPeriod = _billRepository.DetermineCurrentQuarter();
-                        query = query.Where(b => b.FiscalPeriod == fiscalPeriod);
+                        query = query.Where(b => b.FiscalPeriodString == fiscalPeriod);
                         break;
    
                     case "previous":
-                        Dictionary<int, decimal?> previousQuarterChargeIds = _billRepository.GetPreviousQuarterBillIds();
-                        query = query.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
+                        List<int> previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().Select(x => x.BillId).ToList();
+                        query = query.Where(b => previousQuarterChargeIds.Contains(b.Id));
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
@@ -524,7 +528,7 @@ namespace Service_Billing.Controllers
 
                     row.CreatedBy = bill.CreatedBy;
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                    row.FiscalPeriod = bill.FiscalPeriod;
+                    row.FiscalPeriod = bill.FiscalPeriodString;
                     row.IdirOrURL = bill.IdirOrUrl;
                     if (account != null)
                     {

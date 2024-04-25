@@ -31,9 +31,11 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.FiscalHistory.FirstOrDefault(x => x.Id == id);
         }
 
-        public Task<int> SaveFiscalHistoryInfo(FiscalHistory fiscalHistory)
+        public int SaveFiscalHistoryInfo(FiscalHistory fiscalHistory)
         {
-            throw new NotImplementedException();
+            _billingContext.FiscalHistory.Add(fiscalHistory);
+            _billingContext.SaveChanges();
+            return fiscalHistory.Id;
         }
     }
 }
