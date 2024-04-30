@@ -373,7 +373,7 @@ namespace Service_Billing.Controllers
                
                 bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
-               
+                List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
                 switch (searchParams?.QuarterFilter)
                 {
                     case "current":
@@ -381,10 +381,9 @@ namespace Service_Billing.Controllers
                         string fiscalPeriod = _billRepository.DetermineCurrentQuarter();
                         query = query.Where(b => b.FiscalPeriodString == fiscalPeriod);
                         break;
-   
                     case "previous":
-                        List<int> previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().Select(x => x.BillId).ToList();
-                        query = query.Where(b => previousQuarterChargeIds.Contains(b.Id));
+                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
+                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
@@ -451,8 +450,24 @@ namespace Service_Billing.Controllers
                 }
 
                 query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
+                
+                IEnumerable<Bill> result = query.AsNoTracking().ToList<Bill>();
 
-                return query.AsNoTracking().ToList<Bill>();
+                //if we're looking at a previous quarter's charges, make the amounts and quantities reflect what it was for that quarter
+                if (previousQuarterChargeIds.Any())
+                {
+                    foreach (Bill bill in result)
+                    {
+                        FiscalHistory? chargeHistory = previousQuarterChargeIds.FirstOrDefault(x => x.BillId == bill.Id);
+                        if(chargeHistory != null)
+                        {
+                            bill.Amount = chargeHistory.UnitPriceAtFiscal;
+                            bill.Quantity = chargeHistory.QuantityAtFiscal;
+                        }
+                    }
+                }
+
+                return result;
             }
             
             catch (Exception ex)
