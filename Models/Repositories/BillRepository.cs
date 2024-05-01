@@ -170,10 +170,10 @@ namespace Service_Billing.Models.Repositories
             {
                 _logger.LogInformation("Promoting charges to new quarter...");
                 // determine limits of current fiscal quarter
-                DateTime quarterStart = DetermineStartOfCurrentQuarter();
-                _logger.LogInformation($"quarter start date: {quarterStart.ToShortDateString()}");
-                DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
-                _logger.LogInformation($"quarter end date: {quarterEnd.ToShortDateString()}");
+                DateTimeOffset quarterStart = DetermineStartOfCurrentQuarter();
+                _logger.LogInformation($"quarter start date: {quarterStart.Date.ToShortTimeString()}");
+                DateTimeOffset quarterEnd = DetermineEndOfQuarter(quarterStart.Date);
+                _logger.LogInformation($"quarter end date: {quarterEnd.Date.ToShortTimeString()}");
                 // list which services are fixed consumptions. Ignore charges where UOM is not month
                 List<int> fixedServiceIds = GetFixedServices();
                 List<int> oneTimeServiceIds = GetOneTimeServices();
@@ -207,7 +207,7 @@ namespace Service_Billing.Models.Repositories
                     //   _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
                     bill.FiscalPeriodString = newQuarter;
                     FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity);
-                    decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart);
+                    decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
                     if (bill.Quantity != newQuantityForCharge)
                     {
                         bill.Quantity = newQuantityForCharge;
