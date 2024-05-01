@@ -222,7 +222,7 @@ namespace Service_Billing.Models.Repositories
                                 bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
                         }
                         else
-                            _logger.LogError($"No sevice category found for charge with ID: {bill.Id}! Could not update charge amount!");
+                            _logger.LogError($"No service category found for charge with ID: {bill.Id}! Could not update charge amount!");
 
                         _billingContext.Update(bill);
                     }
