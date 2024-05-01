@@ -66,7 +66,7 @@ namespace Service_Billing.Models.Repositories
 
             return $"Fiscal {year1.ToString().Substring(2)}/{year2.ToString().Substring(2)} {quarter}";
         }
-        private DateTime DetermineStartOfCurrentQuarter()
+        public DateTime DetermineStartOfCurrentQuarter()
         {
             DateTime quarter = DateTime.Today;
             switch (quarter.Month)
@@ -119,7 +119,7 @@ namespace Service_Billing.Models.Repositories
             }
         }
 
-        private DateTime DetermineEndOfQuarter(DateTime quarterStart)
+        public DateTime DetermineEndOfQuarter(DateTime quarterStart)
         {
             switch (quarterStart.Month)
             {

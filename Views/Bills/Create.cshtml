@@ -69,12 +69,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
+                <input asp-for="StartDate" class="form-control" type="date" id="startDate" value="@DateTime.Today" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" class="form-control" type="date" id="endDate" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -117,7 +117,7 @@
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
                 var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = function () {
@@ -125,11 +125,12 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
-                        if ($('#uom').val() == 'Month' && userSetQuantity === false) {
-                            console.log(userSetQuantity);
-                            $('#quantity').val(3);
-                            $("#amount").val($('#amount').val() * 3);
-                        } 
+                        $("#quantity").val(response['quantity']);
+                        // if ($('#uom').val() == 'Month' && userSetQuantity === false) {
+                        //     console.log(userSetQuantity);
+                        //     $('#quantity').val(3);
+                        //     $("#amount").val($('#amount').val() * 3);
+                       // } 
                     }
                 };
                 xhr.open('get', url);
@@ -149,7 +150,12 @@
                 userSetQuantity = true;
                 calculateAmount();
             });
-
+            $("#startDate").on("change", (e) => {
+                calculateAmount();
+            });
+            $("#endDate").on("change", (e) => {
+                calculateAmount();
+            });
             var clientsMatchingSearch = [];
             createClientSelect = () => {
                 var url = "../../Bills/GetClients";

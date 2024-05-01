@@ -231,7 +231,7 @@ namespace Service_Billing.Controllers
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
                 if(string.IsNullOrEmpty(bill.CreatedBy))
-                    bill.CreatedBy = GetMyName().Result;
+                    bill.CreatedBy = await GetMyName();
                 bill.DateModified = DateTime.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
@@ -252,7 +252,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetBillAmount(short? serviceId, decimal? quantity)
+        public ActionResult GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
         {
             try
             {
@@ -262,6 +262,35 @@ namespace Service_Billing.Controllers
                 if (category == null)
                 {
                     throw new Exception($"Service category with id: {serviceId} not found!");
+                }
+                /* if UOM is month, then we should adjust the quantity such that the client is not charged for any months
+                 * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
+                 * will typically be set to three, unless it has an end date sooner than the end of that quarter
+                 * */
+                if(category.UOM.ToLower() == "month")
+                {
+                    DateTimeOffset start = new DateTimeOffset();
+                    DateTimeOffset end = new DateTimeOffset();
+                    DateTime quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                    DateTime quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart);
+                    int startMonthDifference = 0;
+                    int endMonthDifference = 0;
+                    if (!String.IsNullOrEmpty(startDate))
+                    {
+                        if (DateTimeOffset.TryParse(startDate, out start) && start > quarterStart)
+                        {
+                            startMonthDifference = start.Month - quarterStart.Month;
+                        }
+                    }
+                    if (!String.IsNullOrEmpty(endDate))
+                    {
+                        if (DateTimeOffset.TryParse(endDate, out end) && end < quarterEnd)
+                        {
+                            int monthScalar = (int)(end.Year - quarterEnd.Year) > 0 ? (int)(end.Year - quarterEnd.Year) : 1;
+                            endMonthDifference = Math.Min(monthScalar * quarterEnd.Month - end.Month, 3);
+                        }
+                    }
+                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 1);
                 }
                 decimal newAmount;
                 string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
@@ -277,7 +306,7 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
-                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity);
+                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
                 recordEntry.UOM = UOM;
 
                 return new JsonResult(recordEntry);
@@ -625,7 +654,7 @@ namespace Service_Billing.Controllers
 
             foreach (var entry in model.ServicesAndSums)
             {
-                records.Add(new RecordEntry(entry.Key, entry.Value));
+                records.Add(new RecordEntry(entry.Key, entry.Value, null));
                 total += entry.Value;
             }
 
@@ -799,11 +828,13 @@ namespace Service_Billing.Controllers
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
         public string? UOM { get; set; }
+        public decimal? Quantity { get; set; }
 
-        public RecordEntry(string serviceCategory, decimal? amount)
+        public RecordEntry(string serviceCategory, decimal? amount, decimal? quantity)
         {
             ServiceCategory = serviceCategory;
             Amount = amount;
+            Quantity = quantity;
         }
     }
 }
