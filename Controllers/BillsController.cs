@@ -232,7 +232,7 @@ namespace Service_Billing.Controllers
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
                 if(string.IsNullOrEmpty(bill.CreatedBy))
                     bill.CreatedBy = await GetMyName();
-                bill.DateModified = DateTime.Now;
+                bill.DateModified = DateTimeOffset.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
                 _logger.LogInformation($"New charge is valid");
@@ -271,8 +271,8 @@ namespace Service_Billing.Controllers
                 {
                     DateTimeOffset start = new DateTimeOffset();
                     DateTimeOffset end = new DateTimeOffset();
-                    DateTime quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
-                    DateTime quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart);
+                    DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                    DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
                     int startMonthDifference = 0;
                     int endMonthDifference = 0;
                     if (!String.IsNullOrEmpty(startDate))
