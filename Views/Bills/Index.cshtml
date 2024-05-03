@@ -141,11 +141,8 @@
                     </div>
                     <div class="ui-section-buttons">
                         <div class="option-buttons">
-                            <input type="submit" value="Filter" class="btn btn-default" /> |
-                            <a asp-action="Index">Back to Full List</a>
-                        
+                            <a asp-action="Index">Clear Filters</a>
                         </div>
-
                     </div>
                 </fieldset>
                 <div class="export-button">
@@ -215,5 +212,12 @@
             filterServiceCategories();
         });
         filterServiceCategories();
+
+        $('form input').change(function () {
+            $(this).closest('form').submit();
+        });
+        $('form select').change(function () {
+            $(this).closest('form').submit();
+        });
     </script>
 }

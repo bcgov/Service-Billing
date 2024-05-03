@@ -65,10 +65,8 @@
                         </div>
                         <div class="ui-section-buttons">
                             <div class="option-buttons">
-                                <input type="submit" value="Filter" class="btn btn-default" />
-                                <a asp-action="Index">Back to Full List</a>
+                                <a asp-action="Index">Clear Filters</a>
                             </div>
-
                         </div>
                     </div>
                 </fieldset>
@@ -131,6 +129,13 @@
             // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#account-index-link').addClass("active-nav-link");
+        });
+
+        $('form input').change(function () {
+            $(this).closest('form').submit();
+        });
+        $('form select').change(function () {
+            $(this).closest('form').submit();
         });
     </script>
 }
