@@ -321,11 +321,9 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult GetClients()
         {
-
             try
             {
                 return new JsonResult(from a in _clientAccountRepository.GetAll() select new { a.Id, a.Name });
-
             }
             catch (Exception ex)
             {
