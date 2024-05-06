@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
@@ -25,6 +26,7 @@ namespace Service_Billing.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ServiceBillingContext _serviceBillingContext;
+        private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -33,6 +35,7 @@ namespace Service_Billing.Controllers
             IMinistryRepository ministryRepository,
             IAuthorizationService authorizationService,
             IBusinessAreaRepository businessAreaRepository,
+            IFiscalPeriodRepository fiscalPeriodRepository,
             ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -48,6 +51,7 @@ namespace Service_Billing.Controllers
             _authorizationService = authorizationService;
             _businessAreaRepository = businessAreaRepository;
             _serviceBillingContext = serviceBillingContext;
+            _fiscalPeriodRepository = fiscalPeriodRepository;
         }
 
         [Authorize]
@@ -158,7 +162,7 @@ namespace Service_Billing.Controllers
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.DateModified = pacificTime;
 
-            if (String.IsNullOrEmpty(bill.FiscalPeriodString) || String.IsNullOrEmpty(bill.BillingCycle))
+            if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
             ViewData["Categories"] = categories;
@@ -366,11 +370,11 @@ namespace Service_Billing.Controllers
                 case 3:
                     quarter = "Quarter 4";
                     bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
-                    bill.FiscalPeriodString = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    bill.MostRecentActiveFiscalPeriod.Period = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
                     return;
             }
 
-            bill.FiscalPeriodString = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            bill.MostRecentActiveFiscalPeriod.Period = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
         }
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
@@ -405,8 +409,13 @@ namespace Service_Billing.Controllers
                 {
                     case "current":
                     default:
-                        string fiscalPeriod = _billRepository.DetermineCurrentQuarter();
-                        query = query.Where(b => b.FiscalPeriodString == fiscalPeriod);
+                        string fiscalPeriodString = _billRepository.DetermineCurrentQuarter();
+                        FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+                        if(fiscalPeriod == null)
+                        {
+                            throw new Exception($"No Fiscal Period entity was found that matches \"{fiscalPeriodString}\"");
+                        }
+                        query = query.Where(b => b.CurrentFiscalPeriodId == fiscalPeriod.Id);
                         break;
                     case "previous":
                         previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
@@ -476,7 +485,7 @@ namespace Service_Billing.Controllers
                     query = query.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
-                query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
+                query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title).Include(c => c.MostRecentActiveFiscalPeriod);
                 
                 IEnumerable<Bill> result = query.AsNoTracking().ToList<Bill>();
 
@@ -570,7 +579,7 @@ namespace Service_Billing.Controllers
 
                     row.CreatedBy = bill.CreatedBy;
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                    row.FiscalPeriod = bill.FiscalPeriodString;
+                    row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod.Period;
                     row.IdirOrURL = bill.IdirOrUrl;
                     if (account != null)
                     {

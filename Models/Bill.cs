@@ -26,10 +26,6 @@ namespace Service_Billing.Models
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }
 
-        [Display(Name = "Fiscal Period")]
-        [Column("FiscalPeriod")]
-        public string? FiscalPeriodString { get; set; }
-      //  public decimal Unit_Price; //comes from service category lookup
         public decimal? Quantity { get; set; }
 
         [Column("ticketNumberAndRequesterName")]
@@ -51,8 +47,12 @@ namespace Service_Billing.Models
         public string? CreatedBy { get; set; }
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
-
         public virtual ICollection<FiscalHistory>? previousFiscalRecords { get; set; }
+        public int CurrentFiscalPeriodId { get; set; } // "LastActiveFiscalPeriodID" would have been a better name
+
+        [ForeignKey("CurrentFiscalPeriodId")]
+        public virtual FiscalPeriod MostRecentActiveFiscalPeriod { get; set; }
+
 
 
         public Bill()

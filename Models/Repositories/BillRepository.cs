@@ -200,12 +200,12 @@ namespace Service_Billing.Models.Repositories
                 foreach (Bill bill in billsToPromote)
                 {
                     List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
-                    if ((!string.IsNullOrEmpty(bill.FiscalPeriodString) && bill.FiscalPeriodString == newQuarter)) // make sure charge has no fiscal history for the new quarter
+                    if ((!string.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) && bill.MostRecentActiveFiscalPeriod.Period == newQuarter)) // make sure charge has no fiscal history for the new quarter
                     {
                         continue; //don't add anything more than once.
                     }
-                    //   _fiscalPeriodRepository.UpdateRecord(bill.Id, bill.FiscalPeriod, bill.Amount);
-                    bill.FiscalPeriodString = newQuarter;
+                //    bill.MostRecentActiveFiscalPeriod.Period = newQuarter;  //TODO: drop this, as we will drop this field for the foreign relation on the next line
+                    bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
                     FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity);
                     decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
                     if (bill.Quantity != newQuantityForCharge)
@@ -266,7 +266,7 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                .Where(b => b.FiscalPeriodString == fiscalPeriod);
+                .Where(b => b.MostRecentActiveFiscalPeriod.Period == fiscalPeriod);
         }
 
         public string GetPreviousQuarterString()
@@ -331,6 +331,7 @@ namespace Service_Billing.Models.Repositories
                 .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
+                .Include(bill => bill.MostRecentActiveFiscalPeriod)
                 .FirstOrDefault(b => b.Id == id);
         }
 
@@ -372,7 +373,7 @@ namespace Service_Billing.Models.Repositories
             newBill.Amount = bill.Amount;
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
-            newBill.FiscalPeriodString = bill.FiscalPeriodString;
+            newBill.MostRecentActiveFiscalPeriod.Period = bill.MostRecentActiveFiscalPeriod.Period;
             newBill.IdirOrUrl = bill.IdirOrUrl;
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
@@ -408,7 +409,7 @@ namespace Service_Billing.Models.Repositories
                 bill.StartDate = editedBill.StartDate;
                 bill.CreatedBy = editedBill.CreatedBy;
                 bill.ClientAccountId = editedBill.ClientAccountId;
-                bill.FiscalPeriodString = editedBill.FiscalPeriodString;
+                bill.MostRecentActiveFiscalPeriod.Period = editedBill.MostRecentActiveFiscalPeriod.Period;
                 bill.IdirOrUrl = editedBill.IdirOrUrl;
                 bill.IsActive = editedBill.IsActive;
                 bill.Quantity = editedBill.Quantity;

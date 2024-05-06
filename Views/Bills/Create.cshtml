@@ -51,11 +51,11 @@
                 <label>UOM</label>
                 <input id="uom" class="form-control" readonly="true" />
             </div>
-            <div class="form-group">
+           @*  <div class="form-group">
                 <label asp-for="FiscalPeriodString" class="control-label"></label>
                 <input asp-for="FiscalPeriodString" class="form-control" data-val="true" data-val-required="Please provide a Fiscal Period" />
                 <span asp-validation-for="FiscalPeriodString" class="text-danger"></span>
-            </div>
+            </div> *@
             <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="Quantity" class="control-label"></label>
                 <input asp-for="Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />

@@ -2,9 +2,8 @@
 {
     public interface IFiscalPeriodRepository
     {
-    //    void UpdateRecord(int chargeId, string fiscalPeriod, decimal? amount);
         FiscalPeriod? GetByFiscalQuarterString(string fiscalPeriod);
+        FiscalPeriod? GetFiscalPeriodByString(string period);
         int SaveFiscalPeriod(FiscalPeriod fiscalPeriod);
-   //     IEnumerable<FiscalPeriod> GetPeriodsByChargeId(int chargeId);
     }
 }
