@@ -4,7 +4,6 @@ namespace Service_Billing.HostedServices
 {
     public class ChargePromotionService : BackgroundService
     {
-        private readonly IBillRepository _billRepository;
         private readonly ILogger<ChargePromotionService> _logger;
         
         public IServiceProvider Services { get; }
