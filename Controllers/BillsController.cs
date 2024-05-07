@@ -98,14 +98,14 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> GetBillsTable(ChargeIndexSearchParamsModel searchModel)
+        public ActionResult GetBillsTable(ChargeIndexSearchParamsModel searchModel)
         {
 
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-            IEnumerable<Bill> bills = QueryForCharges(searchModel, ministryUserName);
+            IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
             if (bills != null && bills.Any())
             { 
                 bills = bills.Where(b => b.ServiceCategory.IsActive);
@@ -234,6 +234,10 @@ namespace Service_Billing.Controllers
             {
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
+                if (account == null || category == null)
+                {
+                    throw new Exception("Could not find either a client account or service category when attempting to create new charge entry.");
+                }
                 if(string.IsNullOrEmpty(bill.CreatedBy))
                     bill.CreatedBy = await GetMyName();
                 bill.DateModified = DateTimeOffset.Now;
@@ -243,6 +247,7 @@ namespace Service_Billing.Controllers
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
+
                 return RedirectToAction($"Details", new { bill.Id });
 
             }
@@ -271,7 +276,7 @@ namespace Service_Billing.Controllers
                  * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
                  * will typically be set to three, unless it has an end date sooner than the end of that quarter
                  * */
-                if(category.UOM.ToLower() == "month")
+                if(category?.UOM?.ToLower() == "month")
                 {
                     DateTimeOffset start = new DateTimeOffset();
                     DateTimeOffset end = new DateTimeOffset();
@@ -370,11 +375,24 @@ namespace Service_Billing.Controllers
                 case 3:
                     quarter = "Quarter 4";
                     bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
-                    bill.MostRecentActiveFiscalPeriod.Period = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    string fiscalPeriodString = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    FiscalPeriod? CurrentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+                    if(CurrentFiscalPeriod == null )
+                    {
+                        _logger.LogError($"No existing Fiscal Period entity found for current Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}");
+                    }
+                    else
+                    {
+                        bill.CurrentFiscalPeriodId = CurrentFiscalPeriod.Id;
+                    }
+                    
                     return;
             }
-
-            bill.MostRecentActiveFiscalPeriod.Period = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            FiscalPeriod? CurrentFiscal = _fiscalPeriodRepository.GetFiscalPeriodByString($"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}");
+            if (CurrentFiscal == null)
+                _logger.LogError($"could not find a fiscal period entity for \"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}\" ");
+            else
+                bill.CurrentFiscalPeriodId= CurrentFiscal.Id;
         }
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
@@ -579,7 +597,7 @@ namespace Service_Billing.Controllers
 
                     row.CreatedBy = bill.CreatedBy;
                     row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                    row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod.Period;
+                    row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
                     row.IdirOrURL = bill.IdirOrUrl;
                     if (account != null)
                     {
