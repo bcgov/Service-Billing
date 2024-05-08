@@ -22,8 +22,6 @@ namespace Service_Billing.Services.Email
                 var addr = new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca");
                 email.Sender = addr;
                 email.To.Add(addr);
-                email.From.Add(new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca"));
-                email.To.Add(new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca"));
                 email.Subject = subject;
                 var builder = new BodyBuilder();
                 builder.HtmlBody = message;
