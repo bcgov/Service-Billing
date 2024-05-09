@@ -228,7 +228,7 @@ namespace Service_Billing.Controllers
                             eaEmail,
                             "Please Review: New GDX Service Billing Account Information",
                             $@"
-                            Hello {eaEmail.Split('@')[0]},
+                            Hello Andre Lashley,
                     
                             We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
                     
