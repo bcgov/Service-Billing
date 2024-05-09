@@ -66,6 +66,10 @@
             {
                 <li id="create-service-link">@Html.ActionLink("Create New Service", "Create", "ServiceCategory")</li>
             }
+            @if (isAdmin)
+            {
+                <li id="organization-service-link">@Html.ActionLink("Manage Organizations", "Index", "Organization")</li>
+            }
         </ul>
     </div>
 </nav>
