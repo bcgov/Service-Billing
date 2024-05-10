@@ -222,10 +222,12 @@ namespace Service_Billing.Controllers
                     {
                         var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
                         var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                        var eaDisplayName = (await _graphApiService.Me(eaId, cca)).DisplayName;
                         var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
                         await _emailService.SendEmail(
                             eaEmail,
+                            eaDisplayName,
                             "Please Review: New GDX Service Billing Account Information",
                             $@"
                             Hello Andre Lashley,
