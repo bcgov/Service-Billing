@@ -93,7 +93,9 @@ namespace Service_Billing.Controllers
                 _logger.LogError(ex.Message);
             }
 
-            return View("index");
+            IEnumerable<Ministry> organizations = _ministryRepository.GetAll();
+
+            return View("index", organizations);
         }
 
         [HttpGet]
