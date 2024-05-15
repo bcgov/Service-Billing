@@ -1,0 +1,17 @@
+﻿@model Service_Billing.Models.Ministry
+<h3>Create new Organization</h3>
+<div id="newOrgSection">
+    <form asp-action="Create" data-bind="@Model" method="post">
+        <div asp-validation-summary="All" class="text-danger"></div>
+        <div class="form-group">
+            <label asp-for="@Model.Acronym" class="control-label">Acronym or Short Name</label>
+            <input asp-for="@Model.Acronym" class="form-control" />
+            <span asp-validation-for="@Model.Acronym" class="text-danger"></span>
+
+            <label asp-for="@Model.Title" class="control-label">Full Name</label>
+            <input asp-for="@Model.Title" class="form-control" />
+            <span asp-validation-for="@Model.Title" class="text-danger"></span>
+        </div>
+        <input type="Submit" class="btn btn-primary" />
+    </form>
+</div>

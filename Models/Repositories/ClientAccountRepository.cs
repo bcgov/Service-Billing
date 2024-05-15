@@ -52,10 +52,10 @@ namespace Service_Billing.Models.Repositories
             return userAccounts.Distinct();
         }
 
-        public void Update(ClientAccount account)
+        public async Task Update(ClientAccount account)
         {
             _context.Update(account);
-            _context.SaveChanges(true);
+            await _context.SaveChangesAsync(true);
         }
 
         public void Approve(ClientAccount account)
@@ -68,6 +68,11 @@ namespace Service_Billing.Models.Repositories
         public IEnumerable<ClientAccount> GetInactiveAccounts()
         {
             return _context.ClientAccounts.Where(x => !x.IsActive);
+        }
+
+        public IEnumerable<ClientAccount> GetAccountsByOrgId(int orgId)
+        {
+            return _context.ClientAccounts.Where(x => x.OrganizationId == orgId);
         }
     }
 }

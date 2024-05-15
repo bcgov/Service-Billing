@@ -21,5 +21,16 @@ namespace Service_Billing.Models.Repositories
         {
             return _billingContext.Ministries.FirstOrDefault(x => x.Id == id);
         }
+
+        public async Task Update(Ministry ministry)
+        {
+            _billingContext.Update(ministry);
+            await _billingContext.SaveChangesAsync();
+        }
+        public async Task Save(Ministry ministry)
+        {
+            await _billingContext.AddAsync(ministry);
+            await _billingContext.SaveChangesAsync();
+        }
     }
 }
