@@ -19,8 +19,10 @@ namespace Service_Billing.Services.Email
             try
             {
                 var email = new MimeMessage();
-                var addr = new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca");
-                email.From.Add(new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca"));
+                // var addr = new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca");
+                // email.From.Add(new MailboxAddress("Lashley, Andre CITZ:EX", "Andre.Lashley@gov.bc.ca"));
+                var addr = new MailboxAddress("Hunter, Carolynn J CITZ:EX", "carolynn.hunter@gov.bc.ca");
+                email.From.Add(new MailboxAddress("Hunter, Carolynn J CITZ:EX", "carolynn.hunter@gov.bc.ca"));
                 email.To.Add(new MailboxAddress(displayName, to));
                 //email.Sender = addr;
                 email.Subject = subject;
