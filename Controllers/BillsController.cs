@@ -100,7 +100,6 @@ namespace Service_Billing.Controllers
         [HttpPost]
         public ActionResult GetBillsTable(ChargeIndexSearchParamsModel searchModel)
         {
-
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
@@ -182,7 +181,6 @@ namespace Service_Billing.Controllers
                 bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 bill.DateModified = DateTime.Now;
                 await _billRepository.Update(bill);
-                //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
             }
             catch (DbUpdateException ex)
