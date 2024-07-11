@@ -89,7 +89,7 @@ namespace Service_Billing.Controllers
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                     break;
                 case "all":
-                    ViewData["FiscalPeriod"] = "All Quarters";
+                    ViewData["FiscalPeriod"] = "all";
                     break;
             }
             ViewData["searchModel"] = searchModel;
@@ -224,8 +224,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
-                                    // public async Task<IActionResult> Create(IFormCollection collection)
+        [ValidateAntiForgeryToken] 
         public async Task<ActionResult> Create(Bill bill)
         {
             try
@@ -247,7 +246,6 @@ namespace Service_Billing.Controllers
                 bill = _billRepository.GetBill(billId);
 
                 return RedirectToAction($"Details", new { bill.Id });
-
             }
             catch (DbUpdateException ex)
             {
