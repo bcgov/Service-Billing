@@ -105,11 +105,7 @@ namespace Service_Billing.Controllers
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
-            if (bills != null && bills.Any())
-            { 
-                bills = bills.Where(b => b.ServiceCategory.IsActive);
-                bills = bills.Where(b => b.ClientAccount.IsActive);
-            }
+         
             ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             if (searchModel != null && searchModel.QuarterFilter == "previous")
             {
@@ -431,6 +427,7 @@ namespace Service_Billing.Controllers
                         }
                         query = query.Where(b => b.CurrentFiscalPeriodId == fiscalPeriod.Id);
                         query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         break;
                     case "previous":
                         previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
@@ -440,6 +437,8 @@ namespace Service_Billing.Controllers
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
                         DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
                         query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                         break;
                     case "all":
