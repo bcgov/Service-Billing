@@ -430,6 +430,7 @@ namespace Service_Billing.Controllers
                             throw new Exception($"No Fiscal Period entity was found that matches \"{fiscalPeriodString}\"");
                         }
                         query = query.Where(b => b.CurrentFiscalPeriodId == fiscalPeriod.Id);
+                        query = query.Where(b => b.IsActive);
                         break;
                     case "previous":
                         previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
@@ -445,18 +446,13 @@ namespace Service_Billing.Controllers
                         // Just break. Effectively it's just one less Where clause
                         break;
                 }
-                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "current")
                 {
                     IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
                     query = query.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     query = query.Where(x => x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-
-                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
-                {
-                    query = query.Where(b => b.IsActive);
-                }
                 if (shouldRestrictToUserOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
