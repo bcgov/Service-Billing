@@ -89,7 +89,7 @@ namespace Service_Billing.Controllers
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                     break;
                 case "all":
-                    ViewData["FiscalPeriod"] = "All Quarters";
+                    ViewData["FiscalPeriod"] = "all";
                     break;
             }
             ViewData["searchModel"] = searchModel;
@@ -100,17 +100,12 @@ namespace Service_Billing.Controllers
         [HttpPost]
         public ActionResult GetBillsTable(ChargeIndexSearchParamsModel searchModel)
         {
-
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
-            if (bills != null && bills.Any())
-            { 
-                bills = bills.Where(b => b.ServiceCategory.IsActive);
-                bills = bills.Where(b => b.ClientAccount.IsActive);
-            }
+         
             ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             if (searchModel != null && searchModel.QuarterFilter == "previous")
             {
@@ -182,7 +177,6 @@ namespace Service_Billing.Controllers
                 bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 bill.DateModified = DateTime.Now;
                 await _billRepository.Update(bill);
-                //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
             }
             catch (DbUpdateException ex)
@@ -226,8 +220,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
-                                    // public async Task<IActionResult> Create(IFormCollection collection)
+        [ValidateAntiForgeryToken] 
         public async Task<ActionResult> Create(Bill bill)
         {
             try
@@ -249,7 +242,6 @@ namespace Service_Billing.Controllers
                 bill = _billRepository.GetBill(billId);
 
                 return RedirectToAction($"Details", new { bill.Id });
-
             }
             catch (DbUpdateException ex)
             {
@@ -434,6 +426,8 @@ namespace Service_Billing.Controllers
                             throw new Exception($"No Fiscal Period entity was found that matches \"{fiscalPeriodString}\"");
                         }
                         query = query.Where(b => b.CurrentFiscalPeriodId == fiscalPeriod.Id);
+                        query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         break;
                     case "previous":
                         previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
@@ -443,24 +437,21 @@ namespace Service_Billing.Controllers
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
                         DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
                         query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                         break;
                     case "all":
                         // Just break. Effectively it's just one less Where clause
                         break;
                 }
-                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "current")
                 {
                     IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
                     query = query.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     query = query.Where(x => x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-
-                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
-                {
-                    query = query.Where(b => b.IsActive);
-                }
                 if (shouldRestrictToUserOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
