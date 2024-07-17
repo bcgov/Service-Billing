@@ -6,7 +6,6 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Billing</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js" asp-append-version="true"></script>
     <script src="~/lib/jquery/jquery.js"></script>
     <script src="~/lib/jquery-validate/jquery.validate.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
@@ -32,8 +31,10 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.13.2/jquery-ui.js"></script>
-    <link rel="Stylesheet" href="https://ajax.aspnetcdn.com/ajax/jquery.ui/1.8.10/themes/redmond/jquery-ui.css" />
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"
+            integrity="sha256-lSjKY0/srUM9BE3dPm+c4fBo1dky2v27Gdjm2uoZaL0="
+            crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/redmond/jquery-ui.css" integrity="sha384-nV9wiMkeXf7YIDKlnL/B+OIA6E26UftW/uZBNdF5VcRJ4wHdfql/IBIRaUsOls5d" crossorigin="anonymous" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
