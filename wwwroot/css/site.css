@@ -1,6 +1,14 @@
+@font-face {
+    font-family: "BC Sans";
+    src: url("/fonts/BCSans-Regular_2f.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
 html {
     font-size: 14px;
-    font-family: "BC Sans" position: relative;
+    font-family: "BC Sans"; 
+    position: relative;
     min-height: 100%;
 }
 
@@ -16,7 +24,7 @@ html {
 
 body {
     margin-bottom: 60px;
-    font-family: "BC Sans"
+    font-family: "BC Sans";
 }
 
 .flex-container {
