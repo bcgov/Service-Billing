@@ -29,6 +29,7 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
+                .Include(c => c.MostRecentActiveFiscalPeriod)
                 .Include(bill => bill.ClientAccount);
 
         public string DetermineCurrentQuarter(DateTime? date = null)

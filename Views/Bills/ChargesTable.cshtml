@@ -57,7 +57,14 @@ else
                     asp-action="Details"
                        asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
                 </td>
-                <td>@ViewData["FiscalPeriod"]</td>
+                @if(ViewData["FiscalPeriod"] as string == "all")
+                {
+                    <td>@bill.MostRecentActiveFiscalPeriod.Period</td>
+                }
+                else
+                {
+                    <td>@ViewData["FiscalPeriod"]</td> <!-- this could probably be handled better-->
+                }
                 <td>@bill.IdirOrUrl</td>
                 <td>
                     @{

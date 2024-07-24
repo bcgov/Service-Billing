@@ -105,21 +105,31 @@ namespace Service_Billing.Controllers
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
-         
-            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
-            if (searchModel != null && searchModel.QuarterFilter == "previous")
+
+            if(searchModel != null && !String.IsNullOrEmpty(searchModel.QuarterFilter))
             {
-                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
-                ViewData["FiscalPeriod"] = searchModel.QuarterString;
+                switch (searchModel.QuarterFilter)
+                {
+                    case "current": default:
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+                        break;
+                    case "previous":
+                        searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+                        ViewData["FiscalPeriod"] = searchModel.QuarterString;
+                        break;
+                    case "next":
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                        break;
+                    case "all":
+                        ViewData["FiscalPeriod"] = "all";
+                        break;
+                }
             }
-            if (searchModel != null && searchModel.QuarterFilter == "next")
+            else
             {
-                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             }
-            else if (searchModel != null)
-            {
-                searchModel.QuarterString = string.Empty;
-            }
+          
             return PartialView("ChargesTable", bills);
         }
 
@@ -445,7 +455,7 @@ namespace Service_Billing.Controllers
                         // Just break. Effectively it's just one less Where clause
                         break;
                 }
-                if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "current")
+                if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && (searchParams?.QuarterFilter == "current" || searchParams?.QuarterFilter == "next"))
                 {
                     IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
                     query = query.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
