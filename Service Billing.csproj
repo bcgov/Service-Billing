@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>aspnet-Billing-38bf824e-5f89-4de6-9846-e0a954b0677b</UserSecretsId>
@@ -25,28 +25,28 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ClosedXML" Version="0.102.2" />
-    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.2.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.8">
+    <PackageReference Include="ClosedXML" Version="0.102.3" />
+    <PackageReference Include="Microsoft.AspNet.Mvc" Version="5.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="7.0.8" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="7.0.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="7.0.5">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.7">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.13.0" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraphBeta" Version="2.13.0" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.13.0" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="7.0.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="7.0.12" />
-    <PackageReference Include="MimeKit" Version="4.2.0" />
-    <PackageReference Include="System.DirectoryServices" Version="7.0.1" />
-	<PackageReference Include="CsvHelper" Version="12.2.1" />
-	<PackageReference Include="MailKit" Version="4.2.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraphBeta" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.0.1" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.7" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.3" />
+    <PackageReference Include="MimeKit" Version="4.7.1" />
+    <PackageReference Include="System.DirectoryServices" Version="8.0.0" />
+	<PackageReference Include="CsvHelper" Version="33.0.1" />
+	<PackageReference Include="MailKit" Version="4.7.1.1" />
   </ItemGroup>
 
   <ItemGroup>

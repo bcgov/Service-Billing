@@ -1,9 +1,11 @@
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
+# Use the official .NET 8 runtime image as the base image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 
 EXPOSE 443 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
+# Use the official .NET 8 SDK image as the build image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG configuration=Release
 WORKDIR /src
 COPY ["Service Billing.csproj", "./"]
