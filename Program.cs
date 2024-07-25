@@ -122,7 +122,8 @@ builder.Services.AddMvc();
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options
-    .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
+    .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")
+    , o => o.UseCompatibilityLevel(120))); // "use compatibility" was added to deal with problems that arose when upgrading to .Net 8.0
 
 builder.Services.AddRazorPages().AddMvcOptions(options =>
 {
