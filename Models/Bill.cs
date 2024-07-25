@@ -47,7 +47,7 @@ namespace Service_Billing.Models
         public string? CreatedBy { get; set; }
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
-        public virtual ICollection<FiscalHistory>? previousFiscalRecords { get; set; }
+        public virtual ICollection<FiscalHistory>? PreviousFiscalRecords { get; set; }
         public int CurrentFiscalPeriodId { get; set; } // "LastActiveFiscalPeriodID" would have been a better name
 
         [ForeignKey("CurrentFiscalPeriodId")]
@@ -61,7 +61,7 @@ namespace Service_Billing.Models
             this.DateCreated = DateTimeOffset.UtcNow;
             this.StartDate = DateTimeOffset.UtcNow;
             this.IsActive = true;
-            previousFiscalRecords = new Collection<FiscalHistory>();
+            PreviousFiscalRecords = new Collection<FiscalHistory>();
         }
     }
 }

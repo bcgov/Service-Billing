@@ -30,6 +30,7 @@ namespace Service_Billing.Models.Repositories
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(c => c.MostRecentActiveFiscalPeriod)
+                .Include(c => c.PreviousFiscalRecords)
                 .Include(bill => bill.ClientAccount);
 
         public string DetermineCurrentQuarter(DateTime? date = null)
@@ -332,6 +333,7 @@ namespace Service_Billing.Models.Repositories
                 .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
+                .Include(c => c.PreviousFiscalRecords)
                 .Include(bill => bill.MostRecentActiveFiscalPeriod)
                 .FirstOrDefault(b => b.Id == id);
         }

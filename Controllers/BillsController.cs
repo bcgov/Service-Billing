@@ -420,7 +420,11 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                IQueryable<Bill> query = _serviceBillingContext.Bills.Include(b => b.ClientAccount).Include(b => b.ServiceCategory);
+                IQueryable<Bill> query = _serviceBillingContext.Bills
+                    .Include(b => b.ClientAccount)
+                    .Include(b => b.ServiceCategory)
+                    .Include(b => b.PreviousFiscalRecords)
+                    .ThenInclude(r => r.FiscalPeriod);
                
                 bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));

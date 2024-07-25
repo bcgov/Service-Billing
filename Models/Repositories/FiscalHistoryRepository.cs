@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Service_Billing.Data;
 
 namespace Service_Billing.Models.Repositories
@@ -14,7 +15,8 @@ namespace Service_Billing.Models.Repositories
             _billingContext = billingContext;
             _logger = logger;
         }
-        public IEnumerable<FiscalHistory> All => _billingContext.FiscalHistory;
+        public IEnumerable<FiscalHistory> All => _billingContext.FiscalHistory
+            .Include(f => f.Bill);
 
         public IEnumerable<FiscalHistory> GetFiscalHistoriesByChargeId(int id)
         {
