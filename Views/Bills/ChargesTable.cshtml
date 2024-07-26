@@ -75,7 +75,7 @@ else
                             }
                         </td>
                         <td>
-                            @String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal).ToString())
+                            @String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal))
                         </td>
                         @if (category != null)
                         {
