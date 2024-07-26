@@ -80,10 +80,10 @@ else
                         @if (category != null)
                         {
                             <td>
-                                @fiscalHistory.UnitPriceAtFiscal
+                                @String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal)
                             </td>
                             <td>
-                                @fiscalHistory.QuantityAtFiscal
+                                @String.Format("{0:.##}", fiscalHistory.QuantityAtFiscal)
                             </td>
                             <td>
                                 @if (!String.IsNullOrEmpty(category.UOM))
@@ -171,7 +171,7 @@ else
                             $@category.Costs
                         </td>
                         <td>
-                            @bill.Quantity
+                            @String.Format("{0:.##}", bill.Quantity)
                         </td>
                         <td>
                             @if (!String.IsNullOrEmpty(category.UOM))
