@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
+using System.Text.RegularExpressions;
 
 namespace Service_Billing.Controllers
 {
@@ -327,7 +328,10 @@ namespace Service_Billing.Controllers
                 {
                     foreach (var user in queriedUsers.Value)
                     {
-                        contacts.Add(user.DisplayName);
+                        if (IsValidDisplayName(user.DisplayName))
+                        {
+                            contacts.Add(user.DisplayName);
+                        }
                     }
                 }
 
@@ -350,6 +354,13 @@ namespace Service_Billing.Controllers
                 _consentHandler.HandleException(ex);
                 return new JsonResult(ex.InnerException);
             }
+        }
+
+        private bool IsValidDisplayName(string displayName)
+        {
+            // Define your regex pattern here
+            string pattern = @"[A-Za-z\s,]+ [A-Z]{2,}:[A-Z]{2}";
+            return Regex.IsMatch(displayName, pattern);
         }
 
         public IActionResult CurrentUserAccounts()
