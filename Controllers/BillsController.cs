@@ -579,39 +579,84 @@ namespace Service_Billing.Controllers
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    ChargeRow row = new ChargeRow();
-                    row.ChargeId = bill.Id;
-                    row.ClientNumber = bill.ClientAccountId;
-                    row.ClientName = bill.ClientAccount.Name;
-                    row.Program = bill.Title;
-                    if (serviceCategory != null)
-                    {
-                        row.GDXBusArea = serviceCategory?.BusArea?.Name;
-                        row.ServiceCategory = serviceCategory?.Name;
-                    }
-                    row.TicketNumber = bill.TicketNumberAndRequester;
-                    row.Amount = @String.Format("${0:.##}", bill.Amount);
-                    row.Quantity = bill.Quantity;
-                    row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
-                    if (bill.DateCreated != null)
-                        row.Created = bill.DateCreated?.DateTime.ToShortDateString();
-                    if (bill.StartDate != null)
-                        row.Start = bill.StartDate?.DateTime.ToShortDateString();
-                    if (bill.EndDate != null)
-                        row.End = bill.EndDate?.DateTime.ToShortDateString();
 
-                    row.CreatedBy = bill.CreatedBy;
-                    row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                    row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
-                    row.IdirOrURL = bill.IdirOrUrl;
-                    if (account != null)
+                    if (!string.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "all")
                     {
-                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                            row.ExpenseAuthority = account.ExpenseAuthorityName;
-                        if(!String.IsNullOrEmpty(account.PrimaryContact))
-                            row.PrimaryContact = account.PrimaryContact;
+                        foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                        {
+                            ChargeRow row = new ChargeRow();
+                            row.ChargeId = bill.Id;
+                            row.ClientNumber = bill.ClientAccountId;
+                            row.ClientName = bill.ClientAccount.Name;
+                            row.Program = bill.Title;
+                            if (serviceCategory != null)
+                            {
+                                row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                                row.ServiceCategory = serviceCategory?.Name;
+                            }
+                            row.TicketNumber = bill.TicketNumberAndRequester;
+                            row.Amount = String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal));
+                            row.Quantity = fiscalHistory.QuantityAtFiscal;
+                            row.UnitPrice = String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal.ToString());
+                            if (bill.DateCreated != null)
+                                row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                            if (bill.StartDate != null)
+                                row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                            if (bill.EndDate != null)
+                                row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                            row.CreatedBy = bill.CreatedBy;
+                            row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                            row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
+                            row.IdirOrURL = bill.IdirOrUrl;
+                            if (account != null)
+                            {
+                                if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                    row.ExpenseAuthority = account.ExpenseAuthorityName;
+                                if (!String.IsNullOrEmpty(account.PrimaryContact))
+                                    row.PrimaryContact = account.PrimaryContact;
+                            }
+                            row.Notes = bill.Notes;
+                            rows.Add(row);
+                        }
                     }
-                    rows.Add(row);
+                    else
+                    {
+                        ChargeRow row = new ChargeRow();
+                        row.ChargeId = bill.Id;
+                        row.ClientNumber = bill.ClientAccountId;
+                        row.ClientName = bill.ClientAccount.Name;
+                        row.Program = bill.Title;
+                        if (serviceCategory != null)
+                        {
+                            row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                            row.ServiceCategory = serviceCategory?.Name;
+                        }
+                        row.TicketNumber = bill.TicketNumberAndRequester;
+                        row.Amount = @String.Format("${0:.##}", bill.Amount);
+                        row.Quantity = bill.Quantity;
+                        row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                        if (bill.DateCreated != null)
+                            row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                        if (bill.StartDate != null)
+                            row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                        if (bill.EndDate != null)
+                            row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                        row.CreatedBy = bill.CreatedBy;
+                        row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                        row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
+                        row.IdirOrURL = bill.IdirOrUrl;
+                        if (account != null)
+                        {
+                            if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                row.ExpenseAuthority = account.ExpenseAuthorityName;
+                            if (!String.IsNullOrEmpty(account.PrimaryContact))
+                                row.PrimaryContact = account.PrimaryContact;
+                        }
+                        row.Notes = bill.Notes;
+                        rows.Add(row);
+                    }
                 }
 
                 ws.Cell("A1").InsertTable(rows);
@@ -653,13 +698,7 @@ namespace Service_Billing.Controllers
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
-                //if (searchParams?.CategoryFilter > 0)
-                //{
-                //    ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
-                //    if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
-                //        model.Service = serviceCategory.Name;
-                //}
-                //model.ServiceCategoryId = searchParams?.CategoryFilter > 0 ? (int)searchParams.CategoryFilter : -1;
+               
                 SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
 
 
@@ -850,6 +889,7 @@ namespace Service_Billing.Controllers
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
         public string? PrimaryContact { get; set; }
+        public string? Notes { get; set; }
     }
 
     // For creating the exported quarterly reports.
