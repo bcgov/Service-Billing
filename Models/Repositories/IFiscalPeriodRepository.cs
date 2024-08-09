@@ -4,6 +4,7 @@
     {
         FiscalPeriod? GetByFiscalQuarterString(string fiscalPeriod);
         FiscalPeriod? GetFiscalPeriodByString(string period);
+        FiscalPeriod? GetFiscalPeriodById(int id);
         int SaveFiscalPeriod(FiscalPeriod fiscalPeriod);
     }
 }

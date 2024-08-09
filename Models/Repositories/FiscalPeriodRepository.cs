@@ -21,6 +21,11 @@ namespace Service_Billing.Models.Repositories
         {
             return _billingContext.FiscalPeriods.FirstOrDefault(x => x.Period == period);
         }
+
+        public FiscalPeriod? GetFiscalPeriodById(int id)
+        {
+            return _billingContext.FiscalPeriods.FirstOrDefault(x => x.Id == id);
+        }
         public int SaveFiscalPeriod(FiscalPeriod fiscalPeriod)
         {
             _billingContext.FiscalPeriods.Add(fiscalPeriod);
