@@ -1,5 +1,6 @@
 ﻿@model IEnumerable<Bill>;
 @{
+    int? chargesFound = ViewData["ChargesReturnedByQuery"] as int?;
 }
 
 @if (Model != null && !Model.Any())
@@ -10,9 +11,9 @@
     </h3>
 }
 
-@if (Model != null)
+@if (chargesFound != null && chargesFound.Value > 0)
 {
-    <p> <div>Found @Model.Count() results</div> </p>
+    <p> <div>Found @chargesFound.Value results</div> </p>
 }
 else
 {

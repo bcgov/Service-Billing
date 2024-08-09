@@ -105,7 +105,8 @@ namespace Service_Billing.Controllers
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
-
+            int count = bills.Any() ? bills.Count() : 0;
+            
             if(searchModel != null && !String.IsNullOrEmpty(searchModel.QuarterFilter))
             {
                 switch (searchModel.QuarterFilter)
@@ -122,6 +123,12 @@ namespace Service_Billing.Controllers
                         break;
                     case "all":
                         ViewData["FiscalPeriod"] = "all";
+                        count = 0;
+                        foreach(Bill bill in bills)
+                        {
+                            if (bill.PreviousFiscalRecords.Any())
+                                count += bill.PreviousFiscalRecords.Count();
+                        }
                         break;
                 }
             }
@@ -129,6 +136,7 @@ namespace Service_Billing.Controllers
             {
                 ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             }
+            ViewData["ChargesReturnedByQuery"] = count;
           
             return PartialView("ChargesTable", bills);
         }
