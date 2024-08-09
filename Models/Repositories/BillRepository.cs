@@ -376,7 +376,7 @@ namespace Service_Billing.Models.Repositories
             newBill.Amount = bill.Amount;
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
-            newBill.MostRecentActiveFiscalPeriod.Period = bill.MostRecentActiveFiscalPeriod.Period;
+            newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
             newBill.IdirOrUrl = bill.IdirOrUrl;
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
