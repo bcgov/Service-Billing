@@ -246,6 +246,11 @@ namespace Service_Billing.Controllers
                 bill.DateModified = DateTimeOffset.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
+                DetermineCurrentQuarter(bill, bill.StartDate);
+                FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
+                if (fiscalPeriod == null)
+                    throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
+                bill.MostRecentActiveFiscalPeriod = fiscalPeriod;
                 _logger.LogInformation($"New charge is valid");
 
                 int billId = await _billRepository.CreateBill(bill);
