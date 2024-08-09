@@ -5,6 +5,12 @@ VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Service Billing", "Service Billing.csproj", "{FCECF9FB-AD9F-4FD8-BE71-D00E9CE4D354}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E62B4052-469A-4235-B43A-41406E8030A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBillingUnitTests", "..\ServiceBillingUnitTests\ServiceBillingUnitTests.csproj", "{50890245-5D55-4F72-B2DF-4B2D8ABE0C85}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceBillingIntegrationTests", "..\ServiceBillingIntegrationTests\ServiceBillingIntegrationTests.csproj", "{308255F4-68B5-4804-A1CC-C8E50B261342}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +21,21 @@ Global
 		{FCECF9FB-AD9F-4FD8-BE71-D00E9CE4D354}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCECF9FB-AD9F-4FD8-BE71-D00E9CE4D354}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCECF9FB-AD9F-4FD8-BE71-D00E9CE4D354}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50890245-5D55-4F72-B2DF-4B2D8ABE0C85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50890245-5D55-4F72-B2DF-4B2D8ABE0C85}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50890245-5D55-4F72-B2DF-4B2D8ABE0C85}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50890245-5D55-4F72-B2DF-4B2D8ABE0C85}.Release|Any CPU.Build.0 = Release|Any CPU
+		{308255F4-68B5-4804-A1CC-C8E50B261342}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{308255F4-68B5-4804-A1CC-C8E50B261342}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{308255F4-68B5-4804-A1CC-C8E50B261342}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{308255F4-68B5-4804-A1CC-C8E50B261342}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{50890245-5D55-4F72-B2DF-4B2D8ABE0C85} = {E62B4052-469A-4235-B43A-41406E8030A2}
+		{308255F4-68B5-4804-A1CC-C8E50B261342} = {E62B4052-469A-4235-B43A-41406E8030A2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {F9367EC1-97EF-42EE-868E-1C0B4037B8D6}

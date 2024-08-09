@@ -1,12 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.Extensions.Logging;
-using Service_Billing.Controllers;
+﻿using Microsoft.EntityFrameworkCore;
 using Service_Billing.Data;
-using Service_Billing.Models;
-using System.Linq;
 
 namespace Service_Billing.Models.Repositories
 {
