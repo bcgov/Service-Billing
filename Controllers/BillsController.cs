@@ -438,9 +438,13 @@ namespace Service_Billing.Controllers
                     .Include(b => b.ServiceCategory)
                     .Include(b => b.PreviousFiscalRecords)
                     .ThenInclude(r => r.FiscalPeriod);
-               
-                bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+
+               //Todo: Give this some more thought. Can probably simplify this logic.
+                bool restrictToOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
+                bool restrictToUserContact = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && !User.IsInRole("GDXBillingService.Owner"));
+
                 List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
                 switch (searchParams?.QuarterFilter)
                 {
@@ -479,15 +483,12 @@ namespace Service_Billing.Controllers
                 }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     query = query.Where(x => x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-                if (shouldRestrictToUserOwnedServices)
+                if (restrictToOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     query = query.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
-                if (!String.IsNullOrEmpty(ministryUserName))
-                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
-                    query = query.Where(b => IsAccountContact(ministryUserName, b.ClientAccount));
-                }
+
                 if (searchParams?.MinistryFilter > 0)
                 {
                     query = query.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
@@ -524,6 +525,10 @@ namespace Service_Billing.Controllers
                 query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title).Include(c => c.MostRecentActiveFiscalPeriod);
                 
                 IEnumerable<Bill> result = query.AsNoTracking().ToList<Bill>();
+                if (restrictToUserContact)
+                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
+                    result = FilterChargesForCurrentMinistryUser(ministryUserName, result);
+                }
 
                 //if we're looking at a previous quarter's charges, make the amounts and quantities reflect what it was for that quarter
                 if (previousQuarterChargeIds.Any())
