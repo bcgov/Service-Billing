@@ -137,11 +137,11 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ClientAccount model)
+        public async Task<IActionResult> Edit(ClientAccount model)
         {
             try
             {
-                _clientAccountRepository.Update(model);
+                await _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id });
             }
