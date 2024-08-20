@@ -32,7 +32,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="IdirOrUrl" class="control-label"></label>
-                <input asp-for="IdirOrUrl" class="form-control" data-val="true" data-val-required="Typically this is the IDIR the client, or a URL to the relevant website."/>
+                <input asp-for="IdirOrUrl" class="form-control"/>
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
             <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
