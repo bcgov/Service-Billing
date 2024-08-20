@@ -32,7 +32,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="IdirOrUrl" class="control-label"></label>
-                <input asp-for="IdirOrUrl" class="form-control" />
+                <input asp-for="IdirOrUrl" class="form-control" data-val="true" data-val-required="Typically this is the IDIR the client, or a URL to the relevant website."/>
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
             <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
@@ -41,7 +41,7 @@
             
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" id="amount" />
+                <input asp-for="Amount" class="form-control" id="amount" data-val-required="There ought to be some amount here. Have you selected a service category?"/>
                 <span asp-validation-for="Amount" class="text-danger"></span>
                 <div class="input-info">
                     The amount is calculated based on service and quantity, and typically should not be changed. 
@@ -51,11 +51,7 @@
                 <label>UOM</label>
                 <input id="uom" class="form-control" readonly="true" />
             </div>
-           @*  <div class="form-group">
-                <label asp-for="FiscalPeriodString" class="control-label"></label>
-                <input asp-for="FiscalPeriodString" class="form-control" data-val="true" data-val-required="Please provide a Fiscal Period" />
-                <span asp-validation-for="FiscalPeriodString" class="text-danger"></span>
-            </div> *@
+
             <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="Quantity" class="control-label"></label>
                 <input asp-for="Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
@@ -125,11 +121,6 @@
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
                         $("#quantity").val(response['quantity']);
-                        // if ($('#uom').val() == 'Month' && userSetQuantity === false) {
-                        //     console.log(userSetQuantity);
-                        //     $('#quantity').val(3);
-                        //     $("#amount").val($('#amount').val() * 3);
-                       // } 
                     }
                 };
                 xhr.open('get', url);

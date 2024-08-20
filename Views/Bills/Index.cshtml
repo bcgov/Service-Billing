@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
-
 @using Service_Billing.ViewModels;
 @using System.Security.Claims
 
@@ -8,7 +7,6 @@
     ViewData["Title"] = "Quarterly Report";
     Layout = "_Layout";
 }
-
 
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
