@@ -68,7 +68,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
-                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" data-val="true" data-val-required="Please provide the five-digit responsibility centre code from the Corporate Accounting System." />
+                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" maxlength="5" id="responsibilityCentre" data-val="true" data-val-required="Please provide the five-digit responsibility centre code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -110,9 +110,6 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
 
     <script>
         $(document).ready(function () {
@@ -149,8 +146,13 @@
                 }
             });
             $("#casServiceLine").on("keyup", (e) => {
-                if ($("#casServiceLine").val().length > 3) {
+                if ($("#casServiceLine").val().length > 5) {
                     $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
+                }
+            });
+            $("#responsibilityCentre").on("keyup", (e) => {
+                if ($("#responsibilityCentre").val().length > 5) {
+                    $("#responsibilityCentre").val($("#responsibilityCentre").val().substring(0, 5));
                 }
             });
         });
