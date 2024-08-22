@@ -276,16 +276,16 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
+        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
         {
             try
             {
                 if (serviceId == null || quantity == null)
-                    throw new Exception("Cannot calculate bill amount because categoryId or quantity is null");
+                    return null;
                 ServiceCategory? category = _categoryRepository.GetById(serviceId);
                 if (category == null)
                 {
-                    throw new Exception($"Service category with id: {serviceId} not found!");
+                    return null;
                 }
                 /* if UOM is month, then we should adjust the quantity such that the client is not charged for any months
                  * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity

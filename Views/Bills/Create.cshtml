@@ -109,6 +109,7 @@
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
             calculateAmount = () => {
+                console.log("calculate ammount");
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
@@ -130,22 +131,24 @@
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
-
                 var id = $('#categorySelect').val();
-                $("#categoryIdInput").val(id);
-                
+                $("#categoryIdInput").val(id);   
                 calculateAmount();
             });
+
             $("#quantity").on("change", (e) => {
                 userSetQuantity = true;
                 calculateAmount();
             });
+
             $("#startDate").on("change", (e) => {
                 calculateAmount();
             });
+
             $("#endDate").on("change", (e) => {
                 calculateAmount();
             });
+
             var clientsMatchingSearch = [];
             createClientSelect = () => {
                 var url = "../../Bills/GetClients";
