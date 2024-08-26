@@ -57,9 +57,8 @@ else
                         </td>
                         <td>@bill.ClientAccount?.Name</td>
                         <td>
-                            <a asp-controller="Bills"
-                               asp-action="Details"
-                               asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
+              
+                            @Html.ActionLink(bill.Title, "Details", "Bills", new { id = @bill.Id, historyId = @fiscalHistory.Id })
                         </td>
                         <td>
                             @fiscalHistory.FiscalPeriod?.Period

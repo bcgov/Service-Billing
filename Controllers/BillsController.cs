@@ -141,17 +141,38 @@ namespace Service_Billing.Controllers
             return PartialView("ChargesTable", bills);
         }
 
-        public ActionResult Details(int id)
+        public ActionResult Details(int id, int? historyId = null)
         {
             Bill? bill = _billRepository.GetBill(id);
-            if (bill == null)
+            try
             {
-                return NotFound();
+                if (bill == null)
+                {
+                    return NotFound();
+                }
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                ViewData["clientAccount"] = account != null ? account : "";
+                ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+                if(historyId != null)
+                {
+                    FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
+                    if (fiscalHistory == null)
+                    {
+                        throw new Exception("Tried to view charge details with fiscal history Id present, but no fiscal history was found");
+                    }
+                    else 
+                    { 
+                        ViewData["historyData"] = fiscalHistory;
+                        ViewData["periodString"] = fiscalHistory?.FiscalPeriod?.Period;
+                    }   
+                }
             }
-            ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-            ViewData["clientAccount"] = account != null ? account : "";
-            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
             return View(bill);
         }
 

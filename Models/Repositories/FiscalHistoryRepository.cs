@@ -20,12 +20,12 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<FiscalHistory> GetFiscalHistoriesByChargeId(int id)
         {
-            return _billingContext.FiscalHistory.Where(x => x.BillId == id);
+            return _billingContext.FiscalHistory.Where(x => x.BillId == id).Include(x => x.FiscalPeriod);
         }
 
         public IEnumerable<FiscalHistory> GetFiscalHistoryByFiscalPeriodId(int id)
         {
-            return _billingContext.FiscalHistory.Where(x => x.PeriodId == id);
+            return _billingContext.FiscalHistory.Where(x => x.PeriodId == id).Include(x => x.FiscalPeriod);
         }
 
         public FiscalHistory? GetFiscalHistoryById(int id)

@@ -20,13 +20,15 @@ namespace Service_Billing.Models
         public virtual FiscalPeriod? FiscalPeriod { get; set; }
         public decimal? UnitPriceAtFiscal { get; set; }
         public decimal? QuantityAtFiscal { get; set; }
+        public string? Notes { get; set; }
 
-        public FiscalHistory(int billId, int periodId, decimal? unitPriceAtFiscal, decimal? quantityAtFiscal)
+        public FiscalHistory(int billId, int periodId, decimal? unitPriceAtFiscal, decimal? quantityAtFiscal, string? notes = null)
         {
             BillId = billId;
             PeriodId = periodId;
             UnitPriceAtFiscal = unitPriceAtFiscal;
             QuantityAtFiscal = quantityAtFiscal;
+            Notes = notes;
         }
     }
 }

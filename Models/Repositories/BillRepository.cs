@@ -201,7 +201,7 @@ namespace Service_Billing.Models.Repositories
                     }
                 //    bill.MostRecentActiveFiscalPeriod.Period = newQuarter;  //TODO: drop this, as we will drop this field for the foreign relation on the next line
                     bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity);
+                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity, bill.Notes);
                     decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
                     if (bill.Quantity != newQuantityForCharge)
                     {
@@ -326,7 +326,7 @@ namespace Service_Billing.Models.Repositories
                 .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
-                .Include(c => c.PreviousFiscalRecords)
+                .Include(c => c.PreviousFiscalRecords!).ThenInclude(h => h.FiscalPeriod)
                 .Include(bill => bill.MostRecentActiveFiscalPeriod)
                 .FirstOrDefault(b => b.Id == id);
         }
