@@ -213,35 +213,7 @@
         </tr>
     </table>
 </div>
-@* @if (Model.PreviousFiscalRecords != null)
-{
-    <div>
-        <h4>Previous Fiscal Records</h4>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th scope="col">Fiscal Period</th>
-                    <th scope="col">Unit Price for Service</th>
-                    <th scope="col">Quantity</th>
-                    <th scope="col">Amount</th>
-                    <th scope="col">Notes</th> <!-- This field should be editable, but I can't be bothered right now, deadbeat that I am. --Alex C -->
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (FiscalHistory record in Model.PreviousFiscalRecords)
-                {
-                    <tr>
-                        <td>@record.FiscalPeriod</td>
-                        <td>@record.UnitPriceAtFiscal</td>
-                        <td>@record.QuantityAtFiscal</td>
-                        <td>@record.UnitPriceAtFiscal * @record.QuantityAtFiscal</td>
-                        <td>@record.Notes</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div> 
-}*@
+
 <div class="bottom-nav">
     @if (!User.IsInRole("GDXBillingService.User"))
     {
