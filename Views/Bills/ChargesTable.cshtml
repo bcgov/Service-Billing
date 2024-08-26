@@ -116,7 +116,6 @@ else
                             @if (bill.EndDate != null)
                             {
                                 @bill.EndDate.Value.ToString("MM/dd/yyyy")
-                                ;
                             }
                         </td>
                         <td>
@@ -126,7 +125,14 @@ else
                             }
                         </td>
                         <td>
-                            @bill.Notes
+                            @if(fiscalHistory.Id == bill.CurrentFiscalPeriodId)
+                            {
+                                @bill.Notes
+                            }
+                            else
+                            {
+                                @fiscalHistory.Notes
+                            }
                         </td>
                     </tr>
                 }
