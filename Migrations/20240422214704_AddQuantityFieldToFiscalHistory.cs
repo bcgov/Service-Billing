@@ -24,8 +24,7 @@ namespace Service_Billing.Migrations
                 table: "FiscalHistory",
                 column: "PeriodId",
                 principalTable: "FiscalPeriods",
-                principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                principalColumn: "Id");
 
             migrationBuilder.Sql($"update FiscalHistory " +
                 $"set QuantityAtFiscal = Bills.Quantity " +
