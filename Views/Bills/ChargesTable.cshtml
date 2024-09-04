@@ -47,7 +47,7 @@ else
             var client = bill.ClientAccount;
             @if (ViewData["FiscalPeriod"] as string == "all" && bill.PreviousFiscalRecords != null)
             {
-              if(!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod).Contains(bill.MostRecentActiveFiscalPeriod))
+              if(!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod.Id).Contains(bill.CurrentFiscalPeriodId))
               {
                 <tr>
                     <td>
