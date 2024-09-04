@@ -39,12 +39,17 @@ namespace Service_Billing.Models
         public DateTimeOffset? DateCreated { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
+        [Display(Name = "End Date")]
         public DateTimeOffset? EndDate { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
+        [Display(Name = "Start Date")]
         public DateTimeOffset? StartDate { get; set; }
+        [Display(Name = "Billing Cycle")]
         public string? BillingCycle { get; set; }
+        [Display(Name = "Created By")]
         public string? CreatedBy { get; set; }
+        [Display(Name = "Is Active")]
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
         public virtual ICollection<FiscalHistory>? PreviousFiscalRecords { get; set; }
