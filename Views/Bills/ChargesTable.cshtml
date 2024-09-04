@@ -47,7 +47,7 @@ else
             var client = bill.ClientAccount;
             @if (ViewData["FiscalPeriod"] as string == "all" && bill.PreviousFiscalRecords != null)
             {
-              if(!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod.Id).Contains(bill.CurrentFiscalPeriodId))
+              if(!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod).Contains(bill.MostRecentActiveFiscalPeriod))
               {
                 <tr>
                     <td>
@@ -132,10 +132,14 @@ else
                     <td>
                         @bill.Notes
                     </td>
-                </tr>
+                    </tr>
                 }
                 foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
                 {
+                    if(bill.CurrentFiscalPeriodId == fiscalHistory.PeriodId)
+                    {
+                        continue; // Pretty sure this is only needed for currently mangled dev database, but it doesn't hurt anything
+                    }
                     <tr>
                         <td>
                             <a asp-controller="ClientAccount"
