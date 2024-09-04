@@ -18,7 +18,10 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="@Model.ClientAccount.Name">Client: </label>
-                <input asp-for="@Model.ClientAccount.Name" id="clientInput" class="form-control" title="Begin entering a client name, and a list of matching clients will appear." />
+                <input asp-for="@Model.ClientAccount.Name" 
+                  id="clientInput" class="form-control" 
+                  title="Begin entering a client name, and a list of matching clients will appear." 
+                  data-val="true" data-val-required="Select a ministry or organization from the drop down menu"/>
                 <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -27,7 +30,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label">Program</label>
-                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the name of the digital asset / web property / IDIR. Don't use acronyms." />
+                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the digital asset/web property you will be providing the service for. Don’t use acronyms." />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -41,14 +44,14 @@
             
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" id="amount" data-val-required="There ought to be some amount here. Have you selected a service category?"/>
+                <input asp-for="Amount" class="form-control" id="amount" data-val-required="Select the service category for this to display."/>
                 <span asp-validation-for="Amount" class="text-danger"></span>
                 <div class="input-info">
                     The amount is calculated based on service and quantity, and typically should not be changed. 
                 </div>
             </div>
             <div class="form-group">
-                <label>UOM</label>
+                <label>Unit of Measure</label>
                 <input id="uom" class="form-control" readonly="true" />
             </div>
 
