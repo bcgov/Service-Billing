@@ -47,6 +47,93 @@ else
             var client = bill.ClientAccount;
             @if (ViewData["FiscalPeriod"] as string == "all" && bill.PreviousFiscalRecords != null)
             {
+              if(!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod).Contains(bill.MostRecentActiveFiscalPeriod))
+              {
+                <tr>
+                    <td>
+                        <a asp-controller="ClientAccount"
+                           asp-action="Details"
+                           asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
+                    </td>
+                    <td>@bill.ClientAccount?.Name</td>
+                    <td>
+                        <a asp-controller="Bills"
+                           asp-action="Details"
+                           asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
+                    </td>
+
+                    <td>@bill.MostRecentActiveFiscalPeriod.Period</td> <!-- this could probably be handled better-->
+
+                    <td>@bill.IdirOrUrl</td>
+                    <td>
+                        @{
+
+                            if (category != null)
+                            {
+                                @category.Name
+                                ;
+                            }
+                        }
+                    </td>
+                    <td>
+                        @if (bill.Amount != null)
+                        {
+                            @String.Format("${0:.##}", bill.Amount)
+                        }
+                    </td>
+                    @if (category != null)
+                    {
+                        <td>
+                            $@category.Costs
+                        </td>
+                        <td>
+                            @String.Format("{0:.##}", bill.Quantity)
+                        </td>
+                        <td>
+                            @if (!String.IsNullOrEmpty(category.UOM))
+                            {
+                                @category.UOM
+                            }
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                        </td>
+                        <td>
+                            @bill.Quantity
+                        </td>
+                        <td>
+                        </td>
+                    }
+                    <td>
+                        @bill.ClientAccount?.AggregatedGLCode
+                    </td>
+                    <td>
+                        @if (bill.StartDate != null)
+                        {
+                            @bill.StartDate.Value.ToString("MM/dd/yyyy")
+                            ;
+                        }
+                    </td>
+                    <td>
+                        @if (bill.EndDate != null)
+                        {
+                            @bill.EndDate.Value.ToString("MM/dd/yyyy")
+                            ;
+                        }
+                    </td>
+                    <td>
+                        @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
+                        {
+                            @client.ExpenseAuthorityName
+                        }
+                    </td>
+                    <td>
+                        @bill.Notes
+                    </td>
+                </tr>
+                }
                 foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
                 {
                     <tr>
