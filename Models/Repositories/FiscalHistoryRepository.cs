@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.EntityFrameworkCore;
 using Service_Billing.Data;
 
 namespace Service_Billing.Models.Repositories
@@ -14,16 +15,17 @@ namespace Service_Billing.Models.Repositories
             _billingContext = billingContext;
             _logger = logger;
         }
-        public IEnumerable<FiscalHistory> All => _billingContext.FiscalHistory;
+        public IEnumerable<FiscalHistory> All => _billingContext.FiscalHistory
+            .Include(f => f.Bill);
 
         public IEnumerable<FiscalHistory> GetFiscalHistoriesByChargeId(int id)
         {
-            return _billingContext.FiscalHistory.Where(x => x.BillId == id);
+            return _billingContext.FiscalHistory.Where(x => x.BillId == id).Include(x => x.FiscalPeriod);
         }
 
         public IEnumerable<FiscalHistory> GetFiscalHistoryByFiscalPeriodId(int id)
         {
-            return _billingContext.FiscalHistory.Where(x => x.PeriodId == id);
+            return _billingContext.FiscalHistory.Where(x => x.PeriodId == id).Include(x => x.FiscalPeriod);
         }
 
         public FiscalHistory? GetFiscalHistoryById(int id)
@@ -31,9 +33,11 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.FiscalHistory.FirstOrDefault(x => x.Id == id);
         }
 
-        public Task<int> SaveFiscalHistoryInfo(FiscalHistory fiscalHistory)
+        public int SaveFiscalHistoryInfo(FiscalHistory fiscalHistory)
         {
-            throw new NotImplementedException();
+            _billingContext.FiscalHistory.Add(fiscalHistory);
+            _billingContext.SaveChanges();
+            return fiscalHistory.Id;
         }
     }
 }

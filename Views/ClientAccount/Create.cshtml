@@ -61,29 +61,29 @@
                 <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" />
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" data-val="true" data-val-required="Please include the name of the ministry expense authority."/>
                 <div id="authorityContactSelect">
                 </div>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
-                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" data-val="true" data-val-required="Please Provide a five character RC code" />
+                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" maxlength="5" id="responsibilityCentre" data-val="true" data-val-required="Please provide the five-digit responsibility centre code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
-                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" id="casServiceLine" data-val="true" data-val-required="Please Provide a five character Service Line code" />
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" id="casServiceLine" data-val="true" data-val-required="Please provide the five-digit service line code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.STOB" class="control-label">CAS STOB Number</label>
-                <input type="number" asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please Provide a four character STOB number" />
+                <input type="number" asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please provide the ministry Standard Object of Expenditure (STOB) number." />
                 <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Account.Project" class="control-label">CAS Project Number</label>
-                <input asp-for="@Model.Account.Project" class="form-control" />
+                <label asp-for="@Model.Account.Project" class="control-label">Ministry Project Code</label>
+                <input asp-for="@Model.Account.Project" class="form-control" data-val="true" data-val-required="Please provide a ministry project code."/>
                 <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">
@@ -110,9 +110,6 @@
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
 
     <script>
         $(document).ready(function () {
@@ -149,8 +146,13 @@
                 }
             });
             $("#casServiceLine").on("keyup", (e) => {
-                if ($("#casServiceLine").val().length > 3) {
+                if ($("#casServiceLine").val().length > 5) {
                     $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
+                }
+            });
+            $("#responsibilityCentre").on("keyup", (e) => {
+                if ($("#responsibilityCentre").val().length > 5) {
+                    $("#responsibilityCentre").val($("#responsibilityCentre").val().substring(0, 5));
                 }
             });
         });

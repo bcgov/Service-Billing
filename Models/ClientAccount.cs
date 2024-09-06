@@ -25,27 +25,24 @@ o	Note: not all naming convention components are required. The naming convention
 
         //5-digits or combination of digits and letters
         [BindRequired]
-        [StringLength(5)]
-        [MinLength(5)]
-        [MaxLength(5)]
+        [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit responsibility centre code from the Corporate Accounting System.")]
         [Display(Name = "Responsibility Center")]
         public string? ResponsibilityCentre { get; set; }
 
         [BindRequired]
+        [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit service line code from the Corporate Accounting System.")]
         [Display(Name = "Service Line")]
         public int? ServiceLine { get; set; }
 
         [BindRequired]
+        [RegularExpression(@"^.{4,4}$", ErrorMessage = "Please provide the ministry Standard Object of Expenditure (STOB) number.")]
         public Int16? STOB { get; set; }
 
         [Required(ErrorMessage = "A Project Code must be provided")]
-        [StringLength(7)]
-        [MinLength(7)]
+        [RegularExpression(@"^.{7,7}$", ErrorMessage = "Please provide a ministry project code.")]
         [Display(Name = "Project")]
         public string? Project { get; set; }
 
-
-        [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Expense Authority")]
         public string? ExpenseAuthorityName { get; set; }
 

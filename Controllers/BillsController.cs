@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
@@ -25,6 +26,7 @@ namespace Service_Billing.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ServiceBillingContext _serviceBillingContext;
+        private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -33,6 +35,7 @@ namespace Service_Billing.Controllers
             IMinistryRepository ministryRepository,
             IAuthorizationService authorizationService,
             IBusinessAreaRepository businessAreaRepository,
+            IFiscalPeriodRepository fiscalPeriodRepository,
             ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -48,6 +51,7 @@ namespace Service_Billing.Controllers
             _authorizationService = authorizationService;
             _businessAreaRepository = businessAreaRepository;
             _serviceBillingContext = serviceBillingContext;
+            _fiscalPeriodRepository = fiscalPeriodRepository;
         }
 
         [Authorize]
@@ -85,7 +89,7 @@ namespace Service_Billing.Controllers
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                     break;
                 case "all":
-                    ViewData["FiscalPeriod"] = "All Quarters";
+                    ViewData["FiscalPeriod"] = "all";
                     break;
             }
             ViewData["searchModel"] = searchModel;
@@ -94,47 +98,81 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> GetBillsTable(ChargeIndexSearchParamsModel searchModel)
+        public ActionResult GetBillsTable(ChargeIndexSearchParamsModel searchModel)
         {
-
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
-            IEnumerable<Bill> bills = QueryForCharges(searchModel, ministryUserName);
-            if (bills != null && bills.Any())
-            { 
-                bills = bills.Where(b => b.ServiceCategory.IsActive);
-                bills = bills.Where(b => b.ClientAccount.IsActive);
-            }
-            ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
-            if (searchModel != null && searchModel.QuarterFilter == "previous")
+            IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
+            int count = bills.Any() ? bills.Count() : 0;
+            
+            if(searchModel != null && !String.IsNullOrEmpty(searchModel.QuarterFilter))
             {
-                searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
-                ViewData["FiscalPeriod"] = searchModel.QuarterString;
+                switch (searchModel.QuarterFilter)
+                {
+                    case "current": default:
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
+                        break;
+                    case "previous":
+                        searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
+                        ViewData["FiscalPeriod"] = searchModel.QuarterString;
+                        break;
+                    case "next":
+                        ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                        break;
+                    case "all":
+                        ViewData["FiscalPeriod"] = "all";
+                        count = 0;
+                        foreach(Bill bill in bills)
+                        {
+                            if (bill.PreviousFiscalRecords.Any())
+                                count += bill.PreviousFiscalRecords.Count();
+                        }
+                        break;
+                }
             }
-            if (searchModel != null && searchModel.QuarterFilter == "next")
+            else
             {
-                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
+                ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             }
-            else if (searchModel != null)
-            {
-                searchModel.QuarterString = string.Empty;
-            }
+            ViewData["ChargesReturnedByQuery"] = count;
+          
             return PartialView("ChargesTable", bills);
         }
 
-        public ActionResult Details(int id)
+        public ActionResult Details(int id, int? historyId = null)
         {
             Bill? bill = _billRepository.GetBill(id);
-            if (bill == null)
+            try
             {
-                return NotFound();
+                if (bill == null)
+                {
+                    return NotFound();
+                }
+                ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                ViewData["clientAccount"] = account != null ? account : "";
+                ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+                if(historyId != null)
+                {
+                    FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
+                    if (fiscalHistory == null)
+                    {
+                        throw new Exception("Tried to view charge details with fiscal history Id present, but no fiscal history was found");
+                    }
+                    else 
+                    { 
+                        ViewData["historyData"] = fiscalHistory;
+                        ViewData["periodString"] = fiscalHistory?.FiscalPeriod?.Period;
+                    }   
+                }
             }
-            ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-            ViewData["clientAccount"] = account != null ? account : "";
-            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+
             return View(bill);
         }
 
@@ -158,7 +196,7 @@ namespace Service_Billing.Controllers
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.DateModified = pacificTime;
 
-            if (String.IsNullOrEmpty(bill.FiscalPeriod) || String.IsNullOrEmpty(bill.BillingCycle))
+            if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
             ViewData["Categories"] = categories;
@@ -176,8 +214,8 @@ namespace Service_Billing.Controllers
             try
             {
                 bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+                bill.DateModified = DateTime.Now;
                 await _billRepository.Update(bill);
-                //  return View("Details", bill.Id);
                 return RedirectToAction("Details", new { bill.Id });
             }
             catch (DbUpdateException ex)
@@ -221,22 +259,33 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]  //[Bind(Include = "LastName, FirstMidName, EnrollmentDate")]Student student)
-                                    // public async Task<IActionResult> Create(IFormCollection collection)
+        [ValidateAntiForgeryToken] 
         public async Task<ActionResult> Create(Bill bill)
         {
             try
             {
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
+                if (account == null || category == null)
+                {
+                    throw new Exception("Could not find either a client account or service category when attempting to create new charge entry.");
+                }
+                if(string.IsNullOrEmpty(bill.CreatedBy))
+                    bill.CreatedBy = await GetMyName();
+                bill.DateModified = DateTimeOffset.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
+                DetermineCurrentQuarter(bill, bill.StartDate);
+                FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
+                if (fiscalPeriod == null)
+                    throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
+                bill.MostRecentActiveFiscalPeriod = fiscalPeriod;
                 _logger.LogInformation($"New charge is valid");
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
-                return RedirectToAction($"Details", new { bill.Id });
 
+                return RedirectToAction($"Details", new { bill.Id });
             }
             catch (DbUpdateException ex)
             {
@@ -248,16 +297,45 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult GetBillAmount(short? serviceId, decimal? quantity)
+        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
         {
             try
             {
                 if (serviceId == null || quantity == null)
-                    throw new Exception("Cannot calculate bill amount because categoryId or quantity is null");
+                    return null;
                 ServiceCategory? category = _categoryRepository.GetById(serviceId);
                 if (category == null)
                 {
-                    throw new Exception($"Service category with id: {serviceId} not found!");
+                    return null;
+                }
+                /* if UOM is month, then we should adjust the quantity such that the client is not charged for any months
+                 * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
+                 * will typically be set to three, unless it has an end date sooner than the end of that quarter
+                 * */
+                if(category?.UOM?.ToLower() == "month")
+                {
+                    DateTimeOffset start = new DateTimeOffset();
+                    DateTimeOffset end = new DateTimeOffset();
+                    DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                    DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
+                    int startMonthDifference = 0;
+                    int endMonthDifference = 0;
+                    if (!String.IsNullOrEmpty(startDate))
+                    {
+                        if (DateTimeOffset.TryParse(startDate, out start) && start > quarterStart)
+                        {
+                            startMonthDifference = start.Month - quarterStart.Month;
+                        }
+                    }
+                    if (!String.IsNullOrEmpty(endDate))
+                    {
+                        if (DateTimeOffset.TryParse(endDate, out end) && end < quarterEnd)
+                        {
+                            int monthScalar = (int)(end.Year - quarterEnd.Year) > 0 ? (int)(end.Year - quarterEnd.Year) : 1;
+                            endMonthDifference = Math.Min(monthScalar * quarterEnd.Month - end.Month, 3);
+                        }
+                    }
+                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 1);
                 }
                 decimal newAmount;
                 string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
@@ -273,7 +351,7 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
-                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity);
+                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
                 recordEntry.UOM = UOM;
 
                 return new JsonResult(recordEntry);
@@ -288,11 +366,9 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult GetClients()
         {
-
             try
             {
                 return new JsonResult(from a in _clientAccountRepository.GetAll() select new { a.Id, a.Name });
-
             }
             catch (Exception ex)
             {
@@ -335,11 +411,24 @@ namespace Service_Billing.Controllers
                 case 3:
                     quarter = "Quarter 4";
                     bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
-                    bill.FiscalPeriod = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    string fiscalPeriodString = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
+                    FiscalPeriod? CurrentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+                    if(CurrentFiscalPeriod == null )
+                    {
+                        _logger.LogError($"No existing Fiscal Period entity found for current Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}");
+                    }
+                    else
+                    {
+                        bill.CurrentFiscalPeriodId = CurrentFiscalPeriod.Id;
+                    }
+                    
                     return;
             }
-
-            bill.FiscalPeriod = $"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}";
+            FiscalPeriod? CurrentFiscal = _fiscalPeriodRepository.GetFiscalPeriodByString($"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}");
+            if (CurrentFiscal == null)
+                _logger.LogError($"could not find a fiscal period entity for \"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}\" ");
+            else
+                bill.CurrentFiscalPeriodId= CurrentFiscal.Id;
         }
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
@@ -365,54 +454,62 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                IQueryable<Bill> query = _serviceBillingContext.Bills.Include(b => b.ClientAccount).Include(b => b.ServiceCategory);
-               
-                bool shouldRestrictToUserOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                IQueryable<Bill> query = _serviceBillingContext.Bills
+                    .Include(b => b.ClientAccount)
+                    .Include(b => b.ServiceCategory)
+                    .Include(b => b.PreviousFiscalRecords)
+                    .ThenInclude(r => r.FiscalPeriod);
+
+               //Todo: Give this some more thought. Can probably simplify this logic.
+                bool restrictToOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
-               
+                bool restrictToUserContact = (!User.IsInRole("GDXBillingService.FinancialOfficer")
+                    && !User.IsInRole("GDXBillingService.Owner"));
+
+                List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
                 switch (searchParams?.QuarterFilter)
                 {
                     case "current":
                     default:
-                        string fiscalPeriod = _billRepository.DetermineCurrentQuarter();
-                        query = query.Where(b => b.FiscalPeriod == fiscalPeriod);
+                        string fiscalPeriodString = _billRepository.DetermineCurrentQuarter();
+                        FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+                        if(fiscalPeriod == null)
+                        {
+                            throw new Exception($"No Fiscal Period entity was found that matches \"{fiscalPeriodString}\"");
+                        }
+                        query = query.Where(b => b.CurrentFiscalPeriodId == fiscalPeriod.Id);
+                        query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         break;
-   
                     case "previous":
-                        Dictionary<int, decimal?> previousQuarterChargeIds = _billRepository.GetPreviousQuarterBillIds();
-                        query = query.Where(b => previousQuarterChargeIds.Keys.Contains(b.Id));
+                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
+                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
                         DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
                         query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        query = query.Where(b => b.IsActive);
+                        query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
                         break;
                     case "all":
                         // Just break. Effectively it's just one less Where clause
                         break;
                 }
-                if (String.IsNullOrEmpty(searchParams?.QuarterFilter) || searchParams?.QuarterFilter != "previous")
+                if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && (searchParams?.QuarterFilter == "current" || searchParams?.QuarterFilter == "next"))
                 {
                     IEnumerable<ClientAccount> inactiveAccounts = _clientAccountRepository.GetInactiveAccounts();
                     query = query.Where(b => !inactiveAccounts.Select(a => a.Id).Contains(b.ClientAccountId));
                 }
                 if (!string.IsNullOrEmpty(searchParams?.TitleFilter))
                     query = query.Where(x => x.Title.ToLower().Contains(searchParams.TitleFilter.ToLower()));
-
-                if (searchParams?.Inactive != null && !(bool)(searchParams?.Inactive))
-                {
-                    query = query.Where(b => b.IsActive);
-                }
-                if (shouldRestrictToUserOwnedServices)
+                if (restrictToOwnedServices)
                 { //user is service owner, and we should only show services for charges they own
                     List<int> serviceIds = GetUserOwnedServiceIds();
                     query = query.Where(b => serviceIds.Contains(b.ServiceCategoryId));
                 }
-                if (!String.IsNullOrEmpty(ministryUserName))
-                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
-                    query = query.Where(b => IsAccountContact(ministryUserName, b.ClientAccount));
-                }
+
                 if (searchParams?.MinistryFilter > 0)
                 {
                     query = query.Where(x => x.ClientAccount.OrganizationId != null && x.ClientAccount.OrganizationId == searchParams.MinistryFilter);
@@ -446,9 +543,29 @@ namespace Service_Billing.Controllers
                     query = query.Where(b => b.ClientAccount.PrimaryContact != null && b.ClientAccount.PrimaryContact.ToLower().Contains(searchParams.PrimaryContact.ToLower()));
                 }
 
-                query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title);
+                query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title).Include(c => c.MostRecentActiveFiscalPeriod);
+                
+                IEnumerable<Bill> result = query.AsNoTracking().ToList<Bill>();
+                if (restrictToUserContact)
+                { //user is a ministry client, and we should only show charges related to accounts they are a contact on
+                    result = FilterChargesForCurrentMinistryUser(ministryUserName, result);
+                }
 
-                return query.AsNoTracking().ToList<Bill>();
+                //if we're looking at a previous quarter's charges, make the amounts and quantities reflect what it was for that quarter
+                if (previousQuarterChargeIds.Any())
+                {
+                    foreach (Bill bill in result)
+                    {
+                        FiscalHistory? chargeHistory = previousQuarterChargeIds.FirstOrDefault(x => x.BillId == bill.Id);
+                        if(chargeHistory != null)
+                        {
+                            bill.Amount = chargeHistory.UnitPriceAtFiscal;
+                            bill.Quantity = chargeHistory.QuantityAtFiscal;
+                        }
+                    }
+                }
+
+                return result;
             }
             
             catch (Exception ex)
@@ -501,39 +618,84 @@ namespace Service_Billing.Controllers
                 {
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-                    ChargeRow row = new ChargeRow();
-                    row.ChargeId = bill.Id;
-                    row.ClientNumber = bill.ClientAccountId;
-                    row.ClientName = bill.ClientAccount.Name;
-                    row.Program = bill.Title;
-                    if (serviceCategory != null)
-                    {
-                        row.GDXBusArea = serviceCategory?.BusArea?.Name;
-                        row.ServiceCategory = serviceCategory?.Name;
-                    }
-                    row.TicketNumber = bill.TicketNumberAndRequester;
-                    row.Amount = @String.Format("${0:.##}", bill.Amount);
-                    row.Quantity = bill.Quantity;
-                    row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
-                    if (bill.DateCreated != null)
-                        row.Created = bill.DateCreated?.DateTime.ToShortDateString();
-                    if (bill.StartDate != null)
-                        row.Start = bill.StartDate?.DateTime.ToShortDateString();
-                    if (bill.EndDate != null)
-                        row.End = bill.EndDate?.DateTime.ToShortDateString();
 
-                    row.CreatedBy = bill.CreatedBy;
-                    row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                    row.FiscalPeriod = bill.FiscalPeriod;
-                    row.IdirOrURL = bill.IdirOrUrl;
-                    if (account != null)
+                    if (!string.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "all")
                     {
-                        if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                            row.ExpenseAuthority = account.ExpenseAuthorityName;
-                        if(!String.IsNullOrEmpty(account.PrimaryContact))
-                            row.PrimaryContact = account.PrimaryContact;
+                        foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                        {
+                            ChargeRow row = new ChargeRow();
+                            row.ChargeId = bill.Id;
+                            row.ClientNumber = bill.ClientAccountId;
+                            row.ClientName = bill.ClientAccount.Name;
+                            row.Program = bill.Title;
+                            if (serviceCategory != null)
+                            {
+                                row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                                row.ServiceCategory = serviceCategory?.Name;
+                            }
+                            row.TicketNumber = bill.TicketNumberAndRequester;
+                            row.Amount = String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal));
+                            row.Quantity = fiscalHistory.QuantityAtFiscal;
+                            row.UnitPrice = String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal.ToString());
+                            if (bill.DateCreated != null)
+                                row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                            if (bill.StartDate != null)
+                                row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                            if (bill.EndDate != null)
+                                row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                            row.CreatedBy = bill.CreatedBy;
+                            row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                            row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
+                            row.IdirOrURL = bill.IdirOrUrl;
+                            if (account != null)
+                            {
+                                if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                    row.ExpenseAuthority = account.ExpenseAuthorityName;
+                                if (!String.IsNullOrEmpty(account.PrimaryContact))
+                                    row.PrimaryContact = account.PrimaryContact;
+                            }
+                            row.Notes = bill.Notes;
+                            rows.Add(row);
+                        }
                     }
-                    rows.Add(row);
+                    else
+                    {
+                        ChargeRow row = new ChargeRow();
+                        row.ChargeId = bill.Id;
+                        row.ClientNumber = bill.ClientAccountId;
+                        row.ClientName = bill.ClientAccount.Name;
+                        row.Program = bill.Title;
+                        if (serviceCategory != null)
+                        {
+                            row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                            row.ServiceCategory = serviceCategory?.Name;
+                        }
+                        row.TicketNumber = bill.TicketNumberAndRequester;
+                        row.Amount = @String.Format("${0:.##}", bill.Amount);
+                        row.Quantity = bill.Quantity;
+                        row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                        if (bill.DateCreated != null)
+                            row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                        if (bill.StartDate != null)
+                            row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                        if (bill.EndDate != null)
+                            row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                        row.CreatedBy = bill.CreatedBy;
+                        row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                        row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
+                        row.IdirOrURL = bill.IdirOrUrl;
+                        if (account != null)
+                        {
+                            if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                row.ExpenseAuthority = account.ExpenseAuthorityName;
+                            if (!String.IsNullOrEmpty(account.PrimaryContact))
+                                row.PrimaryContact = account.PrimaryContact;
+                        }
+                        row.Notes = bill.Notes;
+                        rows.Add(row);
+                    }
                 }
 
                 ws.Cell("A1").InsertTable(rows);
@@ -575,13 +737,7 @@ namespace Service_Billing.Controllers
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
-                //if (searchParams?.CategoryFilter > 0)
-                //{
-                //    ServiceCategory? serviceCategory = _categoryRepository.GetById(searchParams.CategoryFilter);
-                //    if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.Name))
-                //        model.Service = serviceCategory.Name;
-                //}
-                //model.ServiceCategoryId = searchParams?.CategoryFilter > 0 ? (int)searchParams.CategoryFilter : -1;
+               
                 SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
 
 
@@ -606,7 +762,7 @@ namespace Service_Billing.Controllers
 
             foreach (var entry in model.ServicesAndSums)
             {
-                records.Add(new RecordEntry(entry.Key, entry.Value));
+                records.Add(new RecordEntry(entry.Key, entry.Value, null));
                 total += entry.Value;
             }
 
@@ -772,6 +928,7 @@ namespace Service_Billing.Controllers
         public string? CreatedBy { get; set; }
         public string? ExpenseAuthority { get; set; }
         public string? PrimaryContact { get; set; }
+        public string? Notes { get; set; }
     }
 
     // For creating the exported quarterly reports.
@@ -780,11 +937,13 @@ namespace Service_Billing.Controllers
         public string ServiceCategory { get; set; }
         public decimal? Amount { get; set; }
         public string? UOM { get; set; }
+        public decimal? Quantity { get; set; }
 
-        public RecordEntry(string serviceCategory, decimal? amount)
+        public RecordEntry(string serviceCategory, decimal? amount, decimal? quantity)
         {
             ServiceCategory = serviceCategory;
             Amount = amount;
+            Quantity = quantity;
         }
     }
 }

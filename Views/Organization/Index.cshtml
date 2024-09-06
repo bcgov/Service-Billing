@@ -1,0 +1,87 @@
+﻿@model IEnumerable<Service_Billing.Models.Ministry>
+
+@{
+    ViewData["Title"] = "Organizations";
+    Layout = "_Layout";
+}
+@{
+    Ministry newMinistry = new Ministry();
+}
+
+<h1>Ministries and other Organizations</h1>
+
+@{
+    <partial name="Create" model="newMinistry"/>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Acronym)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Title)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+       
+
+@foreach (var item in Model)
+{
+    <tr>
+        <td>@item.Acronym</td>
+        <td>@item.Title</td>
+        <td><a asp-action="Edit" asp-route-id="@item.Id">edit</a></td>
+    </tr>
+
+}
+
+    </tbody>
+</table>
+@section Scripts 
+{
+    <script>
+        $(function () {
+            $(".accordion").accordion({
+                collapsible: true
+                
+            });
+        });
+        $(function () {
+            $("#dialog").dialog({
+                resizable: false,
+                height: "auto",
+                width: 400,
+                autoOpen: false,
+                buttons: {
+                    "Yes": function () {
+                        $(this).dialog("close");
+
+                    },
+                    "No": function () {
+                        $(this).dialog("close");
+
+                    },
+                    Cancel: function () {
+                        $(this).dialog("close");
+                    }
+                }
+            });
+        });
+        const confirmChanges = ((val) => {
+           // $("#dialog").dialog("option", "values", val);
+            console.log(val);
+          //  $("#dialog").dialog("open");
+        });
+
+        // const editOrganization = ((id, acronym, title, doUpdate) => {
+        //     console.log(id);
+        //     console.log(acronym);
+        //     console.log(title);
+        //     console.log(doUpdate);
+        // });
+    </script>
+}
+

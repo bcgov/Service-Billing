@@ -18,7 +18,10 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="@Model.ClientAccount.Name">Client: </label>
-                <input asp-for="@Model.ClientAccount.Name" id="clientInput" class="form-control" title="Begin entering a client name, and a list of matching clients will appear." />
+                <input asp-for="@Model.ClientAccount.Name" 
+                  id="clientInput" class="form-control" 
+                  title="Begin entering a client name, and a list of matching clients will appear." 
+                  data-val="true" data-val-required="Select a ministry or organization from the drop down menu"/>
                 <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -27,37 +30,32 @@
             </div>
             <div class="form-group">
                 <label asp-for="Title" class="control-label">Program</label>
-                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the name of the digital asset / web property / IDIR. Don't use acronyms." />
+                <input asp-for="Title" class="form-control" data-val="true" data-val-required="Add the digital asset/web property you will be providing the service for. Don’t use acronyms." />
                 <span asp-validation-for="Title" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="IdirOrUrl" class="control-label"></label>
-                <input asp-for="IdirOrUrl" class="form-control" />
+                <input asp-for="IdirOrUrl" class="form-control"/>
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
-            @* <input asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" readonly="true" /> *@
             <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories })
    
             
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" id="amount" />
+                <input asp-for="Amount" class="form-control" id="amount" data-val-required="Select the service category for this to display."/>
                 <span asp-validation-for="Amount" class="text-danger"></span>
                 <div class="input-info">
                     The amount is calculated based on service and quantity, and typically should not be changed. 
                 </div>
             </div>
             <div class="form-group">
-                <label>UOM</label>
+                <label>Unit of Measure</label>
                 <input id="uom" class="form-control" readonly="true" />
             </div>
-            <div class="form-group">
-                <label asp-for="FiscalPeriod" class="control-label"></label>
-                <input asp-for="FiscalPeriod" class="form-control" data-val="true" data-val-required="Please provide a Fiscal Period" />
-                <span asp-validation-for="FiscalPeriod" class="text-danger"></span>
-            </div>
-            <div class="form-group">
+
+            <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="Quantity" class="control-label"></label>
                 <input asp-for="Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
                 <span asp-validation-for="Quantity" class="text-danger"></span>
@@ -69,12 +67,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" />
+                <input asp-for="StartDate" class="form-control" type="date" id="startDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="EndDate" class="control-label"></label>
-                <input asp-for="EndDate" class="form-control" />
+                <input asp-for="EndDate" class="form-control" type="date" id="endDate" />
                 <span asp-validation-for="EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -114,10 +112,11 @@
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
             calculateAmount = () => {
+                console.log("calculate ammount");
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
                 var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = function () {
@@ -125,11 +124,7 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
-                        if ($('#uom').val() == 'Month' && userSetQuantity === false) {
-                            console.log(userSetQuantity);
-                            $('#quantity').val(3);
-                            $("#amount").val($('#amount').val() * 3);
-                        } 
+                        $("#quantity").val(response['quantity']);
                     }
                 };
                 xhr.open('get', url);
@@ -139,14 +134,21 @@
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
-
                 var id = $('#categorySelect').val();
-                $("#categoryIdInput").val(id);
-                
+                $("#categoryIdInput").val(id);   
                 calculateAmount();
             });
+
             $("#quantity").on("change", (e) => {
                 userSetQuantity = true;
+                calculateAmount();
+            });
+
+            $("#startDate").on("change", (e) => {
+                calculateAmount();
+            });
+
+            $("#endDate").on("change", (e) => {
                 calculateAmount();
             });
 

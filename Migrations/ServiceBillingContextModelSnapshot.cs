@@ -17,7 +17,7 @@ namespace Service_Billing.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.8")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -42,6 +42,9 @@ namespace Service_Billing.Migrations
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CurrentFiscalPeriodId")
+                        .HasColumnType("int");
+
                     b.Property<DateTimeOffset?>("DateCreated")
                         .HasColumnType("datetimeoffset");
 
@@ -50,9 +53,6 @@ namespace Service_Billing.Migrations
 
                     b.Property<DateTimeOffset?>("EndDate")
                         .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("FiscalPeriod")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdirOrUrl")
                         .HasColumnType("nvarchar(max)");
@@ -82,6 +82,8 @@ namespace Service_Billing.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClientAccountId");
+
+                    b.HasIndex("CurrentFiscalPeriodId");
 
                     b.HasIndex("ServiceCategoryId");
 
@@ -151,12 +153,10 @@ namespace Service_Billing.Migrations
 
                     b.Property<string>("Project")
                         .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ResponsibilityCentre")
-                        .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<short?>("STOB")
                         .HasColumnType("smallint");
@@ -183,8 +183,14 @@ namespace Service_Billing.Migrations
                     b.Property<int>("BillId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Notes")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("PeriodId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("QuantityAtFiscal")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal?>("UnitPriceAtFiscal")
                         .HasColumnType("decimal(18,2)");
@@ -206,21 +212,13 @@ namespace Service_Billing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal?>("Amount")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("ChargeId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Period")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ChargeId");
-
-                    b.ToTable("FiscalPeriod");
+                    b.ToTable("FiscalPeriods");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Ministry", b =>
@@ -232,9 +230,11 @@ namespace Service_Billing.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Acronym")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Title")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -247,6 +247,12 @@ namespace Service_Billing.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("DisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Mail")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -300,6 +306,12 @@ namespace Service_Billing.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Service_Billing.Models.FiscalPeriod", "MostRecentActiveFiscalPeriod")
+                        .WithMany()
+                        .HasForeignKey("CurrentFiscalPeriodId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Service_Billing.Models.ServiceCategory", "ServiceCategory")
                         .WithMany()
                         .HasForeignKey("ServiceCategoryId")
@@ -308,13 +320,15 @@ namespace Service_Billing.Migrations
 
                     b.Navigation("ClientAccount");
 
+                    b.Navigation("MostRecentActiveFiscalPeriod");
+
                     b.Navigation("ServiceCategory");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
                 {
                     b.HasOne("Service_Billing.Models.Bill", "Bill")
-                        .WithMany()
+                        .WithMany("PreviousFiscalRecords")
                         .HasForeignKey("BillId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -330,17 +344,6 @@ namespace Service_Billing.Migrations
                     b.Navigation("FiscalPeriod");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
-                {
-                    b.HasOne("Service_Billing.Models.Bill", "Charge")
-                        .WithMany("fiscalPeriods")
-                        .HasForeignKey("ChargeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Charge");
-                });
-
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
                 {
                     b.HasOne("Service_Billing.Models.BusinessArea", "BusArea")
@@ -354,7 +357,7 @@ namespace Service_Billing.Migrations
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>
                 {
-                    b.Navigation("fiscalPeriods");
+                    b.Navigation("PreviousFiscalRecords");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.BusinessArea", b =>

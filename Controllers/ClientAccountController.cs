@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
+using System.Text.RegularExpressions;
 
 namespace Service_Billing.Controllers
 {
@@ -136,11 +137,11 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Edit(ClientAccount model)
+        public async Task<IActionResult> Edit(ClientAccount model)
         {
             try
             {
-                _clientAccountRepository.Update(model);
+                await _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id });
             }
@@ -215,31 +216,36 @@ namespace Service_Billing.Controllers
                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
                     .Build();
 
-                var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
-                if (expenseAuthority is not null)
+                if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                 {
-                    var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
-                    var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
-                    var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                    if (expenseAuthority is not null)
+                    {
+                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                        var eaDisplayName = (await _graphApiService.Me(eaId, cca)).DisplayName;
+                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
-                    //await _emailService.SendEmail(
-                    //    eaEmail,
-                    //    "Please Review: New GDX Service Billing Account Information",
-                    //    $@"
-                    //    Hello {eaEmail.Split('@')[0]},
+                        await _emailService.SendEmail(
+                            eaEmail,
+                            eaDisplayName,
+                            "Please Review: New GDX Service Billing Account Information",
+                            $@"
+                            Hello Andre Lashley,
                     
-                    //    We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
+                            We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
                     
-                    //    To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
+                            To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
                     
-                    //    If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
+                            If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
                     
-                    //    We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
+                            We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
                     
-                    //    Warm regards,
+                            Warm regards,
                     
-                    //    GDX Service Billing Team"
-                    //);
+                            GDX Service Billing Team"
+                        );
+                    }
                 }
 
             }
@@ -322,7 +328,10 @@ namespace Service_Billing.Controllers
                 {
                     foreach (var user in queriedUsers.Value)
                     {
-                        contacts.Add(user.DisplayName);
+                        if (IsValidDisplayName(user.DisplayName))
+                        {
+                            contacts.Add(user.DisplayName);
+                        }
                     }
                 }
 
@@ -345,6 +354,13 @@ namespace Service_Billing.Controllers
                 _consentHandler.HandleException(ex);
                 return new JsonResult(ex.InnerException);
             }
+        }
+
+        private bool IsValidDisplayName(string displayName)
+        {
+            // Define your regex pattern here
+            string pattern = @"[A-Za-z\s,]+ [A-Z]{2,}:[A-Z]{2}";
+            return Regex.IsMatch(displayName, pattern);
         }
 
         public IActionResult CurrentUserAccounts()
@@ -544,13 +560,13 @@ namespace Service_Billing.Controllers
         public int clientId;
         public string clientName;
         public short? casClientNumber;
-        public string organization;
+        public string? organization;
         public string aggregateGLCode;
-        public string servicesEnabled;
+        public string? servicesEnabled;
         public string primaryContact;
         public string financialContact;
         public string approver;
-        public string expenseAuthority;
+        public string? expenseAuthority;
         public bool approved;
         public bool active;
         public string notes;

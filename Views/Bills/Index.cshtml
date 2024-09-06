@@ -1,6 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
-
 @using Service_Billing.ViewModels;
 @using System.Security.Claims
 
@@ -8,7 +7,6 @@
     ViewData["Title"] = "Quarterly Report";
     Layout = "_Layout";
 }
-
 
 @{
     IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
@@ -18,7 +16,7 @@
     bool current = searchModel.QuarterFilter == "current";
     bool previous = searchModel.QuarterFilter == "previous";
     bool next = searchModel.QuarterFilter == "next";
-    bool all = searchModel.QuarterFilter == "All Quarters";
+    bool all = searchModel.QuarterFilter == "all";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
     List<SelectListItem> businessAreas = new List<SelectListItem>();
 
@@ -30,7 +28,7 @@
                 { Value = serviceCategory.ServiceId.ToString(), Text = serviceCategory.Name, Selected = (searchModel.CategoryFilter != null && searchModel.CategoryFilter.Contains(serviceCategory.ServiceId)) }
         );
     }
-    foreach(BusinessArea businessArea in ViewBag.BusAreas)
+    foreach (BusinessArea businessArea in ViewBag.BusAreas)
     {
         businessAreas.Add(new SelectListItem { Value = businessArea.Id.ToString(), Text = businessArea.Name });
     }
@@ -62,7 +60,7 @@
 
                             <label for="ministryFilter">Organization</label>
                             <select name="ministryFilter" title="Ministry or other organization charges">
-                                <option value="" disabled selected hidden></option>
+                                <option value="" selected>All (no filter)</option>
                                 @if (ministries != null)
                                 {
                                     foreach (Ministry ministry in ministries)
@@ -79,16 +77,15 @@
                                 }
                             </select>
                             <label for="titleFilter">Program</label>
-                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" title="Search by digital asset"/>
+                            <input type="text" name="titleFilter" value="@searchModel?.TitleFilter" title="Search by digital asset" />
                         </div>
                         <div>
-
                             <label for="busAreaFilter">Business Area</label>
                             <select name="busAreaFilter" id="busAreaFilter" value="@searchModel?.BusAreaFilter">
                                 <option></option>
                                 @foreach (BusinessArea businessArea in ViewBag.BusAreas)
                                 {
-                                    if(searchModel?.BusAreaFilter != null && searchModel.BusAreaFilter == businessArea.Id)
+                                    if (searchModel?.BusAreaFilter != null && searchModel.BusAreaFilter == businessArea.Id)
                                     {
                                         <option value="@businessArea.Id" selected>@businessArea.Acronym - @businessArea.Name</option>
                                     }
@@ -119,33 +116,26 @@
                                     }
                                 </select>
                             </div>
-
                             <div>
                                 <label for="authorityFilter">Expense Authority</label>
-                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" title="Search by ministry expense authority's first or last name"/>
+                                <input type="text" name="authorityFilter" value="@searchModel?.AuthorityFilter" title="Search by ministry expense authority's first or last name" />
                                 <label for="primaryContact">Primary Contact</label>
-                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" title="Search for ministry contact's first or last name"/>
+                                <input type="text" name="primaryContact" value="@searchModel?.PrimaryContact" title="Search for ministry contact's first or last name" />
                                 <label for="clientNumber">GDX Client No.</label>
-                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" title="Search by GDX client number"/>
+                                <input type="number" name="clientNumber" value="@searchModel?.ClientNumber" title="Search by GDX client number" />
                             </div>
                             <div>
                                 <label for="keyword">Keyword</label>
                                 <input type="text" name="keyword" value="@searchModel.Keyword"
                                        title="Search program names, URLs or notes" />
                             </div>
-                            @* <label for="inactive">Include Inactive</label>
-                        <input type="checkbox" name="inactive" checked="@ViewData["Inactive"]" />
-                        @ViewData["Inactive"] *@
                         </div>
-                        <input type="text" name="quarterFilter" value="@searchModel.QuarterFilter" hidden />
                     </div>
                     <div class="ui-section-buttons">
                         <div class="option-buttons">
                             <input type="submit" value="Filter" class="btn btn-default" /> |
-                            <a asp-action="Index">Back to Full List</a>
-                        
+                            <a asp-action="Index">Clear Filters</a>
                         </div>
-
                     </div>
                 </fieldset>
                 <div class="export-button">
@@ -215,5 +205,28 @@
             filterServiceCategories();
         });
         filterServiceCategories();
+
+        $('form input').change(function () {
+            $(this).closest('form').submit();
+        });
+        $('form select').change(function () {
+            $(this).closest('form').submit();
+        });
+        // $(function () {
+        //     $(window).keydown(function (e) {
+        //         if (e.keyCode == 13) {
+        //             e.preventDefault();
+        //             return false;
+        //         }
+        //     });
+        // })
+        addEventListener('keydown', function (event) {
+            if (event.keyCode === 13 && event.target.nodeName === 'INPUT') {
+                var form = event.target.form;
+                var index = Array.prototype.indexOf.call(form, event.target);
+                form.elements[index + 1].focus();
+                event.preventDefault();
+            }
+        });
     </script>
 }

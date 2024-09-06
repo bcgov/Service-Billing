@@ -6,6 +6,8 @@
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
+    string startDateString = Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
+    string endDateString = Model.EndDate.HasValue ? Model.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
 
 }
 
@@ -55,11 +57,11 @@
                 <input id="uom" class="form-control" readonly="true" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model.FiscalPeriod" class="control-label"></label>
-                <input asp-for="@Model.FiscalPeriod" class="form-control" data-val-required="Please provide a Fiscal Period" />
-                <span asp-validation-for="@Model.FiscalPeriod" class="text-danger"></span>
+                <label asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="control-label"></label>
+                <input asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="form-control" readonly="true" data-val-required="Please provide a Fiscal Period" />
+                <span asp-validation-for="@Model.MostRecentActiveFiscalPeriod.Period" class="text-danger"></span>
             </div>
-            <div class="form-group">
+            <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="@Model.Quantity" class="control-label"></label>
                 <input asp-for="@Model.Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
                 <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
@@ -71,12 +73,12 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.StartDate" class="control-label"></label>
-                <input asp-for="@Model.StartDate" class="form-control" />
+                <input asp-for="@Model.StartDate" class="form-control" type="date" id="startDate" value="@startDateString" />
                 <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.EndDate" class="control-label"></label>
-                <input asp-for="@Model.EndDate" class="form-control" />
+                <input asp-for="@Model.EndDate" class="form-control" type="date" id="endDate" value="@endDateString" />
                 <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -115,7 +117,7 @@
     <script>
         $(document).ready(function () {
             calculateAmount = () => {
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "JSON";
                 xhr.onreadystatechange = function () {
@@ -123,6 +125,7 @@
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
+                        $("#quantity").val(response['quantity']);
                     }
                 };
                 xhr.open('get', url);
@@ -136,6 +139,12 @@
                 }
             });
             $("#quantity").on("change", (e) => {
+                calculateAmount();
+            });
+             $("#startDate").on("change", (e) => {
+                calculateAmount();
+            });
+            $("#endDate").on("change", (e) => {
                 calculateAmount();
             });
 

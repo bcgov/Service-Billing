@@ -34,7 +34,7 @@ builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
         // This causes the signin to prompt the user for which
         // account to use - useful when there are multiple accounts signed
         // into the browser
-      
+
         options.Events.OnTokenValidated = async context =>
         {
             var tokenAcquisition = context.HttpContext.RequestServices
@@ -106,6 +106,7 @@ builder.Services.AddScoped<IGraphApiService, GraphApiService>();
 builder.Services.AddScoped<IFiscalPeriodRepository, FiscalPeriodRepository>();
 builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
 builder.Services.AddScoped<IFiscalHistoryRepository, FiscalHistoryRepository>();
+builder.Services.AddScoped<IPeopleRepository, PeopleRepository>();
 
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 
@@ -121,7 +122,8 @@ builder.Services.AddMvc();
 //database connection
 builder.Services.AddDbContext<ServiceBillingContext>(options =>
     options
-    .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")));
+    .UseSqlServer(builder.Configuration.GetConnectionString("ServiceBillingContext") ?? throw new InvalidOperationException("Connection string 'Service_BillingContext' not found.")
+    , o => o.UseCompatibilityLevel(120))); // "use compatibility" was added to deal with problems that arose when upgrading to .Net 8.0
 
 builder.Services.AddRazorPages().AddMvcOptions(options =>
 {
@@ -197,7 +199,7 @@ using (var scope = app.Services.CreateScope())
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<ServiceBillingContext>();
     await context.Database.MigrateAsync();
-    //DbInitializer.SeedPeople(context);
+    // DbInitializer.SeedPeople(context);
     //DbInitializer.SeedMinistries(context);
     //DbInitializer.SeedServices(context);
     //DbInitializer.SeedAccounts(context);

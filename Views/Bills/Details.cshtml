@@ -6,10 +6,15 @@
     ViewData["Title"] = "Charge Details";
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
+    FiscalHistory? fiscalHistory = ViewData["historyData"] != null ? ViewData["historyData"] as FiscalHistory : null;
 }
 <h1>Details</h1>
 <div>
     <h4>@Model.Id - @Model.Title</h4>
+    @if(fiscalHistory != null )
+    {
+        <h4>Historical record for @ViewData["periodString"]</h4>
+    }
     <hr />
     <table>
         <tr>
@@ -73,19 +78,31 @@
         </tr>
         <tr>
             <td class="table-right">
-                @Html.DisplayNameFor(model => model.FiscalPeriod)
+                Most Recent Period
             </td>
             <td>
-                @Html.DisplayFor(model => model.FiscalPeriod)
+                @Html.DisplayFor(model => model.MostRecentActiveFiscalPeriod.Period)
             </td>
         </tr>
         <tr>
-            <td class="table-right">
-                @Html.DisplayNameFor(model => model.Quantity)
-            </td>
-            <td>
-                @Html.DisplayFor(model => model.Quantity)
-            </td>
+            @if (fiscalHistory != null)
+            {
+                <td class="table-right">
+                    Quantity for @ViewData["periodString"]
+                </td>
+                <td>
+                    @fiscalHistory.QuantityAtFiscal
+                </td>
+            }
+            else
+            {
+                <td class="table-right">
+                    @Html.DisplayNameFor(model => model.Quantity)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Quantity)
+                </td>
+            }
         </tr>
         <tr>
             <td class="table-right">
@@ -175,15 +192,28 @@
 
         </tr>
         <tr>
-            <td class="table-right">
-                @Html.DisplayNameFor(model => Model.Notes)
-            </td>
-            <td>
-                @Html.DisplayFor(model => Model.Notes)
-            </td>
+            @if(fiscalHistory != null)
+            {
+                <td class ="table-right">
+                    Notes for @ViewData["periodString"]
+                </td>
+                <td>
+                    @fiscalHistory.Notes
+                </td>
+            }
+            else
+            {
+                <td class="table-right">
+                    @Html.DisplayNameFor(model => Model.Notes)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => Model.Notes)
+                </td>
+            }
         </tr>
     </table>
 </div>
+
 <div class="bottom-nav">
     @if (!User.IsInRole("GDXBillingService.User"))
     {

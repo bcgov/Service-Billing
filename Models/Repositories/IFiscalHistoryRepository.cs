@@ -6,7 +6,6 @@
         FiscalHistory? GetFiscalHistoryById(int id);
         IEnumerable<FiscalHistory> GetFiscalHistoriesByChargeId(int id);
         IEnumerable<FiscalHistory> GetFiscalHistoryByFiscalPeriodId(int id);
-
-        Task<int> SaveFiscalHistoryInfo(FiscalHistory fiscalHistory);
+        int SaveFiscalHistoryInfo(FiscalHistory fiscalHistory);
     }
 }

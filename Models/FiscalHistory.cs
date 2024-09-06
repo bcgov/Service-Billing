@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Service_Billing.Models
 {
+
+    // Previous Fiscal History for a charge, so when a charge is promoted to a new quarter, we keep track of the 
+    // last fiscal history, and what it the unit price was at that time. 
     public class FiscalHistory
     {
         [Key]
@@ -16,5 +19,16 @@ namespace Service_Billing.Models
         [ForeignKey("PeriodId")]
         public virtual FiscalPeriod? FiscalPeriod { get; set; }
         public decimal? UnitPriceAtFiscal { get; set; }
+        public decimal? QuantityAtFiscal { get; set; }
+        public string? Notes { get; set; }
+
+        public FiscalHistory(int billId, int periodId, decimal? unitPriceAtFiscal, decimal? quantityAtFiscal, string? notes = null)
+        {
+            BillId = billId;
+            PeriodId = periodId;
+            UnitPriceAtFiscal = unitPriceAtFiscal;
+            QuantityAtFiscal = quantityAtFiscal;
+            Notes = notes;
+        }
     }
 }

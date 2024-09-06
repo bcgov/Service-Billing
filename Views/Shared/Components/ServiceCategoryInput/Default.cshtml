@@ -5,7 +5,7 @@
 }
 <div class="form-group">
     <label for="categorySelect">Service Category</label>
-    <select asp-for="@Model.ServiceCategoryId" class="form-control" id="categorySelect">
+    <select asp-for="@Model.ServiceCategoryId" class="form-control" id="categorySelect" data-val-required="A Service Category must be selected">
         @if(Model != null && Model.ServiceCategoryId > 0)
         {
             @foreach (ServiceCategory category in categories)
@@ -42,6 +42,7 @@
             }
         }
      </select>
+    <span asp-validation-for="@Model.ServiceCategoryId" class="text-danger"></span>
 </div>
 <div class="change-category-message" id="categoryWarning" hidden="@mustChangeServiceCategory">
     <p>This appears to be an older service category that is no longer active.</p>

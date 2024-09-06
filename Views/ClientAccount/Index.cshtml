@@ -28,7 +28,7 @@
                         <div>
                             <label for="ministryFilter">Organization</label>
                             <select name="ministryFilter">
-                                <option value="" disabled selected hidden></option>
+                                <option value="" selected>All (no filter)</option>
                                 @if (ministries != null)
                                 {
                                     foreach (Ministry ministry in ministries)
@@ -56,8 +56,8 @@
                             <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
                             <label for="primaryContactFilter">Primary Contact</label>
                             <input type="text" name="primaryContactFilter" value="@ViewData["PrimaryContactFilter"]" />
-                         @*    <label for="servicesEnabled">Services Enabled</label>
-                            <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
+                            @*    <label for="servicesEnabled">Services Enabled</label>
+                        <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
                             @*    <label for="notes">Notes</label>
                         <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
                             <label for="keyword">Keyword</label>
@@ -65,10 +65,8 @@
                         </div>
                         <div class="ui-section-buttons">
                             <div class="option-buttons">
-                                <input type="submit" value="Filter" class="btn btn-default" />
-                                <a asp-action="Index">Back to Full List</a>
+                                <a asp-action="Index">Clear Filters</a>
                             </div>
-
                         </div>
                     </div>
                 </fieldset>
@@ -113,17 +111,24 @@
                     <td>
                         @account.ClientNumber
                     </td>
-                    
+
                     <td>@account.ExpenseAuthorityName</td>
                     <td>@account.PrimaryContact</td>
                     <td>@account.IsActive</td>
-                    
+
                 </tr>
             }
         </tbody>
     </table>
 </div>
-
+<div id="chargesTable"></div>
+<div id="loading-card">
+    <div class="table-loading-spanner show">
+        <div class="loader"></div>
+        <p>Loading...</p>
+    </div>
+</div>
+</div>
 @section Scripts {
 
     <script>
@@ -131,6 +136,29 @@
             // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#account-index-link').addClass("active-nav-link");
+
+                $("div.table-loading-spanner").addClass("hide");
+                $("div.table-loading-overlay").addClass("hide");
+        });
+
+        $("input[type='submit']").click(function () {
+            $("div.table-loading-spanner").addClass("show");
+            $("div.table-loading-overlay").addClass("show");
+        });
+
+        $('form input').change(function () {
+            $(this).closest('form').submit();
+        });
+        $('form select').change(function () {
+            $(this).closest('form').submit();
+        });
+        addEventListener('keydown', function (event) {
+            if (event.keyCode === 13 && event.target.nodeName === 'INPUT') {
+                var form = event.target.form;
+                var index = Array.prototype.indexOf.call(form, event.target);
+                form.elements[index + 1].focus();
+                event.preventDefault();
+            }
         });
     </script>
 }

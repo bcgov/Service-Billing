@@ -2,8 +2,9 @@
 {
     public interface IFiscalPeriodRepository
     {
-        void UpdateRecord(int chargeId, string fiscalPeriod, decimal? amount);
-        IEnumerable<FiscalPeriod> GetPeriodsByChargeId(int chargeId);
-        Dictionary<int, decimal?> ChargeIdsAndCostByFiscalPeriod(string fiscalPeriod);
+        FiscalPeriod? GetByFiscalQuarterString(string fiscalPeriod);
+        FiscalPeriod? GetFiscalPeriodByString(string period);
+        FiscalPeriod? GetFiscalPeriodById(int id);
+        int SaveFiscalPeriod(FiscalPeriod fiscalPeriod);
     }
 }

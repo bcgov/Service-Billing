@@ -26,9 +26,6 @@ namespace Service_Billing.Models
         [Display(Name = "Amount")]
         public decimal? Amount { get; set; }
 
-        [Display(Name = "Fiscal Period")]
-        public string? FiscalPeriod { get; set; }
-      //  public decimal Unit_Price; //comes from service category lookup
         public decimal? Quantity { get; set; }
 
         [Column("ticketNumberAndRequesterName")]
@@ -42,16 +39,25 @@ namespace Service_Billing.Models
         public DateTimeOffset? DateCreated { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
+        [Display(Name = "End Date")]
         public DateTimeOffset? EndDate { get; set; }
 
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
+        [Display(Name = "Start Date")]
         public DateTimeOffset? StartDate { get; set; }
+        [Display(Name = "Billing Cycle")]
         public string? BillingCycle { get; set; }
+        [Display(Name = "Created By")]
         public string? CreatedBy { get; set; }
+        [Display(Name = "Is Active")]
         public bool IsActive { get; set; } = true;
         public string? Notes { get; set; }
+        public virtual ICollection<FiscalHistory>? PreviousFiscalRecords { get; set; }
+        public int CurrentFiscalPeriodId { get; set; } // "LastActiveFiscalPeriodID" would have been a better name
 
-        public virtual ICollection<FiscalPeriod>? fiscalPeriods { get; set; }
+        [ForeignKey("CurrentFiscalPeriodId")]
+        public virtual FiscalPeriod MostRecentActiveFiscalPeriod { get; set; }
+
 
 
         public Bill()
@@ -60,7 +66,7 @@ namespace Service_Billing.Models
             this.DateCreated = DateTimeOffset.UtcNow;
             this.StartDate = DateTimeOffset.UtcNow;
             this.IsActive = true;
-            fiscalPeriods = new Collection<FiscalPeriod>();
+            PreviousFiscalRecords = new Collection<FiscalHistory>();
         }
     }
 }

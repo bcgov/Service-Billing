@@ -1,0 +1,41 @@
+﻿@model Service_Billing.Models.Ministry
+
+@{
+    ViewData["Title"] = "Edit Organization Details";
+    Layout = "_Layout";
+}
+
+<h1>Edit</h1>
+
+<h4>Ministry or other Organization</h4>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="@Model.Acronym" class="control-label"></label>
+                <input asp-for="@Model.Acronym" class="form-control" value="@Model.Acronym" />
+                * Updating this Organization's acronym will will change the names of associated Client Accounts to match.
+                <span asp-validation-for="@Model.Acronym" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="@Model.Title" class="control-label"></label>
+                <input asp-for="@Model.Title" class="form-control" value="@Model.Title" />
+                <span asp-validation-for="@Model.Title" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Save" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts{
+
+}
