@@ -369,7 +369,8 @@ namespace Service_Billing.Models.Repositories
             newBill.Amount = bill.Amount;
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
-            newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
+        //    newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
+            newBill.CurrentFiscalPeriodId = bill.CurrentFiscalPeriodId;
             newBill.IdirOrUrl = bill.IdirOrUrl;
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
@@ -410,7 +411,8 @@ namespace Service_Billing.Models.Repositories
                 bill.StartDate = editedBill.StartDate;
                 bill.CreatedBy = editedBill.CreatedBy;
                 bill.ClientAccountId = editedBill.ClientAccountId;
-                bill.MostRecentActiveFiscalPeriod = editedBill.MostRecentActiveFiscalPeriod;  // Re-assign FiscalPeriod
+            //    bill.MostRecentActiveFiscalPeriod = editedBill.MostRecentActiveFiscalPeriod;  // Re-assign FiscalPeriod
+                bill.CurrentFiscalPeriodId = editedBill.CurrentFiscalPeriodId;
                 bill.IdirOrUrl = editedBill.IdirOrUrl;
                 bill.IsActive = editedBill.IsActive;
                 bill.Quantity = editedBill.Quantity;

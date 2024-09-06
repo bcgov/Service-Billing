@@ -60,6 +60,7 @@
                 <label asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="control-label"></label>
                 <input asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="form-control" readonly="true" data-val-required="Please provide a Fiscal Period" />
                 <span asp-validation-for="@Model.MostRecentActiveFiscalPeriod.Period" class="text-danger"></span>
+                 <input type="hidden" asp-for="@Model.CurrentFiscalPeriodId" />
             </div>
             <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="@Model.Quantity" class="control-label"></label>
