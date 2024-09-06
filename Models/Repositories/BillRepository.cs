@@ -412,6 +412,7 @@ namespace Service_Billing.Models.Repositories
                 bill.CreatedBy = editedBill.CreatedBy;
                 bill.ClientAccountId = editedBill.ClientAccountId;
             //    bill.MostRecentActiveFiscalPeriod = editedBill.MostRecentActiveFiscalPeriod;  // Re-assign FiscalPeriod
+                bill.CurrentFiscalPeriodId = editedBill.CurrentFiscalPeriodId;
                 bill.IdirOrUrl = editedBill.IdirOrUrl;
                 bill.IsActive = editedBill.IsActive;
                 bill.Quantity = editedBill.Quantity;
