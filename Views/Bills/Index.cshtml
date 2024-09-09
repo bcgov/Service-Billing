@@ -187,7 +187,6 @@
 
         const filterServiceCategories = (() => {
             var busAreaId = $("#busAreaFilter").val();
-            console.log(busAreaId);
             $("#categoryFilter").children('option').each((index, element) => {
                 if (busAreaId) {
                     if (element.getAttribute('areaId') === busAreaId) {
@@ -212,14 +211,7 @@
         $('form select').change(function () {
             $(this).closest('form').submit();
         });
-        // $(function () {
-        //     $(window).keydown(function (e) {
-        //         if (e.keyCode == 13) {
-        //             e.preventDefault();
-        //             return false;
-        //         }
-        //     });
-        // })
+      
         addEventListener('keydown', function (event) {
             if (event.keyCode === 13 && event.target.nodeName === 'INPUT') {
                 var form = event.target.form;
