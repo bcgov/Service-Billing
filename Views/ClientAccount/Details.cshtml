@@ -206,9 +206,7 @@
         @if (!isMinistryClient)
         {
             <a href="/Bills/AddServiceBilling?accountId=@Model?.Id">Order a Service</a>
-            <text> | </text>
         }
-        <a asp-action="Index">Back to List</a>
     </div>
     <div id="dialog" title="Set this charge to Inactive?">
         <p>Inactive charges are not factored into quarterly reports, and deactivated fixed services are not carried to future billing cycles.</p>

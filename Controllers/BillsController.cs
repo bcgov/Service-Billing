@@ -126,8 +126,9 @@ namespace Service_Billing.Controllers
                         count = 0;
                         foreach(Bill bill in bills)
                         {
+                            count++;
                             if (bill.PreviousFiscalRecords.Any())
-                                count += bill.PreviousFiscalRecords.Count();
+                                count += bill.PreviousFiscalRecords.Where(x => x.FiscalPeriod.Id != bill.CurrentFiscalPeriodId).Count();
                         }
                         break;
                 }
