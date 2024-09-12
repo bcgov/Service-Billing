@@ -56,10 +56,6 @@
                             <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
                             <label for="primaryContactFilter">Primary Contact</label>
                             <input type="text" name="primaryContactFilter" value="@ViewData["PrimaryContactFilter"]" />
-                            @*    <label for="servicesEnabled">Services Enabled</label>
-                        <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
-                            @*    <label for="notes">Notes</label>
-                        <input type="text" name="servicesEnabled" value="@ViewData["ServicesEnabled"]" /> *@
                             <label for="keyword">Keyword</label>
                             <input type="text" name="keyword" value="@ViewData["Keyword"]" />
                         </div>
@@ -120,6 +116,12 @@
             }
         </tbody>
     </table>
+    @if (Model != null && !Model.Any())
+    {
+        <h3>
+            No results matched your search
+        </h3>
+    }
 </div>
 <div id="chargesTable"></div>
 <div id="loading-card">
