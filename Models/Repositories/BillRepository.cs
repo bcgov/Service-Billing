@@ -166,9 +166,9 @@ namespace Service_Billing.Models.Repositories
                 _logger.LogInformation("Promoting charges to new quarter...");
                 // determine limits of current fiscal quarter
                 DateTimeOffset quarterStart = DetermineStartOfCurrentQuarter();
-                _logger.LogInformation($"quarter start date: {quarterStart.Date.ToShortTimeString()}");
+                _logger.LogInformation($"quarter start date: {quarterStart.Date}");
                 DateTimeOffset quarterEnd = DetermineEndOfQuarter(quarterStart.Date);
-                _logger.LogInformation($"quarter end date: {quarterEnd.Date.ToShortTimeString()}");
+                _logger.LogInformation($"quarter end date: {quarterEnd.Date}");
                 // list which services are fixed consumptions. Ignore charges where UOM is not month
                 List<int> fixedServiceIds = GetFixedServices();
                 List<int> oneTimeServiceIds = GetOneTimeServices();
@@ -195,13 +195,20 @@ namespace Service_Billing.Models.Repositories
                 foreach (Bill bill in billsToPromote)
                 {
                     List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
-                    if ((!string.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) && bill.MostRecentActiveFiscalPeriod.Period == newQuarter)) // make sure charge has no fiscal history for the new quarter
+                    if (bill.CurrentFiscalPeriodId != null && bill.CurrentFiscalPeriodId == newFiscalPeriod.Id) // make sure charge has no fiscal history for the new quarter
                     {
+                        _logger.LogWarning($"tried promoting bill with ID: {bill.Id} to a new FiscalPeriod, but it's CurrentFiscalPeriodId matches the new FiscalPeriod.Id ({newFiscalPeriod.Id}). Skipping this Charge.");
                         continue; //don't add anything more than once.
                     }
-                //    bill.MostRecentActiveFiscalPeriod.Period = newQuarter;  //TODO: drop this, as we will drop this field for the foreign relation on the next line
+
+                    //handle fiscal period tracking.
+                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, bill.CurrentFiscalPeriodId, bill.Amount, bill.Quantity, bill.Notes);
+                    if(_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalPeriod.Id, bill.Id) == null) // and it should be null!
+                    {
+                        _billingContext.FiscalHistory.Add(fiscalHistory);
+                    }
+
                     bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity, bill.Notes);
                     decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
                     if (bill.Quantity != newQuantityForCharge)
                     {
@@ -221,8 +228,7 @@ namespace Service_Billing.Models.Repositories
 
                         _billingContext.Update(bill);
                     }
-                    _billingContext.FiscalHistory.Add(fiscalHistory);
-            //        await _billingContext.SaveChangesAsync();
+                    
                 }
 
                 await _billingContext.SaveChangesAsync();
