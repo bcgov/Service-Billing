@@ -546,3 +546,13 @@ input[type=number]::-webkit-outer-spin-button {
 .dialog-input-section {
     display: inline-block;
 }
+
+.toast {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+}
+
+.table-filter-section {
+  width: 100%;
+}

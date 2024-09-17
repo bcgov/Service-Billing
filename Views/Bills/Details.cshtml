@@ -7,11 +7,13 @@
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
     FiscalHistory? fiscalHistory = ViewData["historyData"] != null ? ViewData["historyData"] as FiscalHistory : null;
+    var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
+    var clientName = clientAccount?.Name;
 }
 <h1>Details</h1>
 <div>
     <h4>@Model.Id - @Model.Title</h4>
-    @if(fiscalHistory != null )
+    @if (fiscalHistory != null)
     {
         <h4>Historical record for @ViewData["periodString"]</h4>
     }
@@ -192,9 +194,9 @@
 
         </tr>
         <tr>
-            @if(fiscalHistory != null)
+            @if (fiscalHistory != null)
             {
-                <td class ="table-right">
+                <td class="table-right">
                     Notes for @ViewData["periodString"]
                 </td>
                 <td>
@@ -220,3 +222,17 @@
         <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(() => {
+            console.log(@isNew);
+          //  if (@isNew) {
+                $("#toast-title-text").html("Success!");
+                $("#toast-header-small-text").html("New charge created");
+                $("#toast-body").html("Your new charge was created, and entered in the database");
+                $("#info-toast").toast("show");
+          //  }
+        });
+    </script>
+}
