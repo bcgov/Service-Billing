@@ -91,12 +91,12 @@ namespace Service_Billing.Controllers
 
         // GET: ClientAccountController/Details/5
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public ActionResult Details(int id)
+        public ActionResult Details(int id, bool isNew = false)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
-
+            ViewData["isNew"] = isNew;
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
@@ -262,7 +262,7 @@ namespace Service_Billing.Controllers
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(model.Account.Id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
 
-            return RedirectToAction("details", new { model.Account.Id });
+            return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
 
         private short GetNextClientNumber()

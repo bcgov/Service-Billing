@@ -52,6 +52,13 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
+        public IActionResult Details(ServiceCategory serviceCategory, bool isNew = false)
+        {
+            ViewData["isNew"] = isNew;
+            return View(serviceCategory);
+        }
+
+        [HttpGet]
         public IActionResult Edit(int id)
         {
             ServiceCategory? serviceCategory = _categoryRepository.GetById(id);
@@ -121,7 +128,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             ViewData["BusAreas"] = busAreas;
-            return View("index", categories);
+            return RedirectToAction("details", new { model, isNew = true });
         }
 
         [HttpPost]

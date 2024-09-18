@@ -13,6 +13,7 @@
 @{
     var user = User as ClaimsPrincipal;
     var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
+    var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
 }
 <h1>Client Account Information</h1>
 <div>
@@ -336,6 +337,14 @@
             };
             xhr.open('post', url);
             xhr.send();
+        });
+        $(document).ready(() => {
+            if (@isNew) {
+                $("#toast-title-text").html("Success!");
+                $("#toast-header-small-text").html("New Account created");
+                $("#toast-body").html("Your new Client Account was created, and entered in the database");
+                $("#info-toast").toast("show");
+            }
         });
     </script>
 }

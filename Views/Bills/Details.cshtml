@@ -226,13 +226,12 @@
 @section Scripts {
     <script>
         $(document).ready(() => {
-            console.log(@isNew);
-          //  if (@isNew) {
+            if (@isNew) {
                 $("#toast-title-text").html("Success!");
                 $("#toast-header-small-text").html("New charge created");
                 $("#toast-body").html("Your new charge was created, and entered in the database");
                 $("#info-toast").toast("show");
-          //  }
+            }
         });
     </script>
 }
