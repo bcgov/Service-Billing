@@ -16,7 +16,7 @@
 
 <h1>Manage Client Account Information</h1>
 
-<div class="row row-cols-1 row-cols-md-3 g-4">
+<div>
 
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !User.IsInRole("GDXBillingService.User"))
     {
