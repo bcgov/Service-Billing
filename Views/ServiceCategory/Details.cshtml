@@ -72,13 +72,12 @@
 <div class="bottom-nav">
     <a asp-action="Edit" asp-route-id="@Model?.ServiceId">Edit</a>
 </div>
-
 @section Scripts {
     <script>
         $(document).ready(() => {
             if (@isNew) {
                 $("#toast-title-text").html("Success!");
-                $("#toast-header-small-text").html"New Service Category created");
+                $("#toast-header-small-text").html("New Service Category created");
                 $("#toast-body").html("Your new Service Category was created, and entered in the database");
                 $("#info-toast").toast("show");
             }
