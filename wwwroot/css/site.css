@@ -563,7 +563,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .table-filter-section {
-  width: 100%;
+  max-width: 1200px;
 }
 
 a {
@@ -572,4 +572,12 @@ a {
 
 #toast-body, #toast-links {
   margin-left: 8px;
+}
+
+.container {
+  margin-left: 20px;
+}
+
+table, tr, tbody {
+  margin-right: 20px;
 }
