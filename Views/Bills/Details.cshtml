@@ -7,11 +7,14 @@
     ServiceCategory? serviceCategory = ViewData["serviceCategory"] as ServiceCategory;
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
     FiscalHistory? fiscalHistory = ViewData["historyData"] != null ? ViewData["historyData"] as FiscalHistory : null;
+    var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
+    var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
+    var clientName = clientAccount?.Name;
 }
 <h1>Details</h1>
 <div>
     <h4>@Model.Id - @Model.Title</h4>
-    @if(fiscalHistory != null )
+    @if (fiscalHistory != null)
     {
         <h4>Historical record for @ViewData["periodString"]</h4>
     }
@@ -192,9 +195,9 @@
 
         </tr>
         <tr>
-            @if(fiscalHistory != null)
+            @if (fiscalHistory != null)
             {
-                <td class ="table-right">
+                <td class="table-right">
                     Notes for @ViewData["periodString"]
                 </td>
                 <td>
@@ -220,3 +223,22 @@
         <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
     }
 </div>
+
+@section Scripts {
+    <script>
+        $(document).ready(() => {
+            if (@isNew) {
+                $("#toast-title-text").html("Charge Created");
+                $("#toast-header-small-text").html("New charge created");
+                $("#toast-body").html(`Your new charge, <i>${"@Model.Title"}</i> was created, and entered in the database`);
+                $("#info-toast").toast("show");
+            }
+            if (@isEdited) {
+                $("#toast-title-text").html("Charge Updated");
+                $("#toast-header-small-text").html(`<i>${"@Model.Title"}</i>`);
+                $("#toast-body").html(`Charge <i>${"@Model.Title"}</i> has been successfully updated`);
+                $("#info-toast").toast("show");
+            }
+        });
+    </script>
+}

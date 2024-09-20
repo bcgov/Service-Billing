@@ -142,7 +142,7 @@ namespace Service_Billing.Controllers
             return PartialView("ChargesTable", bills);
         }
 
-        public ActionResult Details(int id, int? historyId = null)
+        public ActionResult Details(int id, int? historyId, bool isNew = false, bool isEdited = false)
         {
             Bill? bill = _billRepository.GetBill(id);
             try
@@ -155,6 +155,8 @@ namespace Service_Billing.Controllers
                 ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 ViewData["clientAccount"] = account != null ? account : "";
                 ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
+                ViewData["isNew"] = isNew;
+                ViewData["isEdited"] = isEdited;
                 if(historyId != null)
                 {
                     FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
@@ -217,7 +219,7 @@ namespace Service_Billing.Controllers
                 bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                 bill.DateModified = DateTime.Now;
                 await _billRepository.Update(bill);
-                return RedirectToAction("Details", new { bill.Id });
+                return RedirectToAction("Details", new { bill.Id, isEdited = true });
             }
             catch (DbUpdateException ex)
             {
@@ -286,7 +288,7 @@ namespace Service_Billing.Controllers
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
 
-                return RedirectToAction($"Details", new { bill.Id });
+                return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
             }
             catch (DbUpdateException ex)
             {

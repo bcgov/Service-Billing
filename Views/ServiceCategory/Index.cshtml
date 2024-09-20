@@ -193,6 +193,11 @@
                     @Html.DisplayFor(modelItem => item.ServiceOwner)
                 </td>
                 <td>
+                    <a asp-controller="ServiceCategory"
+                       asp-action="Details"
+                       asp-route-id="@item.ServiceId">Details</a>
+                </td>
+                <td>
                     <a asp-action="Edit" asp-route-id="@item.ServiceId">Edit</a>
                 </td>
             </tr>

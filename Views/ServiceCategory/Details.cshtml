@@ -3,6 +3,11 @@
     ViewData["Title"] = "Service Category Details";
     Layout = "_Layout";
 }
+@{
+    var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
+    var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
+    var serviceName = !String.IsNullOrEmpty(Model.Name) ? Model.Name : string.Empty;
+}
 <h1>Details</h1>
 <div>
     <h4>ServiceCategory</h4>
@@ -67,5 +72,24 @@
     </table>
 </div>
 <div class="bottom-nav">
-    <a asp-action="Edit" asp-route-id="@Model?.ServiceId">Edit</a>
+    <button type="button" class="btn btn-primary" onclick="location.href='@Url.Action("Edit", "ServiceCategory", new {id = Model.ServiceId})'" ">Edit</button>
+    <button type="button" class="btn btn-secondary" onclick="location.href='@Url.Action("Index", "ServiceCategory")'" ">View Service Categories</button>
 </div>
+@section Scripts {
+    <script>
+        $(document).ready(() => {
+            if (@isNew) {
+                $("#toast-title-text").html("Service Created");
+                $("#toast-header-small-text").html("New Service Category created");
+                $("#toast-body").html(`New service category <i>${"@Model.Name"}</i> has been added to the billing system`);
+                $("#info-toast").toast("show");
+            }
+            if (@isEdited) {
+                $("#toast-title-text").html("Service Updated");
+                $("#toast-header-small-text").html(`${"@Model.Name"}`);
+                $("#toast-body").html(`Service Category <i>${"@Model.Name"}</i> has been successfully updated`);
+                $("#info-toast").toast("show");
+            }
+        });
+    </script>
+}

@@ -61,6 +61,11 @@
     <Folder Include="Tests\Mocks\" />
     <Folder Include="Tests\Repositories\" />
     <Folder Include="wwwroot\assets\" />
+    <Folder Include="wwwroot\bc-gov-theme\dist\css\" />
+    <Folder Include="wwwroot\bc-gov-theme\dist\fonts\" />
+    <Folder Include="wwwroot\bc-gov-theme\dist\images\" />
+    <Folder Include="wwwroot\bc-gov-theme\dist\js\" />
+    <Folder Include="wwwroot\bc-gov-theme\dist\scss\" />
     <Folder Include="wwwroot\fonts\" />
   </ItemGroup>
 

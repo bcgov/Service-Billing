@@ -13,6 +13,8 @@
 @{
     var user = User as ClaimsPrincipal;
     var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
+    var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
+    var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
 }
 <h1>Client Account Information</h1>
 <div>
@@ -336,6 +338,21 @@
             };
             xhr.open('post', url);
             xhr.send();
+        });
+        $(document).ready(() => {
+           if (@isNew) {
+                $("#toast-title-text").html("Created Account");
+                $("#toast-header-small-text").html("New Account created");
+                $("#toast-body").html(`Your new Client Account, ${"@Model.Name"} was created, and entered in the database`);
+                $("#toast-links").html(`<a href="/Bills/AddServiceBilling?accountId=${"@Model.Id"}">Add Services</a>`);
+                $("#info-toast").toast("show");
+           }
+            if (@isEdited) {
+                $("#toast-title-text").html("Service Updated");
+                $("#toast-header-small-text").html(`${"@Model.Name"}`);
+                $("#toast-body").html(`Client Account <i>${"@Model.Name"}</i> has been successfully updated`);
+                $("#info-toast").toast("show");
+            }
         });
     </script>
 }
