@@ -130,7 +130,7 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             ViewData["BusAreas"] = busAreas;
-            return RedirectToAction("details", new { model.Service.ServiceId, isNew = true });
+            return RedirectToAction("details", new { id = model.Service.ServiceId, isNew = true });
         }
 
         [HttpPost]
