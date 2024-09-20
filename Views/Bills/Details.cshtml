@@ -8,6 +8,7 @@
     ClientAccount? clientAccount = ViewData["clientAccount"] as ClientAccount;
     FiscalHistory? fiscalHistory = ViewData["historyData"] != null ? ViewData["historyData"] as FiscalHistory : null;
     var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
+    var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
     var clientName = clientAccount?.Name;
 }
 <h1>Details</h1>
@@ -227,9 +228,15 @@
     <script>
         $(document).ready(() => {
             if (@isNew) {
-                $("#toast-title-text").html("Success!");
+                $("#toast-title-text").html("Charge Created");
                 $("#toast-header-small-text").html("New charge created");
-                $("#toast-body").html("Your new charge was created, and entered in the database");
+                $("#toast-body").html(`Your new charge, <i>${"@Model.Title"}</i> was created, and entered in the database`);
+                $("#info-toast").toast("show");
+            }
+            if (@isEdited) {
+                $("#toast-title-text").html("Charge Updated");
+                $("#toast-header-small-text").html(`<i>${"@Model.Title"}</i>`);
+                $("#toast-body").html(`Charge <i>${"@Model.Title"}</i> has been successfully updated`);
                 $("#info-toast").toast("show");
             }
         });

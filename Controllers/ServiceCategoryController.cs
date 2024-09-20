@@ -52,10 +52,11 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public IActionResult Details(int id, bool isNew = false)
+        public IActionResult Details(int id, bool isNew = false, bool isEdited = false)
         {
             ServiceCategory serviceCategory = _categoryRepository.GetById(id);
             ViewData["isNew"] = isNew;
+            ViewData["isEdited"] = isEdited;
             return View(serviceCategory);
         }
 
@@ -92,7 +93,7 @@ namespace Service_Billing.Controllers
             IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             ViewData["BusAreas"] = busAreas;
 
-            return View("index", categories);
+            return RedirectToAction("details", new { serviceCategory.ServiceId, isEdited = true });
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]

@@ -91,12 +91,13 @@ namespace Service_Billing.Controllers
 
         // GET: ClientAccountController/Details/5
         [Authorize(Roles = "GDXBillingService.FinancialOfficer, GDXBillingService.Owner, GDXBillingService.User")]
-        public ActionResult Details(int id, bool isNew = false)
+        public ActionResult Details(int id, bool isNew = false, bool isEdited = false)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
             if (account == null)
                 return NotFound();
             ViewData["isNew"] = isNew;
+            ViewData["isEdited"] = isEdited;
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
@@ -143,7 +144,7 @@ namespace Service_Billing.Controllers
             {
                 await _clientAccountRepository.Update(model);
 
-                return RedirectToAction("Details", new { model.Id });
+                return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
             catch (DbUpdateException ex)
             {
