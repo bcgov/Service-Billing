@@ -93,7 +93,7 @@ namespace Service_Billing.Controllers
             IEnumerable<BusinessArea> busAreas = _businessAreaRepository.GetAll();
             ViewData["BusAreas"] = busAreas;
 
-            return RedirectToAction("details", new { serviceCategory.ServiceId, isEdited = true });
+            return RedirectToAction("details", new { id = serviceCategory.ServiceId, isEdited = true });
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]

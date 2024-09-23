@@ -361,9 +361,10 @@ fieldset div{
     margin-left: 4px;
 }
 legend{
-    margin-left: 10px;
-    padding-left: 10px;
-    width: 20%;
+    float: none;
+    margin: 10px;
+    padding: 10px;
+    width: auto;
     border: none;
 }
 #radio-buttons{
