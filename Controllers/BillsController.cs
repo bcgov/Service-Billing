@@ -338,7 +338,7 @@ namespace Service_Billing.Controllers
                             endMonthDifference = Math.Min(monthScalar * quarterEnd.Month - end.Month, 3);
                         }
                     }
-                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 1);
+                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 0);
                 }
                 decimal newAmount;
                 string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
