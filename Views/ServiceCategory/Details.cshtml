@@ -78,12 +78,12 @@
 @section Scripts {
     <script>
         $(document).ready(() => {
-          //  if (@isNew) {
+            if (@isNew) {
                 $("#toast-title-text").html("Service Created");
                 $("#toast-header-small-text").html("New Service Category created");
                 $("#toast-body").html(`New service category <i>${"@Model.Name"}</i> has been added to the billing system`);
                 $("#info-toast").toast("show");
-        //    }
+            }
             if (@isEdited) {
                 $("#toast-title-text").html("Service Updated");
                 $("#toast-header-small-text").html(`${"@Model.Name"}`);
