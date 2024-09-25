@@ -700,13 +700,33 @@ namespace Service_Billing.Controllers
                         rows.Add(row);
                     }
                 }
-
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Columns().AdjustToContents();
                 ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
                 ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
                 ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
+
+
+                IXLTables tsTables = ws.Tables;
+                IXLTable firstTable = tsTables.FirstOrDefault();
+                if(firstTable == null) 
+                {
+                    throw new Exception("No table was found for this worksheet.");
+                }
+                firstTable.Field("ChargeId").Name = "Charge ID";
+                firstTable.Field("ClientNumber").Name = "Client Number";
+                firstTable.Field("ClientName").Name = "Client Name";
+                firstTable.Field("IdirOrUrl").Name = "IDIR or URL";
+                firstTable.Field("GDXBusArea").Name = "GDX Business Area";
+                firstTable.Field("ServiceCategory").Name = "Service Category";
+                firstTable.Field("FiscalPeriod").Name = "Fiscal Period";
+                firstTable.Field("UnitPrice").Name = "Unit Price";
+                firstTable.Field("TicketNumber").Name = "Ticket Number";
+                firstTable.Field("AggregateGLCode").Name = "Aggregate GL Code";
+                firstTable.Field("CreatedBy").Name = "Created By";
+                firstTable.Field("ExpenseAuthority").Name = "ExpenseAuthority";
+                firstTable.Field("PrimaryContact").Name = "Primary Contact";
 
                 using var stream = new MemoryStream();
                 wb.SaveAs(stream);
