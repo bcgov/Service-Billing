@@ -217,37 +217,37 @@ namespace Service_Billing.Controllers
                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
                     .Build();
 
-                if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                {
-                    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
-                    if (expenseAuthority is not null)
-                    {
-                        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
-                        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
-                        var eaDisplayName = (await _graphApiService.Me(eaId, cca)).DisplayName;
-                        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
+                //if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                //{
+                //    var expenseAuthority = await _graphApiService.GetUsersByDisplayName(account.ExpenseAuthorityName, cca);
+                //    if (expenseAuthority is not null)
+                //    {
+                //        var eaId = expenseAuthority?.Value?.FirstOrDefault()?.Id;
+                //        var eaEmail = (await _graphApiService.Me(eaId, cca)).UserPrincipalName;
+                //        var eaDisplayName = (await _graphApiService.Me(eaId, cca)).DisplayName;
+                //        var baseUrl = $"{Request.Scheme}://{Request.Host}{Request.PathBase}";
 
-                        await _emailService.SendEmail(
-                            eaEmail,
-                            eaDisplayName,
-                            "Please Review: New GDX Service Billing Account Information",
-                            $@"
-                            Hello Andre Lashley,
+                //        await _emailService.SendEmail(
+                //            eaEmail,
+                //            eaDisplayName,
+                //            "Please Review: New GDX Service Billing Account Information",
+                //            $@"
+                //            Hello Andre Lashley,
                     
-                            We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
+                //            We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
                     
-                            To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
+                //            To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
                     
-                            If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
+                //            If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
                     
-                            We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
+                //            We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
                     
-                            Warm regards,
+                //            Warm regards,
                     
-                            GDX Service Billing Team"
-                        );
-                    }
-                }
+                //            GDX Service Billing Team"
+                //        );
+                //    }
+                //}
 
             }
             catch (DbUpdateException ex)
