@@ -202,7 +202,11 @@ namespace Service_Billing.Models.Repositories
                     }
 
                     //handle fiscal period tracking.
-                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, bill.CurrentFiscalPeriodId, bill.Amount, bill.Quantity, bill.Notes);
+                    ServiceCategory? category = bill.ServiceCategory;
+                    decimal unitPriceAtFiscal = 0;
+                    if (!decimal.TryParse(category?.Costs, out unitPriceAtFiscal))
+                        _logger.LogWarning($"Could not find a unit price for the Service Category belonging to charge with Id {bill.Id}. ServiceCategory Id: {bill.ServiceCategoryId}");
+                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, bill.CurrentFiscalPeriodId, unitPriceAtFiscal, bill.Quantity, bill.Notes);
                     if(_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalPeriod.Id, bill.Id) == null) // and it should be null!
                     {
                         _billingContext.FiscalHistory.Add(fiscalHistory);
