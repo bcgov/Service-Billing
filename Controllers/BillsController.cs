@@ -117,6 +117,12 @@ namespace Service_Billing.Controllers
                     case "previous":
                         searchModel.QuarterString = _billRepository.GetPreviousQuarterString();
                         ViewData["FiscalPeriod"] = searchModel.QuarterString;
+                        ViewData["IsPrevious"] = "yes";
+                        FiscalPeriod? previousFiscal = _fiscalPeriodRepository.GetFiscalPeriodByString(searchModel.QuarterString);
+                        if (previousFiscal == null)
+                            throw new Exception($"Could not find fiscal period from database matching '{searchModel.QuarterString}'");
+                        else
+                            ViewData["PreviousFiscalId"] = previousFiscal.Id;
                         break;
                     case "next":
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());

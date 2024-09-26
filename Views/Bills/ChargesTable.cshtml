@@ -12,34 +12,215 @@ else
     <p><div>No results were returned</div></p>
 }
 <div>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th scope="col">GDX Client No.</th>
-            <th scope="col">GDX Client Name</th>
-            <th scope="col">Program</th>
-            <th scope="col">Fiscal Period</th>
-            <th scope="col">URL or IDIR</th>
-            <th scope="col">Service Category</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Unit Price</th>
-            <th scope="col">Quantity</th>
-            <th scope="col">Unit of Measure</th>
-            <th scope="col">Aggregated Financial Code</th>
-            <th scope="col">Start</th>
-            <th scope="col">End</th>
-            <th scope="col">Expense Authority</th>
-            <th scope="col">Notes</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (Bill bill in Model)
-        {
-            var category = bill.ServiceCategory;
-            var client = bill.ClientAccount;
-            @if (ViewData["FiscalPeriod"] as string == "all" && bill.PreviousFiscalRecords != null)
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th scope="col">GDX Client No.</th>
+                <th scope="col">GDX Client Name</th>
+                <th scope="col">Program</th>
+                <th scope="col">Fiscal Period</th>
+                <th scope="col">URL or IDIR</th>
+                <th scope="col">Service Category</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Unit Price</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Unit of Measure</th>
+                <th scope="col">Aggregated Financial Code</th>
+                <th scope="col">Start</th>
+                <th scope="col">End</th>
+                <th scope="col">Expense Authority</th>
+                <th scope="col">Notes</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (Bill bill in Model)
             {
-                if (!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod).Contains(bill.MostRecentActiveFiscalPeriod))
+                var category = bill.ServiceCategory;
+                var client = bill.ClientAccount;
+                @if (ViewData["FiscalPeriod"] as string == "all" && bill.PreviousFiscalRecords != null)
+                {
+                    if (!bill.PreviousFiscalRecords.Select(x => x.FiscalPeriod).Contains(bill.MostRecentActiveFiscalPeriod))
+                    {
+                        <tr>
+                            <td>
+                                <a asp-controller="ClientAccount"
+                                   asp-action="Details"
+                                   asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
+                            </td>
+                            <td>@bill.ClientAccount?.Name</td>
+                            <td>
+                                <a asp-controller="Bills"
+                                   asp-action="Details"
+                                   asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
+                            </td>
+
+                            <td>@bill.MostRecentActiveFiscalPeriod.Period</td> <!-- this could probably be handled better-->
+
+                            <td>@bill.IdirOrUrl</td>
+                            <td>
+                                @{
+
+                                    if (category != null)
+                                    {
+                                        @category.Name
+                                        ;
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @if (bill.Amount != null)
+                                {
+                                    @String.Format("${0:.##}", bill.Amount)
+                                }
+                            </td>
+                            @if (category != null)
+                            {
+                                <td>
+                                    $@category.Costs
+                                </td>
+                                <td>
+                                    @String.Format("{0:.##}", bill.Quantity)
+                                </td>
+                                <td>
+                                    @if (!String.IsNullOrEmpty(category.UOM))
+                                    {
+                                        @category.UOM
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                </td>
+                                <td>
+                                    @bill.Quantity
+                                </td>
+                                <td>
+                                </td>
+                            }
+                            <td>
+                                @bill.ClientAccount?.AggregatedGLCode
+                            </td>
+                            <td>
+                                @if (bill.StartDate != null)
+                                {
+                                    @bill.StartDate.Value.ToString("MM/dd/yyyy")
+                                    ;
+                                }
+                            </td>
+                            <td>
+                                @if (bill.EndDate != null)
+                                {
+                                    @bill.EndDate.Value.ToString("MM/dd/yyyy")
+                                    ;
+                                }
+                            </td>
+                            <td>
+                                @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
+                                {
+                                    @client.ExpenseAuthorityName
+                                }
+                            </td>
+                            <td>
+                                @bill.Notes
+                            </td>
+                        </tr>
+                    }
+                    foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                    {
+                        if (bill.CurrentFiscalPeriodId == fiscalHistory.PeriodId)
+                        {
+                            continue; // Pretty sure this is only needed for currently mangled dev database, but it doesn't hurt anything
+                        }
+                        <tr>
+                            <td>
+                                <a asp-controller="ClientAccount"
+                                   asp-action="Details"
+                                   asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
+                            </td>
+                            <td>@bill.ClientAccount?.Name</td>
+                            <td>
+
+                                @Html.ActionLink(bill.Title, "Details", "Bills", new { id = @bill.Id, historyId = @fiscalHistory.Id })
+                            </td>
+                            <td>
+                                @fiscalHistory.FiscalPeriod?.Period
+                            </td>
+                            <td>@bill.IdirOrUrl</td>
+                            <td>
+                                @{
+
+                                    if (category != null)
+                                    {
+                                        @category.Name
+                                        ;
+                                    }
+                                }
+                            </td>
+                            <td>
+                                @String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal))
+                            </td>
+                            @if (category != null)
+                            {
+                                <td>
+                                    @String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal)
+                                </td>
+                                <td>
+                                    @String.Format("{0:.##}", fiscalHistory.QuantityAtFiscal)
+                                </td>
+                                <td>
+                                    @if (!String.IsNullOrEmpty(category.UOM))
+                                    {
+                                        @category.UOM
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                </td>
+                                <td>
+                                    @fiscalHistory.QuantityAtFiscal
+                                </td>
+                                <td>
+                                </td>
+                            }
+                            <td>
+                                @bill.ClientAccount?.AggregatedGLCode
+                            </td>
+                            <td>
+                                @if (bill.StartDate != null)
+                                {
+                                    @bill.StartDate.Value.ToString("MM/dd/yyyy")
+                                    ;
+                                }
+                            </td>
+                            <td>
+                                @if (bill.EndDate != null)
+                                {
+                                    @bill.EndDate.Value.ToString("MM/dd/yyyy")
+                                }
+                            </td>
+                            <td>
+                                @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
+                                {
+                                    @client.ExpenseAuthorityName
+                                }
+                            </td>
+                            <td>
+                                @if (fiscalHistory.Id == bill.CurrentFiscalPeriodId)
+                                {
+                                    @bill.Notes
+                                }
+                                else
+                                {
+                                    @fiscalHistory.Notes
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+                else
                 {
                     <tr>
                         <td>
@@ -54,7 +235,7 @@ else
                                asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
                         </td>
 
-                        <td>@bill.MostRecentActiveFiscalPeriod.Period</td> <!-- this could probably be handled better-->
+                        <td>@ViewData["FiscalPeriod"]</td> <!-- this could probably be handled better-->
 
                         <td>@bill.IdirOrUrl</td>
                         <td>
@@ -67,20 +248,40 @@ else
                                 }
                             }
                         </td>
-                        <td>
-                            @if (bill.Amount != null)
+                        @if (ViewData["IsPrevious"] != null)
+                        {
+                            FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.FiscalPeriod?.Id == (int)ViewData["PreviousFiscalId"]);
+                            <td>
+                              <!--Amount-->
+                                    @String.Format("${0:.##}", (fiscalHistory?.QuantityAtFiscal * fiscalHistory?.UnitPriceAtFiscal))                             
+                            </td>
+                            @if (category != null)
                             {
-                                @String.Format("${0:.##}", bill.Amount)
+                                <td>
+                                    $@fiscalHistory?.UnitPriceAtFiscal
+                                </td>
+                                <td>
+                                    @String.Format("{0:.##}", fiscalHistory?.QuantityAtFiscal)
+                                </td>
                             }
-                        </td>
-                        @if (category != null)
+                        }
+                        else
                         {
                             <td>
-                                $@category.Costs
+                                @if (bill.Amount != null)
+                                {
+                                    @String.Format("${0:.##}", bill.Amount)
+                                }
                             </td>
-                            <td>
-                                @String.Format("{0:.##}", bill.Quantity)
-                            </td>
+                            @if (category != null)
+                            {
+                                <td>
+                                    $@category.Costs
+                                </td>
+                                <td>
+                                    @String.Format("{0:.##}", bill.Quantity)
+                                </td>
+                            }
                             <td>
                                 @if (!String.IsNullOrEmpty(category.UOM))
                                 {
@@ -88,16 +289,15 @@ else
                                 }
                             </td>
                         }
-                        else
-                        {
-                            <td>
-                            </td>
-                            <td>
-                                @bill.Quantity
-                            </td>
-                            <td>
-                            </td>
-                        }
+
+                        <td>
+                        </td>
+                        <td>
+                            @bill.Quantity
+                        </td>
+                        <td>
+                        </td>
+                        
                         <td>
                             @bill.ClientAccount?.AggregatedGLCode
                         </td>
@@ -125,193 +325,12 @@ else
                             @bill.Notes
                         </td>
                     </tr>
+
                 }
-                foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
-                {
-                    if (bill.CurrentFiscalPeriodId == fiscalHistory.PeriodId)
-                    {
-                        continue; // Pretty sure this is only needed for currently mangled dev database, but it doesn't hurt anything
-                    }
-                    <tr>
-                        <td>
-                            <a asp-controller="ClientAccount"
-                               asp-action="Details"
-                               asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
-                        </td>
-                        <td>@bill.ClientAccount?.Name</td>
-                        <td>
-
-                            @Html.ActionLink(bill.Title, "Details", "Bills", new { id = @bill.Id, historyId = @fiscalHistory.Id })
-                        </td>
-                        <td>
-                            @fiscalHistory.FiscalPeriod?.Period
-                        </td>
-                        <td>@bill.IdirOrUrl</td>
-                        <td>
-                            @{
-
-                                if (category != null)
-                                {
-                                    @category.Name
-                                    ;
-                                }
-                            }
-                        </td>
-                        <td>
-                            @String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal))
-                        </td>
-                        @if (category != null)
-                        {
-                            <td>
-                                @String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal)
-                            </td>
-                            <td>
-                                @String.Format("{0:.##}", fiscalHistory.QuantityAtFiscal)
-                            </td>
-                            <td>
-                                @if (!String.IsNullOrEmpty(category.UOM))
-                                {
-                                    @category.UOM
-                                }
-                            </td>
-                        }
-                        else
-                        {
-                            <td>
-                            </td>
-                            <td>
-                                @fiscalHistory.QuantityAtFiscal
-                            </td>
-                            <td>
-                            </td>
-                        }
-                        <td>
-                            @bill.ClientAccount?.AggregatedGLCode
-                        </td>
-                        <td>
-                            @if (bill.StartDate != null)
-                            {
-                                @bill.StartDate.Value.ToString("MM/dd/yyyy")
-                                ;
-                            }
-                        </td>
-                        <td>
-                            @if (bill.EndDate != null)
-                            {
-                                @bill.EndDate.Value.ToString("MM/dd/yyyy")
-                            }
-                        </td>
-                        <td>
-                            @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
-                            {
-                                @client.ExpenseAuthorityName
-                            }
-                        </td>
-                        <td>
-                            @if (fiscalHistory.Id == bill.CurrentFiscalPeriodId)
-                            {
-                                @bill.Notes
-                            }
-                            else
-                            {
-                                @fiscalHistory.Notes
-                            }
-                        </td>
-                    </tr>
-                }
-            }
-            else
-            {
-                <tr>
-                    <td>
-                        <a asp-controller="ClientAccount"
-                           asp-action="Details"
-                           asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
-                    </td>
-                    <td>@bill.ClientAccount?.Name</td>
-                    <td>
-                        <a asp-controller="Bills"
-                           asp-action="Details"
-                           asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
-                    </td>
-
-                    <td>@ViewData["FiscalPeriod"]</td> <!-- this could probably be handled better-->
-
-                    <td>@bill.IdirOrUrl</td>
-                    <td>
-                        @{
-
-                            if (category != null)
-                            {
-                                @category.Name
-                                ;
-                            }
-                        }
-                    </td>
-                    <td>
-                        @if (bill.Amount != null)
-                        {
-                            @String.Format("${0:.##}", bill.Amount)
-                        }
-                    </td>
-                    @if (category != null)
-                    {
-                        <td>
-                            $@category.Costs
-                        </td>
-                        <td>
-                            @String.Format("{0:.##}", bill.Quantity)
-                        </td>
-                        <td>
-                            @if (!String.IsNullOrEmpty(category.UOM))
-                            {
-                                @category.UOM
-                            }
-                        </td>
-                    }
-                    else
-                    {
-                        <td>
-                        </td>
-                        <td>
-                            @bill.Quantity
-                        </td>
-                        <td>
-                        </td>
-                    }
-                    <td>
-                        @bill.ClientAccount?.AggregatedGLCode
-                    </td>
-                    <td>
-                        @if (bill.StartDate != null)
-                        {
-                            @bill.StartDate.Value.ToString("MM/dd/yyyy")
-                            ;
-                        }
-                    </td>
-                    <td>
-                        @if (bill.EndDate != null)
-                        {
-                            @bill.EndDate.Value.ToString("MM/dd/yyyy")
-                            ;
-                        }
-                    </td>
-                    <td>
-                        @if (client != null && !String.IsNullOrEmpty(client.ExpenseAuthorityName))
-                        {
-                            @client.ExpenseAuthorityName
-                        }
-                    </td>
-                    <td>
-                        @bill.Notes
-                    </td>
-                </tr>
 
             }
-
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
 </div>
 @if (Model != null && !Model.Any())
 {
