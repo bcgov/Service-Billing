@@ -195,10 +195,10 @@ namespace Service_Billing.Models.Repositories
                 foreach (Bill bill in billsToPromote)
                 {
                     List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
-                    //if ((!string.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) && bill.MostRecentActiveFiscalPeriod.Period == newQuarter)) // make sure charge has no fiscal history for the new quarter
-                    //{
-                    //    continue; //don't add anything more than once.
-                    //}
+                    if ((!string.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) && bill.MostRecentActiveFiscalPeriod.Period == newQuarter)) // make sure charge has no fiscal history for the new quarter
+                    {
+                        continue; //don't add anything more than once.
+                    }
                 //    bill.MostRecentActiveFiscalPeriod.Period = newQuarter;  //TODO: drop this, as we will drop this field for the foreign relation on the next line
                     bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
                     FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity, bill.Notes);
