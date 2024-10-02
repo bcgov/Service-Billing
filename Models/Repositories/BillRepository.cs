@@ -195,7 +195,7 @@ namespace Service_Billing.Models.Repositories
                 foreach (Bill bill in billsToPromote)
                 {
                     List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
-                    if ((!string.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) && bill.MostRecentActiveFiscalPeriod.Period == newQuarter)) // make sure charge has no fiscal history for the new quarter
+                    if (bill.CurrentFiscalPeriodId != null && bill.CurrentFiscalPeriodId == newFiscalPeriod.Id) // make sure charge has no fiscal history for the new quarter
                     {
                         continue; //don't add anything more than once.
                     }
