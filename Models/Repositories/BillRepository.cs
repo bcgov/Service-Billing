@@ -213,7 +213,6 @@ namespace Service_Billing.Models.Repositories
                     }
                     
                     bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity, bill.Notes);
                     decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
                     if (bill.Quantity != newQuantityForCharge)
                     {
