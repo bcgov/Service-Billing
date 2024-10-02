@@ -33,6 +33,11 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.FiscalHistory.FirstOrDefault(x => x.Id == id);
         }
 
+        public FiscalHistory? GetFiscalHistoryByIdAndChargeId(int id, int chargeId)
+        {
+            return _billingContext.FiscalHistory.FirstOrDefault(x => x.Id == id && x.BillId == chargeId);
+        }
+
         public int SaveFiscalHistoryInfo(FiscalHistory fiscalHistory)
         {
             _billingContext.FiscalHistory.Add(fiscalHistory);
