@@ -200,6 +200,17 @@ namespace Service_Billing.Models.Repositories
                         continue; //don't add anything more than once.
                     }
                 //    bill.MostRecentActiveFiscalPeriod.Period = newQuarter;  //TODO: drop this, as we will drop this field for the foreign relation on the next line
+
+                    //handle fiscal period tracking.
+                    ServiceCategory? category = bill.ServiceCategory;
+                    decimal unitPriceAtFiscal = 0;
+                    if (!decimal.TryParse(category?.Costs, out unitPriceAtFiscal))
+                        _logger.LogWarning($"Could not find a unit price for the Service Category belonging to charge with Id {bill.Id}. ServiceCategory Id: {bill.ServiceCategoryId}");
+                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, bill.CurrentFiscalPeriodId, unitPriceAtFiscal, bill.Quantity, bill.Notes);
+                    if(_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalPeriod.Id, bill.Id) == null) // and it should be null!
+                    {
+                        _billingContext.FiscalHistory.Add(fiscalHistory);
+                    }
                     
                     bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
                     FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, newFiscalPeriod.Id, bill.Amount, bill.Quantity, bill.Notes);
