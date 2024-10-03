@@ -109,7 +109,37 @@
             </td>
         </tr>
     </table>
-    <partial name="_ClientTeam" model="@Model"/>
+    <br />
+    <div>
+        <table>
+
+            <tr>
+                <td class="table-right">
+                    @Html.DisplayNameFor(model => model.FinancialContact)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.FinancialContact)
+                </td>
+            </tr>
+            <tr>
+                <td class="table-right">
+                    @Html.DisplayNameFor(model => model.PrimaryContact)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.PrimaryContact)
+                </td>
+            </tr>
+            <tr>
+                <td class="table-right">
+                    @Html.DisplayNameFor(model => model.Approver)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.Approver)
+                </td>
+            </tr>
+        </table>
+    </div>
+
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
     {
         <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Id)" />
