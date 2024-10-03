@@ -164,7 +164,7 @@ namespace Service_Billing.Models.Repositories
             try
             {
                 _logger.LogInformation("Promoting charges to new quarter...");
-                // determine limits of current fiscal quarter
+                // determine start and end of current fiscal quarter
                 DateTimeOffset quarterStart = DetermineStartOfCurrentQuarter();
                 _logger.LogInformation($"quarter start date: {quarterStart.Date.ToShortTimeString()}");
                 DateTimeOffset quarterEnd = DetermineEndOfQuarter(quarterStart.Date);
