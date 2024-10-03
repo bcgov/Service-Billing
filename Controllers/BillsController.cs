@@ -705,9 +705,11 @@ namespace Service_Billing.Controllers
                         row.Notes = bill.Notes;
                         rows.Add(row);
                     }
-                }
+                } 
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
+                ws.Column("A").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                ws.Column("B").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                 ws.Columns().AdjustToContents();
                 ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
                 ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
