@@ -538,6 +538,7 @@ namespace Service_Billing.Controllers
                        (!String.IsNullOrEmpty(x.IdirOrUrl) && x.IdirOrUrl.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.ClientAccount.Name) && x.ClientAccount.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.CreatedBy) && x.CreatedBy.ToLower().Contains(searchParams.Keyword.ToLower())) ||
+                        ((x.ServiceCategory != null) && x.ServiceCategory.Name.ToLower().Contains(searchParams.Keyword.ToLower())) ||
                         (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
