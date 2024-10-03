@@ -582,3 +582,7 @@ a {
 table, tr, tbody {
   margin-right: 20px;
 }
+
+.table-left{
+  padding-right: 18px;
+}
