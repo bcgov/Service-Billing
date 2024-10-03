@@ -586,3 +586,12 @@ table, tr, tbody {
 .table-left{
   padding-right: 18px;
 }
+
+btn:focus, a:focus {
+  outline: none;
+}
+
+.navbar-toggler:focus {
+  outline: none !important;
+  box-shadow: none;
+}
