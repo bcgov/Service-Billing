@@ -252,8 +252,8 @@ else
                         {
                             FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.FiscalPeriod?.Id == (int)ViewData["PreviousFiscalId"]);
                             <td>
-                              <!--Amount-->
-                                    @String.Format("${0:.##}", (fiscalHistory?.QuantityAtFiscal * fiscalHistory?.UnitPriceAtFiscal))                             
+                                <!--Amount-->
+                                @String.Format("${0:.##}", (fiscalHistory?.QuantityAtFiscal * fiscalHistory?.UnitPriceAtFiscal))
                             </td>
                             @if (category != null)
                             {
@@ -282,13 +282,13 @@ else
                                     @String.Format("{0:.##}", bill.Quantity)
                                 </td>
                             }
-                            <td>
-                                @if (!String.IsNullOrEmpty(category.UOM))
-                                {
-                                    @category.UOM
-                                }
-                            </td>
                         }
+                        <td>
+                            @if (!String.IsNullOrEmpty(category.UOM))
+                            {
+                                @category.UOM
+                            }
+                        </td>
                         <td>
                             @bill.ClientAccount?.AggregatedGLCode
                         </td>
@@ -296,14 +296,12 @@ else
                             @if (bill.StartDate != null)
                             {
                                 @bill.StartDate.Value.ToString("MM/dd/yyyy")
-                                ;
                             }
                         </td>
                         <td>
                             @if (bill.EndDate != null)
                             {
                                 @bill.EndDate.Value.ToString("MM/dd/yyyy")
-                                ;
                             }
                         </td>
                         <td>
