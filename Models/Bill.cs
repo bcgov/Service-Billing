@@ -20,6 +20,7 @@ namespace Service_Billing.Models
         [Display(Name = "Title")]
         public string? Title { get; set; }
 
+        [RegularExpression(@"^(?!http).*", ErrorMessage = "Please do not start this filed with \"http(s)\".")]
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
 
