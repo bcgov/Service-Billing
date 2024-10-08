@@ -20,7 +20,7 @@ namespace Service_Billing.Models
         [Display(Name = "Title")]
         public string? Title { get; set; }
 
-        [RegularExpression(@"^(?!http).*", ErrorMessage = "Please do not start this field with \"http(s)\".")]
+        [RegularExpression(@"(?!.*http).*", ErrorMessage = "Don’t use https or http in this field.")]
         [Display(Name = "URL or IDIR")]
         public string? IdirOrUrl { get; set; }
 
