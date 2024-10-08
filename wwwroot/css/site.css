@@ -579,7 +579,7 @@ a {
   margin-left: 20px;
 }
 
-table, tr, tbody {
+table, tbody {
   margin-right: 20px;
 }
 
@@ -594,4 +594,9 @@ btn:focus, a:focus {
 .navbar-toggler:focus {
   outline: none !important;
   box-shadow: none;
+}
+
+/* Dealing with Bootstraps bizarre container sizing that no one asked for */
+.container {
+  max-width: 100%;
 }
