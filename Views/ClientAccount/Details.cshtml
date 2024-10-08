@@ -20,7 +20,7 @@
 <div>
     <h4>@Model.Id-@Model.Name</h4>
     <hr />
-    <table>
+    <table style="empty-cells: show;">
         <tr>
             <td class="table-left">
                 @Html.DisplayNameFor(model => Model.Name)
@@ -108,37 +108,35 @@
                 @Html.DisplayFor(model => Model.Notes)
             </td>
         </tr>
+        <!-- For the life of me, I cannot figure out how else to get any break between these rows-->
+        <tr><td></td></tr><tr><td></td></tr><tr><td></td></tr> <
+          
+        <tr>
+            <td class="table-left">
+                @Html.DisplayNameFor(model => model.FinancialContact)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.FinancialContact)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-left">
+                @Html.DisplayNameFor(model => model.PrimaryContact)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.PrimaryContact)
+            </td>
+        </tr>
+        <tr>
+            <td class="table-left">
+                @Html.DisplayNameFor(model => model.Approver)
+            </td>
+            <td>
+                @Html.DisplayFor(model => model.Approver)
+            </td>
+        </tr>
     </table>
-    <br />
-    <div>
-        <table>
 
-            <tr>
-                <td class="table-left">
-                    @Html.DisplayNameFor(model => model.FinancialContact)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.FinancialContact)
-                </td>
-            </tr>
-            <tr>
-                <td class="table-left">
-                    @Html.DisplayNameFor(model => model.PrimaryContact)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.PrimaryContact)
-                </td>
-            </tr>
-            <tr>
-                <td class="table-left">
-                    @Html.DisplayNameFor(model => model.Approver)
-                </td>
-                <td>
-                    @Html.DisplayFor(model => model.Approver)
-                </td>
-            </tr>
-        </table>
-    </div>
 
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
     {
@@ -150,39 +148,39 @@
     }
     <table class="table table-striped">
         <thead>
-        <tr>
-        <th scope="col">Title</th>
-        <th scope="col">Service Category</th>
-        <th scope="col">Amount</th>
-        <th scope="col">Start Date</th>
-        <th scope="col">End Date</th>
-        <th scope="col">Details</th>
-        </tr>
+            <tr>
+                <th scope="col">Title</th>
+                <th scope="col">Service Category</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Start Date</th>
+                <th scope="col">End Date</th>
+                <th scope="col">Details</th>
+            </tr>
         </thead>
         <tbody>
             @foreach (Bill charge in Model.Bills)
             {
                 @if (charge.IsActive)
                 {
-                <tr>
-                <td>@charge.Title</td>
-                <td>@charge.ServiceCategory.Name</td>
-                <td>@charge.Amount</td>
-                <td>@charge.StartDate</td>
+                    <tr>
+                        <td>@charge.Title</td>
+                        <td>@charge.ServiceCategory.Name</td>
+                        <td>@charge.Amount</td>
+                        <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
                         {
-                    <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                            <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
                         }
                         else
                         {
-                    <td>@charge.EndDate</td>
+                            <td>@charge.EndDate</td>
                         }
-                <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
                         {
-                    <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
+                            <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
                         }
-                </tr>
+                    </tr>
                 }
             }
         </tbody>
@@ -193,39 +191,39 @@
         <p>These are old or cancelled charges, and are not factored into quarterly reporting.</p>
         <table class="table table-striped">
             <thead>
-            <tr>
-            <th scope="col">Title</th>
-            <th scope="col">Service Category</th>
-            <th scope="col">Amount</th>
-            <th scope="col">Start Date</th>
-            <th scope="col">End Date</th>
-            <th scope="col">Details</th>
-            </tr>
+                <tr>
+                    <th scope="col">Title</th>
+                    <th scope="col">Service Category</th>
+                    <th scope="col">Amount</th>
+                    <th scope="col">Start Date</th>
+                    <th scope="col">End Date</th>
+                    <th scope="col">Details</th>
+                </tr>
             </thead>
             <tbody>
                 @foreach (Bill charge in Model.Bills)
                 {
                     if (charge.IsActive)
                         continue;
-                <tr>
-                <td>@charge.Title</td>
-                <td>@charge.ServiceCategory.Name</td>
-                <td>@charge.Amount</td>
-                <td>@charge.StartDate</td>
+                    <tr>
+                        <td>@charge.Title</td>
+                        <td>@charge.ServiceCategory.Name</td>
+                        <td>@charge.Amount</td>
+                        <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
                         {
-                    <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                            <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
                         }
                         else
                         {
-                    <td>@charge.EndDate</td>
+                            <td>@charge.EndDate</td>
                         }
-                <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
+                        <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive)
                         {
-                    <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
+                            <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
                         }
-                </tr>
+                    </tr>
                 }
             </tbody>
         </table>
