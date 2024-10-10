@@ -105,7 +105,9 @@ namespace Service_Billing.Services.GraphApi
                                       .ExecuteAsync();
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')&$top=8&$select=displayName,id";
+                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')" +
+                $"or startswith(givenName, '{Uri.EscapeDataString(term)}')" +
+                $"&$top=8&$select=displayName,id";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
