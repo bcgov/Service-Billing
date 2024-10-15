@@ -20,30 +20,32 @@ o	Note: not all naming convention components are required. The naming convention
 
         [BindRequired]
         //"must be unique, except for secondary accounts only used for alternative financial coding."
-        [Display(Name = "CAS Client Number")]
+        [Display(Name = "CAS Client Number", Prompt = "00")]
         public Int16? ClientNumber { get; set; } // three digit billing code
 
         //5-digits or combination of digits and letters
         [BindRequired]
         [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit responsibility centre code from the Corporate Accounting System.")]
-        [Display(Name = "Responsibility Center")]
+        [Display(Name = "Responsibility Center", Prompt = "00000")]
         public string? ResponsibilityCentre { get; set; }
 
         [BindRequired]
         [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit service line code from the Corporate Accounting System.")]
-        [Display(Name = "Service Line")]
+        [Display(Name = "Service Line", Prompt = "00000")]
         public int? ServiceLine { get; set; }
 
         [BindRequired]
+        [Display (Prompt = "0000")]
         [RegularExpression(@"^.{4,4}$", ErrorMessage = "Please provide the ministry Standard Object of Expenditure (STOB) number.")]
         public Int16? STOB { get; set; }
 
         [Required(ErrorMessage = "A Project Code must be provided")]
         [RegularExpression(@"^.{7,7}$", ErrorMessage = "Please provide a ministry project code.")]
-        [Display(Name = "Project")]
+        [Display(Name = "Project", Prompt = "1500000")]
         public string? Project { get; set; }
 
-        [Display(Name = "Expense Authority")]
+        [Display(Name = "Expense Authority", Prompt = "Start typing in your contact's last name")]
+        [Required(ErrorMessage = "Please provide the name of the ministry expense authority")]
         public string? ExpenseAuthorityName { get; set; }
 
         [Display(Name = "Services Enabled")]
@@ -63,19 +65,19 @@ o	Note: not all naming convention components are required. The naming convention
            client account team membership, financial coding changes and SharePoint site access for their team.
         */
         //   [Required(ErrorMessage = "Please include this contact")]
-        [Display(Name = "Primary Contact")]
+        [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
         public string? PrimaryContact { get; set; }
 
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
-        //   [Required(ErrorMessage = "Please include this contact")]
+        [Display (Prompt = "Start typing in your contact's last name")]
         public string? Approver { get; set; }
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
          * or approvers are not available. The role can provide updated billing information.  
          * For quarterly billing, this role is a contact. */
         //  [Required(ErrorMessage = "Please include this contact")]
-        [Display(Name = "Financial Contacts")]
+        [Display(Name = "Financial Contacts", Prompt = "Start typing in your contact's last name")]
         public string? FinancialContact { get; set; }
 
         [NotMapped]

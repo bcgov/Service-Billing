@@ -61,7 +61,7 @@
                 <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" data-val="true" data-val-required="Please include the name of the ministry expense authority."/>
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" />
                 <div id="authorityContactSelect">
                 </div>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
