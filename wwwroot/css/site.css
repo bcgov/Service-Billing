@@ -585,6 +585,7 @@ table, tbody {
 
 .table-left{
   padding-right: 18px;
+  font-weight: bold;
 }
 
 btn:focus, a:focus {
