@@ -44,5 +44,12 @@ namespace Service_Billing.Models.Repositories
             _billingContext.SaveChanges();
             return fiscalHistory.Id;
         }
+
+        public async Task UpdateFiscalHistory(FiscalHistory fiscalHistory) 
+        {
+            _billingContext.FiscalHistory.Update(fiscalHistory);
+            await _billingContext.SaveChangesAsync();
+
+        }
     }
 }
