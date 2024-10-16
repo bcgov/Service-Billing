@@ -165,7 +165,7 @@
                     <tr>
                         <td>@charge.Title</td>
                         <td>@charge.ServiceCategory.Name</td>
-                        <td>@charge.Amount</td>
+                        <td>@String.Format("${0:.##}", charge.Amount)</td>
                         <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
                         {
@@ -208,7 +208,7 @@
                     <tr>
                         <td>@charge.Title</td>
                         <td>@charge.ServiceCategory.Name</td>
-                        <td>@charge.Amount</td>
+                        <td>@String.Format("${0:.##}", charge.Amount)</td>
                         <td>@charge.StartDate</td>
                         @if (charge.EndDate == null)
                         {
