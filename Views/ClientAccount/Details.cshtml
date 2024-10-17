@@ -176,7 +176,14 @@
                         }
                         @if (charge.EndDate == null)
                         {
-                            <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                            if (User.IsInRole("GDXBillingService.User"))
+                            {
+                                <td></td>
+                            }
+                            else
+                            {  
+                              <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
+                            }
                         }
                         else
                         {
