@@ -227,7 +227,7 @@
 <div class="bottom-nav">
     @if (!User.IsInRole("GDXBillingService.User"))
     {
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+        @Html.ActionLink("Edit", "Edit", "Bills", new { id = Model?.Id, historyId = @fiscalHistory.Id })
     }
 </div>
 
