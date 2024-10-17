@@ -166,14 +166,21 @@
                         <td>@charge.Title</td>
                         <td>@charge.ServiceCategory.Name</td>
                         <td>@String.Format("${0:.##}", charge.Amount)</td>
-                        <td>@charge.StartDate</td>
+                        @if(charge.StartDate.HasValue)
+                        {  
+                            <td>@charge.StartDate.Value.ToString("MM/dd/yyyy")</td>
+                        }
+                        else
+                        {
+                            <td/>
+                        }
                         @if (charge.EndDate == null)
                         {
                             <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
                         }
                         else
                         {
-                            <td>@charge.EndDate</td>
+                            <td>@charge.EndDate.Value.ToString("MM/dd/yyyy")</td>
                         }
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
@@ -209,14 +216,21 @@
                         <td>@charge.Title</td>
                         <td>@charge.ServiceCategory.Name</td>
                         <td>@String.Format("${0:.##}", charge.Amount)</td>
-                        <td>@charge.StartDate</td>
+                        @if (charge.StartDate.HasValue)
+                        {
+                            <td>@charge.StartDate.Value.ToString("MM/dd/yyyy")</td>
+                        }
+                        else
+                        {
+                            <td />
+                        }
                         @if (charge.EndDate == null)
                         {
                             <td><a asp-action="Edit" asp-controller="Bills" asp-route-id="@charge.Id">Provide end date?</a></td>
                         }
                         else
                         {
-                            <td>@charge.EndDate</td>
+                            <td>@charge.EndDate.Value.ToString("MM/dd/yyyy")</td>
                         }
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive)
