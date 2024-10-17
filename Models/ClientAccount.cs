@@ -26,7 +26,7 @@ o	Note: not all naming convention components are required. The naming convention
         //5-digits or combination of digits and letters
         [BindRequired]
         [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit responsibility centre code from the Corporate Accounting System.")]
-        [Display(Name = "Responsibility Center", Prompt = "00000")]
+        [Display(Name = "Responsibility Centre", Prompt = "00000")]
         public string? ResponsibilityCentre { get; set; }
 
         [BindRequired]
