@@ -185,7 +185,7 @@ namespace Service_Billing.Controllers
             return View(bill);
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int? historyId)
         {
             if (User.IsInRole("GDXBillingService.User"))
             {
@@ -204,7 +204,12 @@ namespace Service_Billing.Controllers
             TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.DateModified = pacificTime;
-
+            EditChargeViewModel model = new EditChargeViewModel(bill);
+            if(historyId != null)
+            {
+                FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
+                model.FiscalHistory = fiscalHistory;
+            }
             if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
             ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
@@ -212,7 +217,7 @@ namespace Service_Billing.Controllers
             ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
             ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
 
-            return View(bill);
+            return View(model);
         }
 
         // POST: ClientAccountController/Edit/5

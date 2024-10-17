@@ -1,13 +1,13 @@
-﻿@model Service_Billing.Models.Bill
-
+﻿
+@model Service_Billing.ViewModels.EditChargeViewModel
 @{
     ViewData["Title"] = "Edit a Charge";
     Layout = "_Layout";
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
-    string startDateString = Model.StartDate.HasValue ? Model.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
-    string endDateString = Model.EndDate.HasValue ? Model.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
+    // string startDateString = Model.Bill.StartDate.HasValue ? Model.Bill.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
+    // string endDateString = Model.Bill.EndDate.HasValue ? Model.Bill.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
 
 }
 
@@ -19,35 +19,35 @@
     <div class="col-md-4">
         <form asp-action="Edit">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="@Model.Id" />
+            <input type="hidden" asp-for="@Model.Bill.Id" />
             <div class="form-group">
-                <label asp-for="@Model.ClientAccount.Name">Client: </label>
-                <input asp-for="@Model.ClientAccount.Name" id="clientInput" class="form-control" title="Begin entering a client name, and a list of matching clients will appear." />
-                <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
+                <label asp-for="@Model.Bill.ClientAccount.Name">Client: </label>
+                <input asp-for="@Model.Bill.ClientAccount.Name" id="clientInput" class="form-control" title="Begin entering a client name, and a list of matching clients will appear." />
+                <span asp-validation-for="@Model.Bill.ClientAccount.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.ClientAccountId" id="clientIdInput" class="form-control" />
-                <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
+                <input type="hidden" asp-for="@Model.Bill.ClientAccountId" id="clientIdInput" class="form-control" />
+                <span asp-validation-for="@Model.Bill.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Title" class="control-label"></label>
-                <input asp-for="@Model.Title" class="form-control" id="title" data-val-required="A project tile must be provided" />
-                <span asp-validation-for="@Model.Title" class="text-danger"></span>
+                <label asp-for="@Model.Bill.Title" class="control-label"></label>
+                <input asp-for="@Model.Bill.Title" class="form-control" id="title" data-val-required="A project tile must be provided" />
+                <span asp-validation-for="@Model.Bill.Title" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.IdirOrUrl" class="control-label"></label>
-                <input asp-for="@Model.IdirOrUrl" class="form-control" />
-                <span asp-validation-for="@Model.IdirOrUrl" class="text-danger"></span>
+                <label asp-for="@Model.Bill.IdirOrUrl" class="control-label"></label>
+                <input asp-for="@Model.Bill.IdirOrUrl" class="form-control" />
+                <span asp-validation-for="@Model.Bill.IdirOrUrl" class="text-danger"></span>
             </div>
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, bill = Model })
-            <span asp-validation-for="@Model.ServiceCategoryId" class="text-danger"></span>
+            <span asp-validation-for="@Model.Bill.ServiceCategoryId" class="text-danger"></span>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" />
+                <input type="hidden" asp-for="@Model.Bill.ServiceCategoryId" id="categoryIdInput" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model.Amount" class="control-label"></label>
-                <input asp-for="@Model.Amount" class="form-control" id="amount"/>
-                <span asp-validation-for="@Model.Amount" class="text-danger"></span>
+                <label asp-for="@Model.Bill.Amount" class="control-label"></label>
+                <input asp-for="@Model.Bill.Amount" class="form-control" id="amount"/>
+                <span asp-validation-for="@Model.Bill.Amount" class="text-danger"></span>
                 <div class="input-info">
                     Typically, amount is calculated based on service and quantity, and shouldn't be changed. It can be overridden here if you have a good reason to do so.
                 </div>
@@ -57,51 +57,62 @@
                 <input id="uom" class="form-control" readonly="true" />
             </div>
             <div class="form-group">
-                <label asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="control-label"></label>
-                <input asp-for="@Model.MostRecentActiveFiscalPeriod.Period" class="form-control" readonly="true" data-val-required="Please provide a Fiscal Period" />
-                <span asp-validation-for="@Model.MostRecentActiveFiscalPeriod.Period" class="text-danger"></span>
-                 <input type="hidden" asp-for="@Model.CurrentFiscalPeriodId" />
+                <label asp-for="@Model.Bill.MostRecentActiveFiscalPeriod.Period" class="control-label"></label>
+                <input asp-for="@Model.Bill.MostRecentActiveFiscalPeriod.Period" class="form-control" readonly="true" data-val-required="Please provide a Fiscal Period" />
+                <span asp-validation-for="@Model.Bill.MostRecentActiveFiscalPeriod.Period" class="text-danger"></span>
+                 <input type="hidden" asp-for="@Model.Bill.CurrentFiscalPeriodId" />
             </div>
             <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
-                <label asp-for="@Model.Quantity" class="control-label"></label>
-                <input asp-for="@Model.Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
-                <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
+                <label asp-for="@Model.Bill.Quantity" class="control-label"></label>
+                <input asp-for="@Model.Bill.Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
+                <span asp-validation-for="@Model.Bill.Quantity" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.TicketNumberAndRequester" class="control-label"></label>
-                <input asp-for="@Model.TicketNumberAndRequester" class="form-control" />
-                <span asp-validation-for="@Model.TicketNumberAndRequester" class="text-danger"></span>
+                <label asp-for="@Model.Bill.TicketNumberAndRequester" class="control-label"></label>
+                <input asp-for="@Model.Bill.TicketNumberAndRequester" class="form-control" />
+                <span asp-validation-for="@Model.Bill.TicketNumberAndRequester" class="text-danger"></span>
+            </div>
+         @*    <div class="form-group">
+                <label asp-for="@Model.Bill.StartDate" class="control-label"></label>
+                <input asp-for="@Model.Bill.StartDate" class="form-control" type="date" id="startDate" value="@startDateString" />
+                <span asp-validation-for="@Model.Bill.StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.StartDate" class="control-label"></label>
-                <input asp-for="@Model.StartDate" class="form-control" type="date" id="startDate" value="@startDateString" />
-                <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
+                <label asp-for="@Model.Bill.EndDate" class="control-label"></label>
+                <input asp-for="@Model.Bill.EndDate" class="form-control" type="date" id="endDate" value="@endDateString" />
+                <span asp-validation-for="@Model.Bill.EndDate" class="text-danger"></span>
+            </div> *@
+            <div class="form-group">
+                <label asp-for="@Model.Bill.DateModified" class="control-label"></label>
+                <input asp-for="@Model.Bill.DateModified" class="form-control" readonly="true" />
+                <span asp-validation-for="@Model.Bill.DateModified" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.EndDate" class="control-label"></label>
-                <input asp-for="@Model.EndDate" class="form-control" type="date" id="endDate" value="@endDateString" />
-                <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
+                <label asp-for="@Model.Bill.BillingCycle" class="control-label"></label>
+                <input asp-for="@Model.Bill.BillingCycle" class="form-control" />
+                <span asp-validation-for="@Model.Bill.BillingCycle" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="@Model.DateModified" class="control-label"></label>
-                <input asp-for="@Model.DateModified" class="form-control" readonly="true" />
-                <span asp-validation-for="@Model.DateModified" class="text-danger"></span>
+                <label asp-for="@Model.Bill.CreatedBy" class="control-label"></label>
+                <input asp-for="@Model.Bill.CreatedBy" class="form-control" />
+                <span asp-validation-for="@Model.Bill.CreatedBy" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="@Model.BillingCycle" class="control-label"></label>
-                <input asp-for="@Model.BillingCycle" class="form-control" />
-                <span asp-validation-for="@Model.BillingCycle" class="text-danger"></span>
+            @if (Model.FiscalHistory != null)
+            {
+              <div class="form-group">
+                    <label asp-for="@Model.FiscalHistory.Notes" class="control-label">Notes for @Model.FiscalHistory?.FiscalPeriod?.Period </label>
+                <textarea asp-for="@Model.FiscalHistory.Notes" class="form-control" value="@Model.FiscalHistory.Notes" > </textArea>
+                <span asp-validation-for="@Model.FiscalHistory.Notes" class="text-danger"></span>
+              </div>
+            }
+            else
+            {
+                <div class="form-group">
+                    <label asp-for="@Model.Bill.Notes" class="control-label"></label>
+                <textarea asp-for="@Model.Bill.Notes" class="form-control" value="@Model.Bill.Notes" > </textArea>
+                <span asp-validation-for="@Model.Bill.Notes" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <label asp-for="@Model.CreatedBy" class="control-label"></label>
-                <input asp-for="@Model.CreatedBy" class="form-control" />
-                <span asp-validation-for="@Model.CreatedBy" class="text-danger"></span>
-            </div>
-             <div class="form-group">
-                <label asp-for="@Model.Notes" class="control-label"></label>
-                <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
-                <span asp-validation-for="@Model.Notes" class="text-danger"></span>
-            </div>
+            }
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>
@@ -181,4 +192,3 @@
         });
     </script>
 }
-
