@@ -27,6 +27,7 @@ namespace Service_Billing.Controllers
         private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ServiceBillingContext _serviceBillingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
+        private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -36,6 +37,7 @@ namespace Service_Billing.Controllers
             IAuthorizationService authorizationService,
             IBusinessAreaRepository businessAreaRepository,
             IFiscalPeriodRepository fiscalPeriodRepository,
+            IFiscalHistoryRepository fiscalHistoryRepository,
             ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -52,6 +54,7 @@ namespace Service_Billing.Controllers
             _businessAreaRepository = businessAreaRepository;
             _serviceBillingContext = serviceBillingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository;
+            _fiscalHistoryRepository = fiscalHistoryRepository;
         }
 
         [Authorize]
@@ -204,11 +207,15 @@ namespace Service_Billing.Controllers
             TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.DateModified = pacificTime;
-            EditChargeViewModel model = new EditChargeViewModel(bill);
+            EditChargeViewModel model;
             if(historyId != null)
             {
                 FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
-                model.FiscalHistory = fiscalHistory;
+                model = new EditChargeViewModel(bill, fiscalHistory);
+            }
+            else
+            {
+                model = new EditChargeViewModel(bill, new FiscalHistory());
             }
             if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
@@ -223,14 +230,28 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Bill bill)
+        public async Task<IActionResult> Edit(EditChargeViewModel model)
         {
             try
             {
-                bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-                bill.DateModified = DateTime.Now;
-                await _billRepository.Update(bill);
-                return RedirectToAction("Details", new { bill.Id, isEdited = true });
+                model.Bill.ServiceCategory = _categoryRepository.GetById(model.Bill.ServiceCategoryId);
+                model.Bill.DateModified = DateTime.Now;
+                await _billRepository.Update(model.Bill);
+                if (model.FiscalHistory != null && model.FiscalHistory.Id > 0)
+                {
+                    FiscalHistory? fh = _fiscalHistoryRepository.GetFiscalHistoryById(model.FiscalHistory.Id);
+                    if (fh != null)
+                    {
+                        fh.Notes = model.FiscalHistory.Notes;
+                        await _fiscalHistoryRepository.UpdateFiscalHistory(fh);
+                    }
+                    else
+                    {
+                        _logger.LogError($"Attempted to update FiscalHistory with ID: {model.FiscalHistory.Id}, but no matching FiscalHistory was found in DB ");
+                    }
+                }
+
+                return RedirectToAction("Details", new { model.Bill.Id, isEdited = true, historyId = model.FiscalHistory?.Id });
             }
             catch (DbUpdateException ex)
             {

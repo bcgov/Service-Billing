@@ -6,8 +6,8 @@
 }
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
-    // string startDateString = Model.Bill.StartDate.HasValue ? Model.Bill.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
-    // string endDateString = Model.Bill.EndDate.HasValue ? Model.Bill.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
+    string startDateString = Model.Bill.StartDate.HasValue ? Model.Bill.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
+    string endDateString = Model.Bill.EndDate.HasValue ? Model.Bill.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
 
 }
 
@@ -39,7 +39,7 @@
                 <input asp-for="@Model.Bill.IdirOrUrl" class="form-control" />
                 <span asp-validation-for="@Model.Bill.IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, bill = Model })
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, bill = Model.Bill })
             <span asp-validation-for="@Model.Bill.ServiceCategoryId" class="text-danger"></span>
             <div class="form-group">
                 <input type="hidden" asp-for="@Model.Bill.ServiceCategoryId" id="categoryIdInput" class="form-control" />
@@ -72,7 +72,7 @@
                 <input asp-for="@Model.Bill.TicketNumberAndRequester" class="form-control" />
                 <span asp-validation-for="@Model.Bill.TicketNumberAndRequester" class="text-danger"></span>
             </div>
-         @*    <div class="form-group">
+            <div class="form-group">
                 <label asp-for="@Model.Bill.StartDate" class="control-label"></label>
                 <input asp-for="@Model.Bill.StartDate" class="form-control" type="date" id="startDate" value="@startDateString" />
                 <span asp-validation-for="@Model.Bill.StartDate" class="text-danger"></span>
@@ -81,7 +81,7 @@
                 <label asp-for="@Model.Bill.EndDate" class="control-label"></label>
                 <input asp-for="@Model.Bill.EndDate" class="form-control" type="date" id="endDate" value="@endDateString" />
                 <span asp-validation-for="@Model.Bill.EndDate" class="text-danger"></span>
-            </div> *@
+            </div>
             <div class="form-group">
                 <label asp-for="@Model.Bill.DateModified" class="control-label"></label>
                 <input asp-for="@Model.Bill.DateModified" class="form-control" readonly="true" />
@@ -97,9 +97,10 @@
                 <input asp-for="@Model.Bill.CreatedBy" class="form-control" />
                 <span asp-validation-for="@Model.Bill.CreatedBy" class="text-danger"></span>
             </div>
-            @if (Model.FiscalHistory != null)
+            @if (Model.FiscalHistory != null && Model.FiscalHistory.PeriodId > 0)
             {
               <div class="form-group">
+                  <input asp-for="@Model.FiscalHistory.Id" type="hidden"/>
                     <label asp-for="@Model.FiscalHistory.Notes" class="control-label">Notes for @Model.FiscalHistory?.FiscalPeriod?.Period </label>
                 <textarea asp-for="@Model.FiscalHistory.Notes" class="form-control" value="@Model.FiscalHistory.Notes" > </textArea>
                 <span asp-validation-for="@Model.FiscalHistory.Notes" class="text-danger"></span>
