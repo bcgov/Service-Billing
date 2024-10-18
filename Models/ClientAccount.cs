@@ -20,7 +20,7 @@ o	Note: not all naming convention components are required. The naming convention
 
         [BindRequired]
         //"must be unique, except for secondary accounts only used for alternative financial coding."
-        [Display(Name = "Client Account Number", Prompt = "00")]
+        [Display(Name = "Client Account #", Prompt = "00")]
         public Int16? ClientNumber { get; set; } // three digit billing code
 
         //5-digits or combination of digits and letters
