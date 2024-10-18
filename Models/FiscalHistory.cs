@@ -30,5 +30,13 @@ namespace Service_Billing.Models
             QuantityAtFiscal = quantityAtFiscal;
             Notes = notes;
         }
+
+        public FiscalHistory() 
+        {
+            Id = 0;
+            BillId = 0;
+            PeriodId = 0;
+            FiscalPeriod = null;
+        }
     }
 }
