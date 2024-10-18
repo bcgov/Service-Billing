@@ -334,7 +334,6 @@ namespace Service_Billing.Models.Repositories
         public Bill? GetBill(int id)
         {
             return _billingContext.Bills
-                .AsNoTracking()
                 .Include(c => c.ServiceCategory)
                 .Include(bill => bill.ClientAccount)
                 .Include(c => c.PreviousFiscalRecords!).ThenInclude(h => h.FiscalPeriod)
