@@ -15,24 +15,6 @@ namespace Service_Billing.Services.GraphApi
             _httpClient = httpClient;
         }
 
-        //public async Task AccessGraphApi()
-        //{
-        //    var cca = ConfidentialClientApplicationBuilder
-        //        .Create(_configuration.GetSection("AzureAd")["ClientId"])
-        //        .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-        //        .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-        //        .Build();
-
-        //    var users = await GetUsers(cca);
-        //    var id = "39f54195-55ba-4f8c-a5dc-93579fc090cc";
-        //    var me = await Me(id, cca);
-
-        //    //foreach (var user in users?.Value ?? new List<GraphUser>())
-        //    //{
-        //    //    Console.WriteLine($"User: {user?.DisplayName}");
-        //    //}
-        //}
-
         public async Task<GraphApiListResponse<GraphUser>> GetUsers(IConfidentialClientApplication cca)
         {
             var emptyResponse = new GraphApiListResponse<GraphUser>();
