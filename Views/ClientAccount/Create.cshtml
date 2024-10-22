@@ -17,8 +17,9 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div class="form-group">
-                <label asp-form="@Model.Account.OrganizationId" class="control-label">Organization</label>
-                <select asp-for="@Model.Account.OrganizationId" class="form-control">
+                <label asp-for="@Model.Account.OrganizationId" class="control-label"> Organization</label>
+                <select asp-for="@Model.Account.OrganizationId" class="form-control" data-val="true"
+                data-val-required="You must select a ministry or other organization from the list">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
                     @if (ministries != null)
                     {
@@ -28,15 +29,18 @@
                         }
                     }
                 </select>
+                <span asp-validation-for="@Model.Account.OrganizationId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
-                <input asp-for="@Model.DivisionOrBranch" class="form-control" />
+                <input asp-for="@Model.DivisionOrBranch" class="form-control" data-val="true"
+                data-val-required="Please enter a value for the name of this client. It will be prepended by the Organization acronym"/>
                 <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ClientNumber" class="control-label">CAS Client Number</label>
-                <input type="number" asp-for="@Model.Account.ClientNumber" class="form-control" />
+                <input type="number" asp-for="@Model.Account.ClientNumber" class="form-control" data-val="true"
+                data-val-required="A CAS Client Number must be provided."/>
                 <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group" id="intake-contacts">
@@ -48,21 +52,19 @@
                 </div>
 
                 <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Account.PrimaryContact" class="form-control" />
+                <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"/>
                 <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.Account.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Account.Approver" />
+                <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
+                <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" />
                 <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Account.FinancialContact" />
+                <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"/>
                 <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" />
-                <div id="authorityContactSelect">
-                </div>
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" />
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -83,7 +85,7 @@
             <div class="form-group">
                 <label asp-for="@Model.Account.Project" class="control-label">Ministry Project Code</label>
                 <input asp-for="@Model.Account.Project" class="form-control" data-val="true" data-val-required="Please provide a ministry project code."/>
-                <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
+                <span asp-validation-for="@Model.Account.Project" class="text-danger" ></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.IsApprovedByEA">EA Approved?</label>

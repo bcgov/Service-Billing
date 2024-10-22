@@ -12,7 +12,7 @@ namespace Service_Billing.ViewModels
         public ClientAccount Account { get; set; }
         public string? MinistryAcronym { get; set; }
 
-        [Display (Prompt = "Select a division or branch name")]
+        [Display (Prompt = "Enter a division or branch name")]
         public string? DivisionOrBranch { get; set; }
       //  public string? ApproverName { get; set; }
         [NotMapped]
