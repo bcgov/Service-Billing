@@ -17,8 +17,8 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div class="form-group">
-                <label for="orgSelect" class="control-label">Organization</label>
-                <select asp-for="@Model.Account.OrganizationId" class="form-control" id="orgSelect">
+                <label asp-form="@Model.Account.OrganizationId" class="control-label">Organization</label>
+                <select asp-for="@Model.Account.OrganizationId" class="form-control">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
                     @if (ministries != null)
                     {
@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
-                <input asp-for="@Model.DivisionOrBranch" id="clientInput" class="form-control" />
+                <input asp-for="@Model.DivisionOrBranch" class="form-control" />
                 <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -48,19 +48,19 @@
                 </div>
 
                 <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Account.PrimaryContact" class="form-control" id="primaryContact" />
+                <input asp-for="@Model.Account.PrimaryContact" class="form-control" />
                 <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Account.Approver" id="approverContact" />
+                <input class="form-control" asp-for="@Model.Account.Approver" />
                 <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Account.FinancialContact" id="financialContact" />
+                <input class="form-control" asp-for="@Model.Account.FinancialContact" />
                 <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" />
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" />
                 <div id="authorityContactSelect">
                 </div>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
@@ -72,7 +72,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
-                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" id="casServiceLine" data-val="true" data-val-required="Please provide the five-digit service line code from the Corporate Accounting System." />
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" data-val="true" data-val-required="Please provide the five-digit service line code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -114,19 +114,19 @@
             $('#create-account-link').addClass("active-nav-link");
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
-            $("#primaryContact").autocomplete({
+            $("#Account_PrimaryContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#financialContact").autocomplete({
+            $("#Account_FinancialContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#approverContact").autocomplete({
+            $("#Account_ApproverContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#authorityContact").autocomplete({
+            $("#Account_ExpenseAuthorityName").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -141,9 +141,9 @@
                     $("#casSTOBNumber").val($("#casSTOBNumber").val().substring(0, 4));
                 }
             });
-            $("#casServiceLine").on("keyup", (e) => {
-                if ($("#casServiceLine").val().length > 5) {
-                    $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
+            $("#Account_ServiceLine").on("keyup", (e) => {
+                if ($("#Account_ServiceLine").val().length > 5) {
+                    $("#Account_ServiceLine").val($("#Account_ServiceLine").val().substring(0, 5));
                 }
             });
             $("#responsibilityCentre").on("keyup", (e) => {
