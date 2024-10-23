@@ -21,28 +21,28 @@ o	Note: not all naming convention components are required. The naming convention
         [BindRequired]
         //"must be unique, except for secondary accounts only used for alternative financial coding."
 
-        [Display(Name = "CAS Client Number", Prompt = "00")]
+        [Display(Name = "CAS Client Number", Prompt = "Enter CAS Client Number")]
         public Int16? ClientNumber { get; set; } // three digit billing code
 
         //5-digits or combination of digits and letters
         [BindRequired]
         [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit responsibility centre code from the Corporate Accounting System.")]
-        [Display(Name = "Responsibility Centre", Prompt = "00000")]
+        [Display(Name = "Responsibility Centre", Prompt = "Enter 5-digit Responsibility Centre code")]
         public string? ResponsibilityCentre { get; set; }
 
         [BindRequired]
         [RegularExpression(@"^.{5,5}$", ErrorMessage = "Please provide the five-digit service line code from the Corporate Accounting System.")]
-        [Display(Name = "Service Line", Prompt = "00000")]
+        [Display(Name = "Service Line", Prompt = "Enter 5-digit Service Line code")]
         public int? ServiceLine { get; set; }
 
         [BindRequired]
-        [Display (Prompt = "0000")]
+        [Display (Prompt = "Enter 4-digit STOB code")]
         [RegularExpression(@"^.{4,4}$", ErrorMessage = "Please provide the ministry Standard Object of Expenditure (STOB) number.")]
         public Int16? STOB { get; set; }
 
         [Required(ErrorMessage = "A Project Code must be provided")]
         [RegularExpression(@"^.{7,7}$", ErrorMessage = "Please provide a ministry project code.")]
-        [Display(Name = "Project", Prompt = "1500000")]
+        [Display(Name = "Project", Prompt = "Enter 7-digit project code")]
         public string? Project { get; set; }
 
         [Display(Name = "Expense Authority", Prompt = "Start typing in your contact's last name")]
