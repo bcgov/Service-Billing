@@ -53,8 +53,8 @@
                 </div>
             </div>
             <div class="form-group">
-                <label>UOM</label>
-                <input id="uom" class="form-control" readonly="true" />
+                <label asp-for="@Model.Bill.ServiceCategory.UOM">Unit of Measure </label>
+                <input asp-for="@Model.Bill.ServiceCategory.UOM" class="form-control" readonly="true" />
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Bill.MostRecentActiveFiscalPeriod.Period" class="control-label"></label>
@@ -133,7 +133,7 @@
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
                         $("#amount").val(response['amount']);
-                        $("#uom").val(response['uom']);
+                        $("#Bill_ServiceCategory_UOM").val(response['uom']); // @Model.Bill.ServiceCategory.UOM
                         $("#quantity").val(response['quantity']);
                     }
                 };
