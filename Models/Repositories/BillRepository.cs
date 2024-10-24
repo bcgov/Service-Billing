@@ -151,7 +151,6 @@ namespace Service_Billing.Models.Repositories
 
             return fixedServiceIds;
         }
-
         public List<int> GetOneTimeServices()
         {
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
@@ -195,7 +194,10 @@ namespace Service_Billing.Models.Repositories
                 && b.IsActive);
 
                 foreach (Bill bill in billsToPromote)
+                {
                     await PromoteCharge(bill, newFiscalPeriod, quarterStart, false);
+
+                }
 
                 await _billingContext.SaveChangesAsync();
                 _logger.LogInformation("Charges promoted to new quarter!");
@@ -219,6 +221,7 @@ namespace Service_Billing.Models.Repositories
                     _logger.LogWarning($"tried promoting bill with ID: {bill.Id} to a new FiscalPeriod, but it's CurrentFiscalPeriodId matches the new FiscalPeriod.Id ({newFiscalPeriod.Id}). Skipping this Charge.");
                     return; //don't add anything more than once.
                 }
+
                 //handle fiscal period tracking.
                 ServiceCategory? category = bill.ServiceCategory;
                 decimal unitPriceAtFiscal = 0;
@@ -256,6 +259,7 @@ namespace Service_Billing.Models.Repositories
                 _logger.LogError($"Error trying to promote bill: {bill.Id} to new quarter with PeriodId {newFiscalPeriod.Id}.");
                 _logger.LogError(ex.Message);
             }
+
         }
 
         private void AddBillFiscalHistoryToContext(int chargeId, int currentFiscalId, int newFiscalId, decimal unitPriceAtFiscal, decimal quantity, string notes)
@@ -266,6 +270,7 @@ namespace Service_Billing.Models.Repositories
                 _billingContext.FiscalHistory.Add(fiscalHistory);
             }
         }
+
 
         private decimal GetBillQuantityForNewQuarter(Bill bill, DateTime quarterStart)
         {
