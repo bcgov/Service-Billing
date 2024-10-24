@@ -229,11 +229,21 @@ else
                                asp-route-id="@bill.ClientAccountId" title="View client details">@bill.ClientAccountId</a>
                         </td>
                         <td>@bill.ClientAccount?.Name</td>
-                        <td>
-                            <a asp-controller="Bills"
-                               asp-action="Details"
-                               asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
-                        </td>
+                        @if (ViewData["IsPrevious"] != null)
+                        {
+                            FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.FiscalPeriod?.Id == (int)ViewData["PreviousFiscalId"]);
+                          <td>
+                            @Html.ActionLink(bill.Title, "Details", "Bills", new { id = @bill.Id, historyId = @fiscalHistory.Id })
+                          </td>
+                        }
+                        else
+                        {    
+                          <td>
+                              <a asp-controller="Bills"
+                                 asp-action="Details"
+                                 asp-route-id="@bill.Id" title="View charge details">@bill.Title</a>
+                          </td>
+                        }
 
                         <td>@ViewData["FiscalPeriod"]</td> <!-- this could probably be handled better-->
 
@@ -310,9 +320,19 @@ else
                                 @client.ExpenseAuthorityName
                             }
                         </td>
-                        <td>
-                            @bill.Notes
-                        </td>
+                        @if (ViewData["IsPrevious"] != null)
+                        {
+                            FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.FiscalPeriod?.Id == (int)ViewData["PreviousFiscalId"]);
+                            <td>
+                                @fiscalHistory?.Notes
+                            </td>
+                        }
+                        else
+                        {  
+                          <td>
+                              @bill.Notes
+                          </td>
+                        }
                     </tr>
 
                 }
