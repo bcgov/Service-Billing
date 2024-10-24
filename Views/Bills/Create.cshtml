@@ -17,9 +17,9 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="@Model.ClientAccount.Name" class="control-label">Client </label>
+                <label asp-for="@Model.ClientAccount.Name">Client: </label>
                 <input asp-for="@Model.ClientAccount.Name" 
-                  class="form-control" 
+                  id="clientInput" class="form-control" 
                   title="Begin entering a client name, and a list of matching clients will appear." 
                   data-val="true" data-val-required="Select a ministry or organization from the drop down menu"/>
                 <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
@@ -44,7 +44,7 @@
             
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" id="Amount" data-val="true" data-val-required="Select the service category for this to display."/>
+                <input asp-for="Amount" class="form-control" id="amount" data-val-required="Select the service category for this to display."/>
                 <span asp-validation-for="Amount" class="text-danger"></span>
                 <div class="input-info">
                     The amount is calculated based on service and quantity, and typically should not be changed. 
@@ -119,7 +119,7 @@
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
-                        $("#Amount").val(response['Amount']);
+                        $("#amount").val(response['amount']);
                         $("#uom").val(response['uom']);
                         $("#quantity").val(response['quantity']);
                     }
@@ -183,6 +183,5 @@
             }
             createClientSelect();
         });
-        
     </script>
 }

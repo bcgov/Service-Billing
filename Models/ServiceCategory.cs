@@ -18,7 +18,6 @@ namespace Service_Billing.Models
         public int BusAreaId { get; set; }
         [ForeignKey("BusAreaId")]
         public virtual BusinessArea? BusArea { get; set; }
-        [BindRequired]
         public string? Name { get; set; }
 
         [Display(Name = "Unit Price")]
@@ -30,7 +29,8 @@ namespace Service_Billing.Models
         public bool IsActive { get; set; }
 
         public string? UOM { get; set; }
-        [Display(Name = "Service Owner", Prompt = "Start typing in your contact's last name")]
+
+        [Display(Name = "Service Owner")]
         public string? ServiceOwner { get; set; }
 
         [NotMapped]

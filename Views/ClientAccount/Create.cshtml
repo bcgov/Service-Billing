@@ -17,9 +17,8 @@
     <div class="col-md-4">
         <form asp-action="Create">
             <div class="form-group">
-                <label asp-for="@Model.Account.OrganizationId" class="control-label"> Organization</label>
-                <select asp-for="@Model.Account.OrganizationId" class="form-control" data-val="true"
-                data-val-required="You must select a ministry or other organization from the list">
+                <label for="orgSelect" class="control-label">Organization</label>
+                <select asp-for="@Model.Account.OrganizationId" class="form-control" id="orgSelect">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
                     @if (ministries != null)
                     {
@@ -29,18 +28,15 @@
                         }
                     }
                 </select>
-                <span asp-validation-for="@Model.Account.OrganizationId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.DivisionOrBranch" class="control-label">Division or Branch Name</label>
-                <input asp-for="@Model.DivisionOrBranch" class="form-control" data-val="true"
-                data-val-required="Please enter a value for the name of this client. It will be prepended by the Organization acronym"/>
+                <input asp-for="@Model.DivisionOrBranch" id="clientInput" class="form-control" />
                 <span asp-validation-for="@Model.DivisionOrBranch" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ClientNumber" class="control-label">CAS Client Number</label>
-                <input type="number" asp-for="@Model.Account.ClientNumber" class="form-control" data-val="true"
-                data-val-required="A CAS Client Number must be provided."/>
+                <input type="number" asp-for="@Model.Account.ClientNumber" class="form-control" />
                 <span asp-validation-for="@Model.Account.ClientNumber" class="text-danger"></span>
             </div>
             <div class="form-group" id="intake-contacts">
@@ -52,19 +48,21 @@
                 </div>
 
                 <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"/>
+                <input asp-for="@Model.Account.PrimaryContact" class="form-control" id="primaryContact" />
                 <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
-                <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" />
+                <label asp-for="@Model.Account.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Account.Approver" id="approverContact" />
                 <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"/>
+                <input class="form-control" asp-for="@Model.Account.FinancialContact" id="financialContact" />
                 <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
 
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" />
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" id="authorityContact" />
+                <div id="authorityContactSelect">
+                </div>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -74,7 +72,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ServiceLine" class="control-label">CAS Service Line</label>
-                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" data-val="true" data-val-required="Please provide the five-digit service line code from the Corporate Accounting System." />
+                <input asp-for="@Model.Account.ServiceLine" class="form-control" maxlength="5" id="casServiceLine" data-val="true" data-val-required="Please provide the five-digit service line code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ServiceLine" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -85,7 +83,7 @@
             <div class="form-group">
                 <label asp-for="@Model.Account.Project" class="control-label">Ministry Project Code</label>
                 <input asp-for="@Model.Account.Project" class="form-control" data-val="true" data-val-required="Please provide a ministry project code."/>
-                <span asp-validation-for="@Model.Account.Project" class="text-danger" ></span>
+                <span asp-validation-for="@Model.Account.Project" class="text-danger" OnServerValidate="ServerValidation"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.IsApprovedByEA">EA Approved?</label>
@@ -116,19 +114,19 @@
             $('#create-account-link').addClass("active-nav-link");
             const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
-            $("#Account_PrimaryContact").autocomplete({
+            $("#primaryContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_FinancialContact").autocomplete({
+            $("#financialContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_ApproverContact").autocomplete({
+            $("#approverContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_ExpenseAuthorityName").autocomplete({
+            $("#authorityContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -143,9 +141,9 @@
                     $("#casSTOBNumber").val($("#casSTOBNumber").val().substring(0, 4));
                 }
             });
-            $("#Account_ServiceLine").on("keyup", (e) => {
-                if ($("#Account_ServiceLine").val().length > 5) {
-                    $("#Account_ServiceLine").val($("#Account_ServiceLine").val().substring(0, 5));
+            $("#casServiceLine").on("keyup", (e) => {
+                if ($("#casServiceLine").val().length > 5) {
+                    $("#casServiceLine").val($("#casServiceLine").val().substring(0, 5));
                 }
             });
             $("#responsibilityCentre").on("keyup", (e) => {

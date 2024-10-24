@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Service_Billing.Models;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -12,7 +11,7 @@ namespace Service_Billing.ViewModels
         public ClientAccount Account { get; set; }
         public string? MinistryAcronym { get; set; }
 
-        [Display (Prompt = "Enter a division or branch name")]
+        [Display (Prompt = "Select a division or branch name")]
         public string? DivisionOrBranch { get; set; }
       //  public string? ApproverName { get; set; }
         [NotMapped]

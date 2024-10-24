@@ -14,9 +14,9 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="@Model.Service.BusAreaId" class="control-label">Business Area</label>
+                <label class="control-label">Business Area</label>
                @*  <input asp-for="@Model.Service.BusArea.Acronym" class="form-control" id="busArea" /> *@
-                <select asp-for="@Model.Service.BusAreaId" class="form-control" data-val="true" data-val-required="A Business Area must be selected">
+                <select asp-for="@Model.Service.BusAreaId" class="form-control" id="areaSelect">
                     <option value="-1"></option>
                     @foreach(BusinessArea busArea in Model.BusAreas)
                     {
@@ -29,7 +29,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Service.Name" class="control-label">Program Name</label>
-                <input asp-for="@Model.Service.Name" class="form-control" data-val="true" data-val-required="Provide a name for this service"/>
+                <input asp-for="@Model.Service.Name" class="form-control" />
                 <span asp-validation-for="@Model.Service.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -59,7 +59,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Service.ServiceOwner" class="control-label"></label>
-                <input asp-for="@Model.Service.ServiceOwner" class="form-control" id="owner" data-val="true" data-val-required="Provide an IDIR identity for the owner of this service" />
+                <input asp-for="@Model.Service.ServiceOwner" class="form-control" id="owner" />
                 <span asp-validation-for="@Model.Service.ServiceOwner" class="text-danger"></span>
             </div>
             <div id="new-business-area-dialog" title="Create a new business area?">
@@ -102,7 +102,7 @@
             option.text = `${text1} (${text2})`;
             option.value = -1;
             option.selected = true;
-            var select = document.getElementById("Service_BusAreaId"); // "Service_BusAreaId" is id for BusArea input 
+            var select = document.getElementById("areaSelect");
             select.appendChild(option);
             $("#new-business-area-dialog").dialog("close");
         });

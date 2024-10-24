@@ -601,7 +601,3 @@ btn:focus, a:focus {
 .container {
   max-width: 100%;
 }
-
-a:not([href]):not([class]) {
-  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
-}
