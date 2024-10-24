@@ -151,6 +151,7 @@ namespace Service_Billing.Models.Repositories
 
             return fixedServiceIds;
         }
+
         public List<int> GetOneTimeServices()
         {
             IEnumerable<ServiceCategory> serviceCategories = _billingContext.ServiceCategories;
@@ -194,47 +195,7 @@ namespace Service_Billing.Models.Repositories
                 && b.IsActive);
 
                 foreach (Bill bill in billsToPromote)
-                {
-                    List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
-                    if (bill.CurrentFiscalPeriodId != null && bill.CurrentFiscalPeriodId == newFiscalPeriod.Id) // make sure charge has no fiscal history for the new quarter
-                    {
-                        _logger.LogWarning($"tried promoting bill with ID: {bill.Id} to a new FiscalPeriod, but it's CurrentFiscalPeriodId matches the new FiscalPeriod.Id ({newFiscalPeriod.Id}). Skipping this Charge.");
-                        continue; //don't add anything more than once.
-                    }
-
-                    //handle fiscal period tracking.
-                    ServiceCategory? category = bill.ServiceCategory;
-                    decimal unitPriceAtFiscal = 0;
-                    if (!decimal.TryParse(category?.Costs, out unitPriceAtFiscal))
-                        _logger.LogWarning($"Could not find a unit price for the Service Category belonging to charge with Id {bill.Id}. ServiceCategory Id: {bill.ServiceCategoryId}");
-                    FiscalHistory fiscalHistory = new FiscalHistory(bill.Id, bill.CurrentFiscalPeriodId, unitPriceAtFiscal, bill.Quantity, bill.Notes);
-                    if (_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalPeriod.Id, bill.Id) == null) // and it should be null!
-                    {
-                        _billingContext.FiscalHistory.Add(fiscalHistory);
-                    }
-
-                    bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                    decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Date);
-                    if (bill.Quantity != newQuantityForCharge)
-                    {
-                        bill.Quantity = newQuantityForCharge;
-                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
-                        {
-                            decimal unitPrice;
-                            if (!decimal.TryParse(bill.ServiceCategory.Costs, out unitPrice))
-                            {
-                                _logger.LogError($"No unit Price found for bill with ID: {bill.Id}. The service category {bill.ServiceCategory.Name} has no unit price set.");
-                            }
-                            else
-                                bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
-                        }
-                        else
-                            _logger.LogError($"No service category found for charge with ID: {bill.Id}! Could not update charge amount!");
-
-                        _billingContext.Update(bill);
-                    }
-
-                }
+                    await PromoteCharge(bill, newFiscalPeriod, quarterStart, false);
 
                 await _billingContext.SaveChangesAsync();
                 _logger.LogInformation("Charges promoted to new quarter!");
@@ -243,6 +204,66 @@ namespace Service_Billing.Models.Repositories
             {
                 _logger.LogError($"error while trying to promote charges to new quarter!");
                 _logger.LogError(ex.ToString());
+            }
+        }
+
+        public async Task PromoteCharge(Bill bill, FiscalPeriod newFiscalPeriod, DateTimeOffset? quarterStart = null, bool saveDBChanges = true)
+        {
+            try
+            {
+                if (quarterStart == null)
+                    quarterStart = DetermineStartOfCurrentQuarter();
+                List<int> recordedPeriodIds = _fiscalHistoryRepository.GetFiscalHistoriesByChargeId(bill.Id).Select(b => b.PeriodId).ToList();
+                if (bill.CurrentFiscalPeriodId == newFiscalPeriod.Id) // make sure charge has no fiscal history for the new quarter
+                {
+                    _logger.LogWarning($"tried promoting bill with ID: {bill.Id} to a new FiscalPeriod, but it's CurrentFiscalPeriodId matches the new FiscalPeriod.Id ({newFiscalPeriod.Id}). Skipping this Charge.");
+                    return; //don't add anything more than once.
+                }
+                //handle fiscal period tracking.
+                ServiceCategory? category = bill.ServiceCategory;
+                decimal unitPriceAtFiscal = 0;
+                if (!decimal.TryParse(category?.Costs, out unitPriceAtFiscal))
+                    _logger.LogWarning($"Could not find a unit price for the Service Category belonging to charge with Id {bill.Id}. ServiceCategory Id: {bill.ServiceCategoryId}");
+
+                AddBillFiscalHistoryToContext(bill.Id, bill.CurrentFiscalPeriodId, newFiscalPeriod.Id, unitPriceAtFiscal, bill.Quantity.Value, bill.Notes);
+
+                bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
+                decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Value.Date);
+                if (bill.Quantity != newQuantityForCharge)
+                {
+                    bill.Quantity = newQuantityForCharge;
+                    if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                    {
+                        decimal unitPrice;
+                        if (!decimal.TryParse(bill.ServiceCategory.Costs, out unitPrice))
+                        {
+                            _logger.LogError($"No unit Price found for bill with ID: {bill.Id}. The service category {bill.ServiceCategory.Name} has no unit price set.");
+                        }
+                        else
+                            bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
+                    }
+                    else
+                        _logger.LogError($"No service category found for charge with ID: {bill.Id}! Could not update charge amount!");
+
+                }
+                _billingContext.Update(bill);
+
+                if (saveDBChanges)
+                    await _billingContext.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error trying to promote bill: {bill.Id} to new quarter with PeriodId {newFiscalPeriod.Id}.");
+                _logger.LogError(ex.Message);
+            }
+        }
+
+        private void AddBillFiscalHistoryToContext(int chargeId, int currentFiscalId, int newFiscalId, decimal unitPriceAtFiscal, decimal quantity, string notes)
+        {
+            FiscalHistory fiscalHistory = new FiscalHistory(chargeId, currentFiscalId, unitPriceAtFiscal, quantity, notes);
+            if (_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalId, chargeId) == null) // and it should be null!
+            {
+                _billingContext.FiscalHistory.Add(fiscalHistory);
             }
         }
 

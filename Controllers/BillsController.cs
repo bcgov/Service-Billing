@@ -310,7 +310,7 @@ namespace Service_Billing.Controllers
                 bill.DateModified = DateTimeOffset.Now;
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
-                DetermineCurrentQuarter(bill, bill.StartDate);
+                DetermineCurrentQuarter(bill, bill.StartDate); // Note: StartDate could be earlier than current quarter
                 FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
                 if (fiscalPeriod == null)
                     throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
@@ -319,6 +319,15 @@ namespace Service_Billing.Controllers
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
+
+                // Has a StartDate Earlier than the start of this Quarter been selected?
+                if(bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter())
+                {
+                    await _billRepository.PromoteCharge(
+                        bill, 
+                        _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter())
+                    );
+                }
 
                 return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
             }
