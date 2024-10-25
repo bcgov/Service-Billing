@@ -68,13 +68,13 @@ o	Note: not all naming convention components are required. The naming convention
         */
         //   [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
-        [Required(ErrorMessage = "Please provide the name of primary contact")]
+       
         public string? PrimaryContact { get; set; }
 
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
-        [Required(ErrorMessage = "Please provide the name of the account's approval authority")]
+     
         public string? Approver { get; set; }
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
@@ -82,7 +82,7 @@ o	Note: not all naming convention components are required. The naming convention
          * For quarterly billing, this role is a contact. */
         //  [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Financial Contacts", Prompt = "Start typing in your contact's last name")]
-        [Required(ErrorMessage = "Please provide the name of the financial contact")]
+       
         public string? FinancialContact { get; set; }
 
         [NotMapped]
