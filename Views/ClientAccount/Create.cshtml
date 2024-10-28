@@ -50,21 +50,28 @@
                 <br/>
                 Contacts matching your input will display in a dropdown menu for you to pick.
                 </div>
-
-                <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"/>
-                <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
-
-                <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
-                <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" />
-                <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
-
-                <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"/>
-                <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
-
+                 <div class="form-group">
+                  <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
+                  <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
+                  data-val-required="Pleasae include a Primary Contact"/>
+                  <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
+                </div>
+                 <div class="form-group">
+                  <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
+                  <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" 
+                   data-val-required="Please include an Approver contact"/>
+                  <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
+                </div>
+                 <div class="form-group">
+                  <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
+                  <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"
+                   data-val-required="Please include a financial contact"/>
+                  <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
+                </div>
+           <div class="form-group">
                 <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" />
+                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" 
+                 data-val-required="Please include the name of a CAS Expense Authority"/>
                 <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">

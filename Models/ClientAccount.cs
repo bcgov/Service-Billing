@@ -61,12 +61,12 @@ o	Note: not all naming convention components are required. The naming convention
         public string? Notes { get; set; }
 
         public virtual ICollection<Bill>? Bills { get; set; }
-        
+
         /* This is the Primary Contact for the Client Account.  Normally there is only one.  
            This role can authorize billable service requests and changes to client account details including new services, 
            client account team membership, financial coding changes and SharePoint site access for their team.
         */
-        //   [Required(ErrorMessage = "Please include this contact")]
+        [BindRequired]
         [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
        
         public string? PrimaryContact { get; set; }
@@ -74,7 +74,7 @@ o	Note: not all naming convention components are required. The naming convention
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
-     
+        [BindRequired]
         public string? Approver { get; set; }
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
@@ -84,6 +84,7 @@ o	Note: not all naming convention components are required. The naming convention
         [Display(Name = "Financial Contacts", Prompt = "Start typing in your contact's last name")]
        
         public string? FinancialContact { get; set; }
+        [BindRequired]
 
         [NotMapped]
         public string AggregatedGLCode
