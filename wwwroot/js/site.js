@@ -1,4 +1,7 @@
-﻿// Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿const navToggle = document.getElementById('nav-toggle');
+const navbar = document.getElementById('navbar');
 
-// Write your JavaScript code.
+// Toggle the 'open' class on click
+navToggle.addEventListener('click', function () {
+    navbar.classList.toggle('open'); // Add or remove 'open' class
+});
