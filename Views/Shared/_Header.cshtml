@@ -16,18 +16,23 @@
         <a href="/">
             <img src="~/assets/BCID_H_rgb_rev.svg" alt="Go to the Government of British Columbia website" />
         </a>
-        <h1>GDX Service Billing</h1>
+        <h1 class="site-title">GDX Service Billing</h1>
     </div>
     <div class="other">
-        <a class="nav-btn">
-            <i class="fas fa-bars" id="menu"></i>
-        </a>
         <!--
           This place is for anything that needs to be right aligned
           beside the logo.
         -->
     </div>
     <partial name="_LoginPartial" />
+    <ul class="navbar-nav hamburger-menu">
+        <li class="nav-item">
+            <span class="navbar-text">
+                <a class="nav-btn" id="nav-toggle">
+                <i class="fas fa-bars" id="menu"></i>
+            </a></span>
+        </li>
+    </ul>
 </header>
 <nav class="navigation-main" id="navbar">
     <div class="nav-container">
