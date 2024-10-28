@@ -5,7 +5,9 @@ namespace Service_Billing.ViewModels
     public class EditChargeViewModel
     {
         public Bill Bill { get; set; }
-        public FiscalHistory FiscalHistory { get; set; }
+        public FiscalHistory? FiscalHistory { get; set; }
+
+        public IEnumerable<ServiceCategory>? Categories { get; set; }
 
         public EditChargeViewModel (Bill bill, FiscalHistory fiscalHistory )
         {

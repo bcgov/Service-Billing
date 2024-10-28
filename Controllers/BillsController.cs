@@ -199,7 +199,7 @@ namespace Service_Billing.Controllers
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            
             if (bill == null)
                 return NotFound();
 
@@ -219,10 +219,9 @@ namespace Service_Billing.Controllers
             }
             if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
-            ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-            ViewData["Categories"] = categories;
+
+            model.Categories = _categoryRepository.GetAll();
             ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
 
             return View(model);
         }

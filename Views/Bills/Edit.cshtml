@@ -5,10 +5,8 @@
     Layout = "_Layout";
 }
 @{
-    IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
     string startDateString = Model.Bill.StartDate.HasValue ? Model.Bill.StartDate.Value.ToString("yyyy-MM-dd") : String.Empty;
     string endDateString = Model.Bill.EndDate.HasValue ? Model.Bill.EndDate.Value.ToString("yyyy-MM-dd") : String.Empty;
-
 }
 
 <h1>Edit</h1>
@@ -39,7 +37,7 @@
                 <input asp-for="@Model.Bill.IdirOrUrl" class="form-control" />
                 <span asp-validation-for="@Model.Bill.IdirOrUrl" class="text-danger"></span>
             </div>
-            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories, bill = Model.Bill })
+            @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  Model.Categories, bill = Model.Bill })
             <span asp-validation-for="@Model.Bill.ServiceCategoryId" class="text-danger"></span>
             <div class="form-group">
                 <input type="hidden" asp-for="@Model.Bill.ServiceCategoryId" id="categoryIdInput" class="form-control" />
