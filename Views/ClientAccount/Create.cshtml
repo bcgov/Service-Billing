@@ -76,7 +76,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
-                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" maxlength="5" id="responsibilityCentre" data-val="true" data-val-required="Please provide the five-digit responsibility centre code from the Corporate Accounting System." />
+                <input asp-for="@Model.Account.ResponsibilityCentre" class="form-control" maxlength="5" data-val="true" data-val-required="Please provide the five-digit responsibility centre code from the Corporate Accounting System." />
                 <span asp-validation-for="@Model.Account.ResponsibilityCentre" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -86,7 +86,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.STOB" class="control-label">CAS STOB Number</label>
-                <input type="number" asp-for="@Model.Account.STOB" class="form-control" maxlength="4" id="casSTOBNumber" data-val="true" data-val-required="Please provide the ministry Standard Object of Expenditure (STOB) number." />
+                <input type="number" asp-for="@Model.Account.STOB" class="form-control" maxlength="4" data-val="true" data-val-required="Please provide the ministry Standard Object of Expenditure (STOB) number." />
                 <span asp-validation-for="@Model.Account.STOB" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -145,9 +145,9 @@
                     $("#casClientNumber").val($("#casClientNumber").val().substring(0, 3));
                 }
             });
-            $("#casSTOBNumber").on("keyup", (e) => {
-                if ($("#casSTOBNumber").val().length > 3) {
-                    $("#casSTOBNumber").val($("#casSTOBNumber").val().substring(0, 4));
+            $("#Account_STOB").on("keyup", (e) => {
+                if ($("#Account_STOB").val().length > 3) {
+                    $("#Account_STOB").val($("#Account_STOB").val().substring(0, 4));
                 }
             });
             $("#Account_ServiceLine").on("keyup", (e) => {
@@ -155,9 +155,9 @@
                     $("#Account_ServiceLine").val($("#Account_ServiceLine").val().substring(0, 5));
                 }
             });
-            $("#responsibilityCentre").on("keyup", (e) => {
-                if ($("#responsibilityCentre").val().length > 5) {
-                    $("#responsibilityCentre").val($("#responsibilityCentre").val().substring(0, 5));
+            $("#Account_ResponsibilityCentre").on("keyup", (e) => {
+                if ($("#Account_ResponsibilityCentre").val().length > 5) {
+                    $("#Account_ResponsibilityCentre").val($("#Account_ResponsibilityCentre").val().substring(0, 5));
                 }
             });
         });

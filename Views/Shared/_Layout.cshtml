@@ -55,7 +55,7 @@
 
   <script>
         $('input,select').each(function () {
-            var req = $(this).attr('data-val');
+            var req = $(this).attr('data-val-required');
             if (undefined != req) {
                 var label = $('label[for="' + $(this).attr('id') + '"]');
                 var text = label.text();
