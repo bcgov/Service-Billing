@@ -161,7 +161,7 @@
                             clientsMatchingSearch.push({ label: data[client].name, "clientId": data[client].id });
                         }
 
-                        $("#clientInput").autocomplete({
+                        $("#ClientAccount_Name").autocomplete({
                             source: clientsMatchingSearch
                         });
 
@@ -170,12 +170,12 @@
                 xhr.open('get', url);
                 xhr.send();
 
-                $("#clientInput").autocomplete({
+                $("#ClientAccount_Name").autocomplete({ // a bit mislabelled since this is for the autocomplete
                     source: clientsMatchingSearch,
                     delay: 500,
                     select: function (event, ui) {
-                        $("#clientIdInput").val(ui.item.clientId);
-                        $("#clientInput").text(ui.item.label);
+                        $("#ClientAccount_Name").val(ui.item.clientId);
+                        $("#ClientAccount_Name").text(ui.item.label);
                     },
                     minLength: 0
                 });
