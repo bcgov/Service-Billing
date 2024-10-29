@@ -25,7 +25,7 @@
                 <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.ClientAccountId" id="clientIdInput" class="form-control" />
+                <input type="hidden" asp-for="@Model.ClientAccountId" class="form-control" />
                 <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -174,7 +174,7 @@
                     source: clientsMatchingSearch,
                     delay: 500,
                     select: function (event, ui) {
-                        $("#ClientAccount_Name").val(ui.item.clientId);
+                        $("#ClientAccountId").val(ui.item.clientId);
                         $("#ClientAccount_Name").text(ui.item.label);
                     },
                     minLength: 0
