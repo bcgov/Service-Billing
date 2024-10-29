@@ -109,7 +109,6 @@
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
             calculateAmount = () => {
-                console.log("calculate ammount");
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
@@ -119,7 +118,7 @@
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
-                        $("#Amount").val(response['Amount']);
+                        $("#Amount").val(response['amount']);
                         $("#uom").val(response['uom']);
                         $("#quantity").val(response['quantity']);
                     }
