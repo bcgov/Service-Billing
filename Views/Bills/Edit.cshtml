@@ -142,8 +142,9 @@
                 calculateAmount();
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
-                    $("#categoryIdInput").val($("#categorySelect").val());
                 }
+                    var id = $('#categorySelect').val();
+                    $("#categoryIdInput").val(id);
             });
             $("#quantity").on("change", (e) => {
                 calculateAmount();
