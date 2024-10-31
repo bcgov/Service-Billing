@@ -203,10 +203,6 @@ namespace Service_Billing.Controllers
             if (bill == null)
                 return NotFound();
 
-            DateTime utcDate = DateTime.UtcNow;
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-            bill.DateModified = pacificTime;
             EditChargeViewModel model;
             if(historyId != null)
             {
@@ -234,7 +230,10 @@ namespace Service_Billing.Controllers
             try
             {
                 model.Bill.ServiceCategory = _categoryRepository.GetById(model.Bill.ServiceCategoryId);
-                model.Bill.DateModified = DateTime.Now;
+                DateTime utcDate = DateTime.UtcNow;
+                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+                model.Bill.DateModified = pacificTime;
                 await _billRepository.Update(model.Bill);
                 if (model.FiscalHistory != null && model.FiscalHistory.Id > 0)
                 {
@@ -308,7 +307,7 @@ namespace Service_Billing.Controllers
                 }
                 if(string.IsNullOrEmpty(bill.CreatedBy))
                     bill.CreatedBy = await GetMyName();
-                bill.DateModified = DateTimeOffset.Now;
+              
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
                 DetermineCurrentQuarter(bill, bill.StartDate); // Note: StartDate could be earlier than current quarter
