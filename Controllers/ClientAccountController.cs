@@ -84,7 +84,7 @@ namespace Service_Billing.Controllers
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter, ministryUserName ?? "");
- 
+
             return View(clients);
         }
 
@@ -101,7 +101,7 @@ namespace Service_Billing.Controllers
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
-                
+
                 if (!String.IsNullOrEmpty(User.GetDisplayName()))
                 {
                     if (!IsUserAccountContact(account))
@@ -128,10 +128,11 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+            ViewData["Organizations"] = _ministryRepository.GetAll();
 
             if (account == null)
                 return NotFound();
-        
+
             return View(account);
         }
 
@@ -197,16 +198,16 @@ namespace Service_Billing.Controllers
             _logger.LogInformation("User submitted Intake form.");
             try
             {
-                if(!model.Account.OrganizationId.HasValue)
+                if (!model.Account.OrganizationId.HasValue)
                     throw new Exception("Somehow and account with no organization Id was submitted");
                 Ministry? org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
                 if (org == null)
                     throw new Exception($"No ministry or organization was found with an ID matching {model.Account.OrganizationId.Value}");
-               // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
+                // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
                 string accountName = $"{org.Acronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
-               
+
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
@@ -233,17 +234,17 @@ namespace Service_Billing.Controllers
                 //            "Please Review: New GDX Service Billing Account Information",
                 //            $@"
                 //            Hello Andre Lashley,
-                    
+
                 //            We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
-                    
+
                 //            To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
-                    
+
                 //            If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
-                    
+
                 //            We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
-                    
+
                 //            Warm regards,
-                    
+
                 //            GDX Service Billing Team"
                 //        );
                 //    }
@@ -325,7 +326,7 @@ namespace Service_Billing.Controllers
 
                 List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
-                if(queriedUsers.Value != null)
+                if (queriedUsers.Value != null)
                 {
                     foreach (var user in queriedUsers.Value)
                     {
@@ -399,8 +400,8 @@ namespace Service_Billing.Controllers
             {
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
             }
-            if(!String.IsNullOrEmpty(primaryContactFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) &&  x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
+            if (!String.IsNullOrEmpty(primaryContactFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) && x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
 
             return clients;
         }
@@ -415,7 +416,7 @@ namespace Service_Billing.Controllers
                 if (ministryFilter > 0)
                 {
                     Ministry? ministry = _ministryRepository.GetById(ministryFilter);
-                    if(ministry != null)
+                    if (ministry != null)
                         fileName += $"-Client{ministry.Title}";
                 }
                 if (!String.IsNullOrEmpty(responsibilityFilter))
@@ -430,7 +431,7 @@ namespace Service_Billing.Controllers
 
                 List<ClientInfoRowEntry> rows = new List<ClientInfoRowEntry>();
 
-                foreach(ClientAccount account in accounts)
+                foreach (ClientAccount account in accounts)
                 {
                     ClientInfoRowEntry row = new ClientInfoRowEntry(account);
                     if (account.OrganizationId.HasValue && account.OrganizationId.Value > 0)
@@ -477,7 +478,7 @@ namespace Service_Billing.Controllers
                     account.IsActive = active;
                     if (!active) //deactivate all charges associates with this client;
                     {
-                        if(account.Bills != null && account.Bills.Any())
+                        if (account.Bills != null && account.Bills.Any())
                         {
                             foreach (Bill charge in account.Bills)
                             {
@@ -524,11 +525,11 @@ namespace Service_Billing.Controllers
             if (!String.IsNullOrEmpty(lastName))
             {
                 if (!String.IsNullOrEmpty(lastName) &&
-                        (!String.IsNullOrEmpty(account.PrimaryContact) && 
+                        (!String.IsNullOrEmpty(account.PrimaryContact) &&
                         (account.PrimaryContact.ToLower().Contains(lastName.ToLower()) && account.PrimaryContact.ToLower().Contains(firstName.ToLower()))) ||
-                        (!String.IsNullOrEmpty(account.FinancialContact) && 
+                        (!String.IsNullOrEmpty(account.FinancialContact) &&
                         (account.FinancialContact.ToLower().Contains(lastName.ToLower()) && account.FinancialContact.ToLower().Contains(firstName.ToLower()))) ||
-                        (!String.IsNullOrEmpty(account.Approver) && 
+                        (!String.IsNullOrEmpty(account.Approver) &&
                         (account.Approver.ToLower().Contains(lastName.ToLower()) && account.Approver.ToLower().Contains(firstName.ToLower())))
                     )
                 {
@@ -553,6 +554,27 @@ namespace Service_Billing.Controllers
                 }
             }
             return lastName;
+        }
+
+        [HttpGet]
+        public ActionResult UpdateNameOnOrgChange(int orgId, string clientName)
+        {
+            try
+            {
+                Ministry? newOrg = _ministryRepository.GetById(orgId);
+                if (newOrg == null)
+                    throw new Exception($"No organization with id = {orgId} was found");
+                string oldAcronym = clientName.Substring(0, clientName.IndexOf('-'));
+                string newAcronym = newOrg?.Acronym;
+                clientName = clientName.Replace(oldAcronym, string.Empty);
+                return new JsonResult ($"{newOrg.Acronym} {clientName}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("error when trying to change ClientAccount name on org change");
+                _logger.LogError(e.Message);
+                return new JsonResult (e.Message);
+            }
         }
     }
 

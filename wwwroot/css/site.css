@@ -624,3 +624,6 @@ a:not([href]):not([class]) {
         font-size: 1.3em;
     }
 }
+.btn-primary{
+  margin: 4px;
+}

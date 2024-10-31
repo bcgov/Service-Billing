@@ -4,6 +4,9 @@
     ViewData["Title"] = "Edit Client Account";
     Layout = "_Layout";
 }
+@{
+  IEnumerable<Ministry>? organizations = ViewData["Organizations"] as IEnumerable<Ministry>;
+}
 
 <h1>Edit</h1>
 
@@ -18,6 +21,7 @@
                 <label asp-for="@Model.Name" class="control-label"></label>
                 <input asp-for="@Model.Name" class="form-control" value="@Model.Name"/>
                 <span asp-validation-for="@Model.Name" class="text-danger"></span>
+                <a onclick="openDialog()">Change Ministry or Organization?</a>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ClientNumber" class="control-label"></label>
@@ -81,7 +85,7 @@
                     <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
                 </div>
                 <input type="hidden" asp-for="@Model.Id" class="form-control" />
-                <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />
+                <input  asp-for="@Model.OrganizationId" class="form-control" />
             </div>
             <br />
             <div class="form-group">
@@ -90,6 +94,26 @@
             
         </form>
     </div>
+</div>
+<div id="dialog" title="Change Ministry or Organization">
+      <p>This will update the organization this account is under, and will update the name to reflect that.</p>
+      <select asp-for="@organizations" class="form-control" id="orgSelect" >
+        @if(organizations != null)
+        {
+          foreach(Ministry organization in organizations)
+            {
+                if (organization.Id == Model.OrganizationId)
+                {
+                    <option value="@organization.Id" selected>@organization.Acronym - @organization.Title</option>
+                }
+                else
+                {
+                    <option value="@organization.Id">@organization.Acronym - @organization.Title</option>
+                }
+            }
+        }
+      </select>            
+      <input type="submit" value="Update" onclick="updateOrg()" class="btn btn-primary" />
 </div>
 
 @section Scripts {
@@ -116,5 +140,33 @@
                 delay: 500
             });
         });
+             $("#dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            autoOpen: false
+            });
+        const updateOrg = (() =>
+        {
+          console.log('update');
+          $('#OrganizationId').val($('#orgSelect').val());
+          console.log($('#OrganizationId').val());
+          console.log($('#Name').val());
+          var url = "../../ClientAccount/UpdateNameOnOrgChange?orgId=" + $("#OrganizationId").val() +'&clientName=' + $('#Name').val();
+          var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var response = JSON.parse(xhr.response);
+                        console.log(JSON.stringify(response));
+                        $("#Name").val(response);
+                        $("#dialog").dialog("close");
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+        });
+         const openDialog = (() => {
+               $("#dialog").dialog("open");
+            });
     </script>
 }
