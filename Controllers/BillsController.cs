@@ -270,12 +270,14 @@ namespace Service_Billing.Controllers
             ViewData["Categories"] = categories;
             ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
-            bill.DateCreated = DateTime.Now;
 
+           /* offloading this bit to Bill's constructor
             DateTime utcDate = DateTime.UtcNow;
             TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.StartDate = pacificTime;
+            bill.DateCreated = pacificTime;
+            */
 
             DetermineCurrentQuarter(bill, bill.DateCreated);
             if (accountId > 0)

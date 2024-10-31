@@ -408,7 +408,6 @@ namespace Service_Billing.Models.Repositories
             newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
             newBill.Quantity = bill.Quantity;
             newBill.Notes = bill.Notes;
-            newBill.StartDate = bill.StartDate;
             newBill.EndDate = bill.EndDate;
             newBill.DateModified = bill.DateModified;
             newBill.CreatedBy = bill.CreatedBy;
@@ -442,7 +441,6 @@ namespace Service_Billing.Models.Repositories
                 bill.StartDate = editedBill.StartDate;
                 bill.CreatedBy = editedBill.CreatedBy;
                 bill.ClientAccountId = editedBill.ClientAccountId;
-                //    bill.MostRecentActiveFiscalPeriod = editedBill.MostRecentActiveFiscalPeriod;  // Re-assign FiscalPeriod
                 bill.CurrentFiscalPeriodId = editedBill.CurrentFiscalPeriodId;
                 bill.IdirOrUrl = editedBill.IdirOrUrl;
                 bill.IsActive = editedBill.IsActive;
