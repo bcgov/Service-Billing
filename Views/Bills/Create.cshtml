@@ -7,6 +7,8 @@
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
     string? currentUserName = ViewData["CurrentUser"] != null ? ViewData["CurrentUser"].ToString() : "";
+    DateTimeOffset startDateFormatted = Model.StartDate.Value;
+    string startDateString = startDateFormatted.ToString("yyyy-MM-dd");
 }
 
 <h1>Add Service Charge</h1>
@@ -67,7 +69,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" type="date" />
+                <input asp-for="StartDate" class="form-control" type="date" value="@startDateString"/>
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -112,7 +114,7 @@
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val();
                 var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = function () {
@@ -140,7 +142,7 @@
                 calculateAmount();
             });
 
-            $("#startDate").on("change", (e) => {
+            $("#StartDate").on("change", (e) => {
                 calculateAmount();
             });
 
