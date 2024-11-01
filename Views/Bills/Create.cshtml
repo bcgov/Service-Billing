@@ -7,6 +7,8 @@
 @{
     IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
     string? currentUserName = ViewData["CurrentUser"] != null ? ViewData["CurrentUser"].ToString() : "";
+    DateTimeOffset startDateFormatted = Model.StartDate.Value;
+    string startDateString = startDateFormatted.ToString("yyyy-MM-dd");
 }
 
 <h1>Add Service Charge</h1>
@@ -17,15 +19,15 @@
         <form asp-action="Create">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="@Model.ClientAccount.Name">Client: </label>
+                <label asp-for="@Model.ClientAccount.Name" class="control-label">Client </label>
                 <input asp-for="@Model.ClientAccount.Name" 
-                  id="clientInput" class="form-control" 
+                  class="form-control" 
                   title="Begin entering a client name, and a list of matching clients will appear." 
                   data-val="true" data-val-required="Select a ministry or organization from the drop down menu"/>
                 <span asp-validation-for="@Model.ClientAccount.Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="hidden" asp-for="@Model.ClientAccountId" id="clientIdInput" class="form-control" />
+                <input type="hidden" asp-for="@Model.ClientAccountId" class="form-control" />
                 <span asp-validation-for="@Model.ClientAccountId" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -44,7 +46,7 @@
             
             <div class="form-group">
                 <label asp-for="Amount" class="control-label"></label>
-                <input asp-for="Amount" class="form-control" id="amount" data-val-required="Select the service category for this to display."/>
+                <input asp-for="Amount" class="form-control" id="Amount" data-val="true" data-val-required="Select the service category for this to display."/>
                 <span asp-validation-for="Amount" class="text-danger"></span>
                 <div class="input-info">
                     The amount is calculated based on service and quantity, and typically should not be changed. 
@@ -67,7 +69,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="StartDate" class="control-label"></label>
-                <input asp-for="StartDate" class="form-control" type="date" id="startDate" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                <input asp-for="StartDate" class="form-control" type="date" value="@startDateString"/>
                 <span asp-validation-for="StartDate" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -109,17 +111,16 @@
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
             calculateAmount = () => {
-                console.log("calculate ammount");
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val();
                 var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
-                        $("#amount").val(response['amount']);
+                        $("#Amount").val(response['amount']);
                         $("#uom").val(response['uom']);
                         $("#quantity").val(response['quantity']);
                     }
@@ -141,7 +142,7 @@
                 calculateAmount();
             });
 
-            $("#startDate").on("change", (e) => {
+            $("#StartDate").on("change", (e) => {
                 calculateAmount();
             });
 
@@ -162,7 +163,7 @@
                             clientsMatchingSearch.push({ label: data[client].name, "clientId": data[client].id });
                         }
 
-                        $("#clientInput").autocomplete({
+                        $("#ClientAccount_Name").autocomplete({
                             source: clientsMatchingSearch
                         });
 
@@ -171,17 +172,18 @@
                 xhr.open('get', url);
                 xhr.send();
 
-                $("#clientInput").autocomplete({
+                $("#ClientAccount_Name").autocomplete({ // a bit mislabelled since this is for the autocomplete
                     source: clientsMatchingSearch,
                     delay: 500,
                     select: function (event, ui) {
-                        $("#clientIdInput").val(ui.item.clientId);
-                        $("#clientInput").text(ui.item.label);
+                        $("#ClientAccountId").val(ui.item.clientId);
+                        $("#ClientAccount_Name").text(ui.item.label);
                     },
                     minLength: 0
                 });
             }
             createClientSelect();
         });
+        
     </script>
 }

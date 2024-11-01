@@ -109,18 +109,25 @@
         </tr>
         <tr>
             <td class="table-left">
-                UOM
+                Unit of Measure
             </td>
-            <td>
-                @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.UOM))
+            @if (serviceCategory != null && !String.IsNullOrEmpty(serviceCategory.UOM))
+            {
+                if (string.CompareOrdinal(serviceCategory.UOM, "Hr") == 0)
                 {
-                    @serviceCategory.UOM
+                    <td>
+                        Hour
+                    </td>
                 }
                 else
                 {
-                    <br />
+                    <td> @serviceCategory.UOM</td>
                 }
-            </td>
+            }
+            else
+            {
+                <br />
+            }
         </tr>
         <tr>
             <td class="table-left">
@@ -220,7 +227,7 @@
 <div class="bottom-nav">
     @if (!User.IsInRole("GDXBillingService.User"))
     {
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a>
+        @Html.ActionLink("Edit", "Edit", "Bills", new { id = Model?.Id, historyId = @fiscalHistory?.Id })
     }
 </div>
 

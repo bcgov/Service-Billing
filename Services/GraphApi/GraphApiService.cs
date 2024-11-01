@@ -15,24 +15,6 @@ namespace Service_Billing.Services.GraphApi
             _httpClient = httpClient;
         }
 
-        //public async Task AccessGraphApi()
-        //{
-        //    var cca = ConfidentialClientApplicationBuilder
-        //        .Create(_configuration.GetSection("AzureAd")["ClientId"])
-        //        .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-        //        .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-        //        .Build();
-
-        //    var users = await GetUsers(cca);
-        //    var id = "39f54195-55ba-4f8c-a5dc-93579fc090cc";
-        //    var me = await Me(id, cca);
-
-        //    //foreach (var user in users?.Value ?? new List<GraphUser>())
-        //    //{
-        //    //    Console.WriteLine($"User: {user?.DisplayName}");
-        //    //}
-        //}
-
         public async Task<GraphApiListResponse<GraphUser>> GetUsers(IConfidentialClientApplication cca)
         {
             var emptyResponse = new GraphApiListResponse<GraphUser>();
@@ -105,7 +87,9 @@ namespace Service_Billing.Services.GraphApi
                                       .ExecuteAsync();
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')&$top=8&$select=displayName,id";
+                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')" +
+                $"or startswith(givenName, '{Uri.EscapeDataString(term)}')" +
+                $"&$select=displayName,id";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)

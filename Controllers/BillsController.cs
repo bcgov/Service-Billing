@@ -27,6 +27,7 @@ namespace Service_Billing.Controllers
         private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly ServiceBillingContext _serviceBillingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
+        private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -36,6 +37,7 @@ namespace Service_Billing.Controllers
             IAuthorizationService authorizationService,
             IBusinessAreaRepository businessAreaRepository,
             IFiscalPeriodRepository fiscalPeriodRepository,
+            IFiscalHistoryRepository fiscalHistoryRepository,
             ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -52,6 +54,7 @@ namespace Service_Billing.Controllers
             _businessAreaRepository = businessAreaRepository;
             _serviceBillingContext = serviceBillingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository;
+            _fiscalHistoryRepository = fiscalHistoryRepository;
         }
 
         [Authorize]
@@ -185,7 +188,7 @@ namespace Service_Billing.Controllers
             return View(bill);
         }
 
-        public ActionResult Edit(int id)
+        public ActionResult Edit(int id, int? historyId)
         {
             if (User.IsInRole("GDXBillingService.User"))
             {
@@ -196,36 +199,57 @@ namespace Service_Billing.Controllers
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            
             if (bill == null)
                 return NotFound();
 
-            DateTime utcDate = DateTime.UtcNow;
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-            bill.DateModified = pacificTime;
-
+            EditChargeViewModel model;
+            if(historyId != null)
+            {
+                FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
+                model = new EditChargeViewModel(bill, fiscalHistory);
+            }
+            else
+            {
+                model = new EditChargeViewModel(bill, new FiscalHistory());
+            }
             if (String.IsNullOrEmpty(bill.MostRecentActiveFiscalPeriod.Period) || String.IsNullOrEmpty(bill.BillingCycle))
                 DetermineCurrentQuarter(bill, bill.DateCreated);
-            ViewData["Client"] = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
-            ViewData["Categories"] = categories;
-            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-            ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
 
-            return View(bill);
+            model.Categories = _categoryRepository.GetAll();
+            ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
+
+            return View(model);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(Bill bill)
+        public async Task<IActionResult> Edit(EditChargeViewModel model)
         {
             try
             {
-                bill.ServiceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
-                bill.DateModified = DateTime.Now;
-                await _billRepository.Update(bill);
-                return RedirectToAction("Details", new { bill.Id, isEdited = true });
+                model.Bill.ServiceCategory = _categoryRepository.GetById(model.Bill.ServiceCategoryId);
+                DateTime utcDate = DateTime.UtcNow;
+                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+                model.Bill.DateModified = pacificTime;
+                await _billRepository.Update(model.Bill);
+                if (model.FiscalHistory != null && model.FiscalHistory.Id > 0)
+                {
+                    FiscalHistory? fh = _fiscalHistoryRepository.GetFiscalHistoryById(model.FiscalHistory.Id);
+                    if (fh != null)
+                    {
+                        fh.Notes = model.FiscalHistory.Notes;
+                        await _fiscalHistoryRepository.UpdateFiscalHistory(fh);
+                    }
+                    else
+                    {
+                        _logger.LogError($"Attempted to update FiscalHistory with ID: {model.FiscalHistory.Id}, but no matching FiscalHistory was found in DB ");
+                    }
+                }
+
+                return RedirectToAction("Details", new { model.Bill.Id, isEdited = true, historyId = model.FiscalHistory?.Id });
             }
             catch (DbUpdateException ex)
             {
@@ -245,12 +269,14 @@ namespace Service_Billing.Controllers
             ViewData["Categories"] = categories;
             ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
-            bill.DateCreated = DateTime.Now;
 
+           /* offloading this bit to Bill's constructor
             DateTime utcDate = DateTime.UtcNow;
             TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
             bill.StartDate = pacificTime;
+            bill.DateCreated = pacificTime;
+            */
 
             DetermineCurrentQuarter(bill, bill.DateCreated);
             if (accountId > 0)
@@ -281,10 +307,10 @@ namespace Service_Billing.Controllers
                 }
                 if(string.IsNullOrEmpty(bill.CreatedBy))
                     bill.CreatedBy = await GetMyName();
-                bill.DateModified = DateTimeOffset.Now;
+              
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
-                DetermineCurrentQuarter(bill, bill.StartDate);
+                DetermineCurrentQuarter(bill, bill.StartDate); // Note: StartDate could be earlier than current quarter
                 FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
                 if (fiscalPeriod == null)
                     throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
@@ -293,6 +319,15 @@ namespace Service_Billing.Controllers
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
+
+                // Has a StartDate Earlier than the start of this Quarter been selected?
+                if(bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter())
+                {
+                    await _billRepository.PromoteCharge(
+                        bill, 
+                        _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter())
+                    );
+                }
 
                 return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
             }
@@ -360,6 +395,8 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
+                if (!String.IsNullOrEmpty(UOM) && string.CompareOrdinal(UOM, "Hr") == 0)
+                    UOM = "Hour";
                 RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
                 recordEntry.UOM = UOM;
 

@@ -115,6 +115,12 @@ header {
         flex-grow: 1;
     }
 
+
+.hamburger-menu {
+    margin-top: 50px;
+    margin-right: 10px;
+}
+
 /*
   These are sample media queries only. Media queries are quite subjective
   but, in general, should be made for the three different classes of screen
@@ -201,8 +207,7 @@ header a [class^="fas fa-"] {
 }
 
 header .nav-btn {
-    display: block;
-    width: auto;
+    display: none;
     margin: 0 0 0 auto;
     cursor: pointer;
 }
@@ -282,13 +287,17 @@ header .nav-btn {
                 .navigation-main .nav-container ul li a {
                     border-right: 1px solid #9b9b9b;
                 }
+}
 
-    header .nav-btn {
-        display: none;
-        width: auto;
-        margin: 0 0 0 auto;
-        cursor: pointer;
+@media (max-width: 768px) {
+    /* Show hamburger icon on small screens */
+    .nav-btn {
+        display: block !important;
     }
+}
+
+.navigation-main.open {
+    display: block; 
 }
 
 @media screen and (min-width: 768px) and (max-width: 899px) {
@@ -585,6 +594,7 @@ table, tbody {
 
 .table-left{
   padding-right: 18px;
+  font-weight: bold;
 }
 
 btn:focus, a:focus {
@@ -599,4 +609,18 @@ btn:focus, a:focus {
 /* Dealing with Bootstraps bizarre container sizing that no one asked for */
 .container {
   max-width: 100%;
+}
+
+a:not([href]):not([class]) {
+  color: rgba(var(--bs-link-color-rgb), var(--bs-link-opacity, 1));
+}
+
+@media (max-width: 768px) {
+    .display-name {
+        padding: 0; /* Remove padding */
+    }
+
+    h1.site-title {
+        font-size: 1.3em;
+    }
 }

@@ -8,5 +8,6 @@
         IEnumerable<FiscalHistory> GetFiscalHistoryByFiscalPeriodId(int id);
         FiscalHistory? GetFiscalHistoryByIdAndChargeId(int id, int chargeId);
         int SaveFiscalHistoryInfo(FiscalHistory fiscalHistory);
+        Task UpdateFiscalHistory(FiscalHistory fiscalHistory);
     }
 }

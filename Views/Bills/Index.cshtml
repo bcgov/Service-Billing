@@ -154,7 +154,22 @@
             </form>
         </div>
     }
-    @*   <partial name="ChargesTable" model="searchModel" /> *@
+   
+    else 
+    {
+        <form asp-action="Index" method="get">
+        <div id="quarter-select">
+            <label for="quarterFilter">Select Quarter</label>
+            <select name="quarterFilter">
+                <option value="current" selected="@current">Current</option>
+                <option value="previous" selected="@previous">Previous</option>
+                <option value="next" selected="@next">Next</option>
+                <option value="all" selected="@all">All</option>
+            </select>
+        </div>
+    </form>
+    }
+
     <div id="chargesTable"></div>
     <div id="loading-card">
         <div class="table-loading-spanner show">
