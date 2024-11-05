@@ -1,6 +1,11 @@
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Graph;
 using Service_Billing.Data;
+using System;
+using System.Reflection;
 
 namespace Service_Billing.Models.Repositories
 {
@@ -359,7 +364,7 @@ namespace Service_Billing.Models.Repositories
                 .Include(bill => bill.ClientAccount)
                 .Include(c => c.PreviousFiscalRecords!).ThenInclude(h => h.FiscalPeriod)
                 .Include(bill => bill.MostRecentActiveFiscalPeriod)
-                .FirstOrDefault(b => b.Id == id);
+                .First(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
@@ -417,40 +422,104 @@ namespace Service_Billing.Models.Repositories
             return newBill.Id;
         }
 
-        public async Task Update(Bill editedBill)
+        public async Task Update(Bill editedBill, string userName = "system")
         {
             Bill? bill = GetBill(editedBill.Id);
             if (bill == null)
             {
                 throw new Exception("Could not retrieve bill from database");
             }
-
+            _billingContext.ChangeTracker.DetectChanges();
+            string x = _billingContext.ChangeTracker.DebugView.LongView;
             if (editedBill != null)
             {
-                // Detach tracked ServiceCategory and FiscalPeriod to avoid conflicts
-                _billingContext.Entry(bill.ServiceCategory).State = EntityState.Detached;
-                _billingContext.Entry(bill.MostRecentActiveFiscalPeriod).State = EntityState.Detached;
+              //  Detach tracked ServiceCategory and FiscalPeriod to avoid conflicts
+           //     _billingContext.Entry(editedBill.ServiceCategory).State = EntityState.Detached;
+            //    _billingContext.Entry(editedBill.MostRecentActiveFiscalPeriod).State = EntityState.Detached;
 
-                // Update scalar properties
-                bill.Title = editedBill.Title;
-                bill.ServiceCategoryId = editedBill.ServiceCategoryId;
-                bill.ServiceCategory = editedBill.ServiceCategory;  // Re-assign ServiceCategory
-                bill.BillingCycle = editedBill.BillingCycle;
-                bill.Amount = editedBill.Amount;
-                bill.EndDate = editedBill.EndDate;
-                bill.StartDate = editedBill.StartDate;
-                bill.CreatedBy = editedBill.CreatedBy;
-                bill.ClientAccountId = editedBill.ClientAccountId;
-                bill.CurrentFiscalPeriodId = editedBill.CurrentFiscalPeriodId;
-                bill.IdirOrUrl = editedBill.IdirOrUrl;
-                bill.IsActive = editedBill.IsActive;
-                bill.Quantity = editedBill.Quantity;
-                bill.TicketNumberAndRequester = editedBill.TicketNumberAndRequester;
-                bill.Notes = editedBill.Notes;
-                bill.DateModified = editedBill.DateModified ?? DateTime.Now;
+                var properties = typeof(Bill).GetProperties();
+
+                foreach (var property in properties)
+                {
+                    if (property.Name == "DateModified")
+                        continue;
+                    // Check if the property can be written to and is not a navigation property
+                    if (property.PropertyType != typeof(ServiceCategory) 
+                    && property.PropertyType != typeof(ClientAccount)
+                    && property.PropertyType != typeof(FiscalPeriod)
+                    && property.Name != "DateCreated"
+                    && property.PropertyType != typeof(ICollection<FiscalHistory>))
+                    {
+                        var originalValue = property.GetValue(bill);
+                        var modifiedValue = property.GetValue(editedBill);
+
+                        // Check for differences
+                        if (!Equals(originalValue, modifiedValue))
+                        {
+                            if(property.PropertyType == typeof(DateTimeOffset))
+                            {
+                                DateTimeOffset originalDate;
+                                DateTimeOffset modifiedDate;
+                                if(DateTimeOffset.TryParse(property.GetValue(bill).ToString(), out originalDate) 
+                                && DateTimeOffset.TryParse(property.GetValue(bill).ToString(), out modifiedDate))
+                                {
+                                    if (Equals(originalDate.Date.ToShortDateString(), modifiedDate.Date.ToShortDateString())) // don't care if it's just a matter of hours
+                                        continue;
+                                }
+                                else
+                                {
+                                    throw new Exception("Could not parse dates from model");
+                                }
+                            }
+                            property.SetValue(bill, modifiedValue);
+                            _billingContext.Entry(bill).Property(property.Name).IsModified = true;
+                        }
+                    }
+                }
+
+                await MakeChangeLogEntry(bill, userName);
                 _billingContext.Update(bill);
-
                 await _billingContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task MakeChangeLogEntry(Bill bill, string userName)
+        {
+            try
+            {
+                DateTime utcDate = DateTime.UtcNow;
+                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+                if(bill == null) 
+                    throw new Exception("No bill with matching Id was found when trying to create a change log entry");
+                Type modelType = bill.GetType();
+                // Get all properties of the model
+
+                // Detect changes
+                _billingContext.ChangeTracker.DetectChanges();
+                string x = _billingContext.ChangeTracker.DebugView.LongView;
+                // Check if the property has changed
+                var entry = _billingContext.Entry(bill);
+                string changes = string.Empty;
+                if (entry.State == EntityState.Modified)
+                {
+                    var modifiedProperties = entry.Properties
+                        .Where(p => p.IsModified)
+                        .Select(p => p.Metadata.Name);
+                    
+                    foreach (var property in entry.Properties)
+                    {
+                        if(modifiedProperties.Contains(property.Metadata.Name) && property.OriginalValue != property.CurrentValue)
+                            changes += $"{property.Metadata.Name} was changed from {property.OriginalValue} to {property.CurrentValue} \n";
+                    }
+                    if(changes != String.Empty)
+                        await _billingContext.ChangeLogs.AddAsync(new ChangeLogEntry(bill.Id, pacificTime, userName, changes, "charge"));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error trying to create a change log entry for a charge. Exception message below.");
+                _logger.LogError(ex.Message);
             }
         }
 
@@ -471,6 +540,11 @@ namespace Service_Billing.Models.Repositories
                     }
                 }
             }
+        }
+
+        public Task Update(Bill bill)
+        {
+            return Update(bill, "Billing System"); // for the test suite.
         }
     }
 }
