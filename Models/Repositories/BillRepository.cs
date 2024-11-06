@@ -14,16 +14,19 @@ namespace Service_Billing.Models.Repositories
         private readonly ServiceBillingContext _billingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
         private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
+        private readonly IChangeLogRepository _changeLogRepository;
         private readonly ILogger<BillRepository> _logger;
         public BillRepository(ServiceBillingContext billingContext,
             IFiscalPeriodRepository fiscalPeriodRepository,
             ILogger<BillRepository> logger,
-            IFiscalHistoryRepository fiscalHistoryRepository)
+            IFiscalHistoryRepository fiscalHistoryRepository,
+            IChangeLogRepository changeLogRepository)
         {
             _billingContext = billingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository;
             _logger = logger;
             _fiscalHistoryRepository = fiscalHistoryRepository;
+            _changeLogRepository = changeLogRepository;
         }
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
@@ -430,13 +433,8 @@ namespace Service_Billing.Models.Repositories
                 throw new Exception("Could not retrieve bill from database");
             }
             _billingContext.ChangeTracker.DetectChanges();
-            string x = _billingContext.ChangeTracker.DebugView.LongView;
             if (editedBill != null)
             {
-              //  Detach tracked ServiceCategory and FiscalPeriod to avoid conflicts
-           //     _billingContext.Entry(editedBill.ServiceCategory).State = EntityState.Detached;
-            //    _billingContext.Entry(editedBill.MostRecentActiveFiscalPeriod).State = EntityState.Detached;
-
                 var properties = typeof(Bill).GetProperties();
 
                 foreach (var property in properties)
@@ -477,7 +475,9 @@ namespace Service_Billing.Models.Repositories
                     }
                 }
 
-                await MakeChangeLogEntry(bill, userName);
+                //await MakeChangeLogEntry(bill, userName);
+                await _changeLogRepository.MakeChangeLogEntry(bill, userName);
+
                 _billingContext.Update(bill);
                 await _billingContext.SaveChangesAsync();
             }
@@ -490,14 +490,11 @@ namespace Service_Billing.Models.Repositories
                 DateTime utcDate = DateTime.UtcNow;
                 TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
                 DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-                if(bill == null) 
-                    throw new Exception("No bill with matching Id was found when trying to create a change log entry");
                 Type modelType = bill.GetType();
                 // Get all properties of the model
 
                 // Detect changes
                 _billingContext.ChangeTracker.DetectChanges();
-                string x = _billingContext.ChangeTracker.DebugView.LongView;
                 // Check if the property has changed
                 var entry = _billingContext.Entry(bill);
                 string changes = string.Empty;
