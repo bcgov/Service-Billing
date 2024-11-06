@@ -475,51 +475,11 @@ namespace Service_Billing.Models.Repositories
                     }
                 }
 
-                //await MakeChangeLogEntry(bill, userName);
                 await _changeLogRepository.MakeChangeLogEntry(bill, userName);
-
                 _billingContext.Update(bill);
                 await _billingContext.SaveChangesAsync();
             }
         }
-
-        public async Task MakeChangeLogEntry(Bill bill, string userName)
-        {
-            try
-            {
-                DateTime utcDate = DateTime.UtcNow;
-                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-                Type modelType = bill.GetType();
-                // Get all properties of the model
-
-                // Detect changes
-                _billingContext.ChangeTracker.DetectChanges();
-                // Check if the property has changed
-                var entry = _billingContext.Entry(bill);
-                string changes = string.Empty;
-                if (entry.State == EntityState.Modified)
-                {
-                    var modifiedProperties = entry.Properties
-                        .Where(p => p.IsModified)
-                        .Select(p => p.Metadata.Name);
-                    
-                    foreach (var property in entry.Properties)
-                    {
-                        if(modifiedProperties.Contains(property.Metadata.Name) && property.OriginalValue != property.CurrentValue)
-                            changes += $"{property.Metadata.Name} was changed from {property.OriginalValue} to {property.CurrentValue} \n";
-                    }
-                    if(changes != String.Empty)
-                        await _billingContext.ChangeLogs.AddAsync(new ChangeLogEntry(bill.Id, pacificTime, userName, changes, "charge"));
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Error trying to create a change log entry for a charge. Exception message below.");
-                _logger.LogError(ex.Message);
-            }
-        }
-
 
         public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)
         {
