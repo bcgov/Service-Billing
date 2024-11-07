@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 
 namespace Service_Billing.Models.Repositories
 {
@@ -10,6 +11,6 @@ namespace Service_Billing.Models.Repositories
 
         Task<int> CreateEntry(ChangeLogEntry entry);
 
-        Task MakeChangeLogEntry<T>(T entity, string userName);
+        Task<EntityEntry?> MakeChangeLogAndReturnEntry<T>(T entity, string userName);
     }
 }

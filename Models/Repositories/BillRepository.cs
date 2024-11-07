@@ -2,6 +2,7 @@ using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2010.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Graph;
 using Service_Billing.Data;
 using System;
@@ -427,15 +428,15 @@ namespace Service_Billing.Models.Repositories
 
         public async Task Update(Bill editedBill, string userName = "system")
         {
-            Bill? bill = GetBill(editedBill.Id);
-            if (bill == null)
+            EntityEntry? entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedBill, userName);
+            Bill? bill = entry?.Entity as Bill;
+            if (bill != null)
             {
-                throw new Exception("Could not retrieve bill from database");
+                _billingContext.Update(bill);
+                await _billingContext.SaveChangesAsync();
             }
-
-            await _changeLogRepository.MakeChangeLogEntry(editedBill, userName);
-            _billingContext.Update(bill);
-            await _billingContext.SaveChangesAsync();
+            else
+                throw new Exception($"Something went wrong while trying to update Charge with Id {editedBill.Id}");
         }
 
         public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)

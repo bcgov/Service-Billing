@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Service_Billing.Data;
 using Service_Billing.Models;
 
@@ -44,14 +45,15 @@ namespace Service_Billing.Models.Repositories
 
         public async Task Update(ServiceCategory serviceCategory, string userName)
         {
-            ServiceCategory? service = GetById(serviceCategory.ServiceId);
-            if (service == null)
+            EntityEntry? entry =  await _changeLogRepository.MakeChangeLogAndReturnEntry(serviceCategory, userName);
+            ServiceCategory? service = entry?.Entity as ServiceCategory;
+            if (service != null)
             {
-                throw new Exception("Could not retrieve service Category from database");
+                _context.Update(service);
+                _context.SaveChanges(true);
             }
-            await _changeLogRepository.MakeChangeLogEntry(serviceCategory, userName);
-            _context.Update(service);
-            _context.SaveChanges(true);
+            else
+                throw new Exception($"Something went wrong while trying to update ServiceCategory with ServiceId {serviceCategory.ServiceId}");
         }
     }
 }

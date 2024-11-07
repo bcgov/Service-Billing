@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Graph;
 using Service_Billing.Data;
 using Service_Billing.Models;
 
@@ -56,14 +58,15 @@ namespace Service_Billing.Models.Repositories
 
         public async Task Update(ClientAccount editedAccount, string userName = "system")
         {
-            ClientAccount? account = GetClientAccount(editedAccount.Id);
-            if (account == null)
+            EntityEntry entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedAccount, userName);
+            ClientAccount? account = entry.Entity as ClientAccount;
+            if (account != null)
             {
-                throw new Exception("Could not retrieve account from database");
+                _context.Update(account);
+                await _context.SaveChangesAsync(true);
             }
-            await _changeLogRepository.MakeChangeLogEntry(editedAccount, userName);
-            _context.Update(account);
-            await _context.SaveChangesAsync(true);
+            else
+                throw new Exception($"Something went wrong while trying to update ClientAccount with Id {editedAccount.Id}");        
         }
 
         public void Approve(ClientAccount account)

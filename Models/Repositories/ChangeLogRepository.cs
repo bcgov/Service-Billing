@@ -47,7 +47,7 @@ namespace Service_Billing.Models.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task MakeChangeLogEntry<T>(T entity, string userName)
+        public async Task<EntityEntry?> MakeChangeLogAndReturnEntry<T>(T entity, string userName)
         {
             try
             {
@@ -60,21 +60,20 @@ namespace Service_Billing.Models.Repositories
 
                 Type modelType = entity.GetType();
                 EntityEntry? entry = _billingContext.Entry(entity);
-                string entityTypeString = GetEntityIdAndTypeString(modelType);
+                string entityTypeString = GetEntityTypeString(modelType);
                 string[] validTypes = { "charge", "clientAccount", "service" };
+
                 if (!validTypes.Contains(entityTypeString))
                     throw new Exception($"Cannot make log entry for invalid entity type {modelType.Name}");
                 int entityId = GetEntityId(modelType, entry);
                 if (entityId == 0)
                     throw new Exception($"No entity Id was parsed for the changed entity of type {modelType.Name}");
-                
-                entry = MarkModifiedFields<T>(entity, entityId, entityTypeString, entry);
-                // Detect changes
-                _billingContext.ChangeTracker.DetectChanges();
 
+                entry = MarkModifiedFields<T>(entity, entityId, entityTypeString, entry);
+                _billingContext.ChangeTracker.DetectChanges();
                 // Check if the property has changed
                 string changes = string.Empty;
-                if (entry.State == EntityState.Modified)
+                if (entry?.State == EntityState.Modified)
                 {
                     var modifiedProperties = entry.Properties
                         .Where(p => p.IsModified)
@@ -95,11 +94,14 @@ namespace Service_Billing.Models.Repositories
                     if (changes != String.Empty)
                         await _billingContext.ChangeLogs.AddAsync(new ChangeLogEntry(entityId, pacificTime, userName, changes, entityTypeString));
                 }
+
+                return entry;
             }
             catch (Exception ex)
             {
                 _logger.LogError("Error trying to create a change log entry for a charge. Exception message below.");
                 _logger.LogError(ex.Message);
+                return null;
             }
         }
         #endregion
@@ -120,8 +122,8 @@ namespace Service_Billing.Models.Repositories
                     properties = typeof(ClientAccount).GetProperties();
                 else if (originalEntity is ServiceCategory)
                     properties = typeof(ServiceCategory).GetProperties();
-                
-                if(properties != null)
+
+                if (properties != null)
                     foreach (var property in properties)
                     {
                         if (property.Name == "DateModified")
@@ -145,8 +147,8 @@ namespace Service_Billing.Models.Repositories
                                 {
                                     DateTimeOffset originalDate;
                                     DateTimeOffset modifiedDate;
-                                    if (DateTimeOffset.TryParse(property.GetValue(originalEntity).ToString(), out originalDate)
-                                    && DateTimeOffset.TryParse(property.GetValue(originalEntity).ToString(), out modifiedDate))
+                                    if (DateTimeOffset.TryParse(property?.GetValue(originalEntity)?.ToString(), out originalDate)
+                                    && DateTimeOffset.TryParse(property?.GetValue(originalEntity)?.ToString(), out modifiedDate))
                                     {
                                         if (Equals(originalDate.Date.ToShortDateString(), modifiedDate.Date.ToShortDateString())) // don't care if it's just a matter of hours
                                             continue;
@@ -162,6 +164,7 @@ namespace Service_Billing.Models.Repositories
                         }
 
                     }
+
                 return _billingContext.Entry(originalEntity);
             }
             catch (Exception ex)
@@ -187,7 +190,7 @@ namespace Service_Billing.Models.Repositories
             }
         }
 
-        private string GetEntityIdAndTypeString(Type modelType)
+        private string GetEntityTypeString(Type modelType)
         {
             if (modelType == typeof(Bill)) // switch statements don't work with model types. That would be neat.
                 return "charge";
@@ -225,26 +228,19 @@ namespace Service_Billing.Models.Repositories
 
         private string GetServiceCategoryChangeString(PropertyEntry property)
         {
-            try
-            {
-                int originalServiceId;
-                if (!int.TryParse(property?.OriginalValue?.ToString(), out originalServiceId))
-                    throw new Exception($"could not parse a service category Id from {property?.OriginalValue}");
-                int currentServiceId;
-                if (!int.TryParse(property?.OriginalValue?.ToString(), out currentServiceId))
-                    throw new Exception($"could not parse a service category Id from {property?.CurrentValue}");
-                ServiceCategory? scOriginal = _billingContext.ServiceCategories.FirstOrDefault(x => x.ServiceId == originalServiceId);
-                ServiceCategory? scCurrent = _billingContext.ServiceCategories.FirstOrDefault(x => x.ServiceId == currentServiceId);
+            int originalServiceId;
+            if (!int.TryParse(property?.OriginalValue?.ToString(), out originalServiceId))
+                throw new Exception($"could not parse a service category Id from {property?.OriginalValue}");
+            int currentServiceId;
+            if (!int.TryParse(property?.OriginalValue?.ToString(), out currentServiceId))
+                throw new Exception($"could not parse a service category Id from {property?.CurrentValue}");
+            ServiceCategory? scOriginal = _billingContext.ServiceCategories.FirstOrDefault(x => x.ServiceId == originalServiceId);
+            ServiceCategory? scCurrent = _billingContext.ServiceCategories.FirstOrDefault(x => x.ServiceId == currentServiceId);
 
-                return $"The Service Category was changed from {scOriginal?.Name} to {scCurrent?.Name}</br>";
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex.Message);
-                return ("The service category was changed, but the logger failed to parse the name change.");
-            }
+            return $"The Service Category was changed from {scOriginal?.Name} to {scCurrent?.Name}</br>";
         }
     }
+
 }
 
 #endregion
