@@ -432,53 +432,10 @@ namespace Service_Billing.Models.Repositories
             {
                 throw new Exception("Could not retrieve bill from database");
             }
-            _billingContext.ChangeTracker.DetectChanges();
-            if (editedBill != null)
-            {
-                var properties = typeof(Bill).GetProperties();
 
-                foreach (var property in properties)
-                {
-                    if (property.Name == "DateModified")
-                        continue;
-                    // Check if the property can be written to and is not a navigation property
-                    if (property.PropertyType != typeof(ServiceCategory) 
-                    && property.PropertyType != typeof(ClientAccount)
-                    && property.PropertyType != typeof(FiscalPeriod)
-                    && property.Name != "DateCreated"
-                    && property.PropertyType != typeof(ICollection<FiscalHistory>))
-                    {
-                        var originalValue = property.GetValue(bill);
-                        var modifiedValue = property.GetValue(editedBill);
-
-                        // Check for differences
-                        if (!Equals(originalValue, modifiedValue))
-                        {
-                            if(property.PropertyType == typeof(DateTimeOffset))
-                            {
-                                DateTimeOffset originalDate;
-                                DateTimeOffset modifiedDate;
-                                if(DateTimeOffset.TryParse(property.GetValue(bill).ToString(), out originalDate) 
-                                && DateTimeOffset.TryParse(property.GetValue(bill).ToString(), out modifiedDate))
-                                {
-                                    if (Equals(originalDate.Date.ToShortDateString(), modifiedDate.Date.ToShortDateString())) // don't care if it's just a matter of hours
-                                        continue;
-                                }
-                                else
-                                {
-                                    throw new Exception("Could not parse dates from model");
-                                }
-                            }
-                            property.SetValue(bill, modifiedValue);
-                            _billingContext.Entry(bill).Property(property.Name).IsModified = true;
-                        }
-                    }
-                }
-
-                await _changeLogRepository.MakeChangeLogEntry(bill, userName);
-                _billingContext.Update(bill);
-                await _billingContext.SaveChangesAsync();
-            }
+            await _changeLogRepository.MakeChangeLogEntry(editedBill, userName);
+            _billingContext.Update(bill);
+            await _billingContext.SaveChangesAsync();
         }
 
         public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)

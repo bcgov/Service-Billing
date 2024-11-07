@@ -10,6 +10,6 @@ namespace Service_Billing.Models.Repositories
 
         Task<int> CreateEntry(ChangeLogEntry entry);
 
-        Task MakeChangeLogEntry(object entity, string userName);
+        Task MakeChangeLogEntry<T>(T entity, string userName);
     }
 }

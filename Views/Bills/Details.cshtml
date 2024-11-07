@@ -235,7 +235,7 @@
                 @logEntry.DateModified
             </div>
             <div>
-                @logEntry.ChangedBy @logEntry.LogEntry
+                @logEntry.ChangedBy @Html.Raw(logEntry.LogEntry)
             </div>
         }
     </div>
