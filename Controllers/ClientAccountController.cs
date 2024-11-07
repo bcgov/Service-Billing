@@ -31,6 +31,7 @@ namespace Service_Billing.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _configuration;
         private readonly IBusinessAreaRepository _businessAreaRepository;
+        private readonly IChangeLogRepository _changeLogRepository;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -40,6 +41,7 @@ namespace Service_Billing.Controllers
             IAuthorizationService authorizationService,
             IServiceCategoryRepository categoryRepository,
             IBusinessAreaRepository businessAreaRepository,
+            IChangeLogRepository changeLogRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -60,6 +62,7 @@ namespace Service_Billing.Controllers
             _authorizationService = authorizationService;
             _configuration = configuration;
             _businessAreaRepository = businessAreaRepository;
+            _changeLogRepository = changeLogRepository;
         }
 
         // GET: ClientAccountController
@@ -120,6 +123,7 @@ namespace Service_Billing.Controllers
             }
             IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(account.Id, "clientAccount");
 
             return View(account);
         }
@@ -142,7 +146,8 @@ namespace Service_Billing.Controllers
         {
             try
             {
-                await _clientAccountRepository.Update(model);
+                string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                await _clientAccountRepository.Update(model, user);
 
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
@@ -486,7 +491,8 @@ namespace Service_Billing.Controllers
                             }
                         }
                     }
-                    _clientAccountRepository.Update(account);
+                    string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                    _clientAccountRepository.Update(account, user);
                 }
                 else
                 {

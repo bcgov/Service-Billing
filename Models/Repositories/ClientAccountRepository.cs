@@ -7,9 +7,11 @@ namespace Service_Billing.Models.Repositories
     public class ClientAccountRepository : IClientAccountRepository
     {
         private readonly ServiceBillingContext _context;
-        public ClientAccountRepository(ServiceBillingContext context)
+        private readonly IChangeLogRepository _changeLogRepository;
+        public ClientAccountRepository(ServiceBillingContext context, IChangeLogRepository changeLogRepository)
         {
             _context = context;
+            _changeLogRepository = changeLogRepository;
         }
 
         public IEnumerable<ClientAccount> GetAll()
@@ -52,8 +54,14 @@ namespace Service_Billing.Models.Repositories
             return userAccounts.Distinct();
         }
 
-        public async Task Update(ClientAccount account)
+        public async Task Update(ClientAccount editedAccount, string userName = "system")
         {
+            ClientAccount? account = GetClientAccount(editedAccount.Id);
+            if (account == null)
+            {
+                throw new Exception("Could not retrieve account from database");
+            }
+            await _changeLogRepository.MakeChangeLogEntry(editedAccount, userName);
             _context.Update(account);
             await _context.SaveChangesAsync(true);
         }

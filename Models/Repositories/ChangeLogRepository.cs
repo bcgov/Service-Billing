@@ -131,7 +131,9 @@ namespace Service_Billing.Models.Repositories
                         && property.PropertyType != typeof(ClientAccount)
                         && property.PropertyType != typeof(FiscalPeriod)
                         && property.Name != "DateCreated"
-                        && property.PropertyType != typeof(ICollection<FiscalHistory>))
+                        && property.PropertyType != typeof(ICollection<FiscalHistory>)
+                        && property.PropertyType != typeof(ICollection<Bill>)
+                        )
                         {
                             var originalValue = property.GetValue(originalEntity);
                             var modifiedValue = property.GetValue(currentEntity);
