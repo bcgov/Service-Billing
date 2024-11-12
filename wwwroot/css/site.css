@@ -624,3 +624,7 @@ a:not([href]):not([class]) {
         font-size: 1.3em;
     }
 }
+
+.form-group{
+  margin-bottom: 12px;
+}
