@@ -628,6 +628,3 @@ a:not([href]):not([class]) {
 .form-group{
   margin-bottom: 12px;
 }
-.notes-field{
-  white-space: pre;
-}

@@ -104,8 +104,8 @@
             <td class="table-left">
                 @Html.DisplayNameFor(model => Model.Notes)
             </td>
-            <td class="notes-field">
-                @Html.DisplayFor(model => Model.Notes)
+            <td>
+                @Html.Raw(Model.Notes?.Replace("\r\n", "<br />"))
             </td>
         </tr>
         <!-- For the life of me, I cannot figure out how else to get any break between these rows-->
