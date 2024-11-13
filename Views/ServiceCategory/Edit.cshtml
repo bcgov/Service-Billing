@@ -45,9 +45,30 @@
                 @* <input asp-for="UOM" class="form-control" /> *@
                 <select asp-for="UOM" class="form-control" data-val="true" data-val-required="A Unit of Measure must be provided (Each, Hour, or Month)">
                     <option value=""></option>
-                    <option value="Month">Month</option>
-                    <option value="Hr">Hour</option>
-                    <option value="Each">Each</option>
+                    @if (Model.UOM == "Month")
+                    {
+                        <option value="Month" selected>Month</option>
+                    }
+                    else
+                    {
+                        <option value="Month">Month</option>
+                    }
+                    @if (Model.UOM == "Hour")
+                    {
+                        <option value="Hr" selected>Hour</option>
+                    }
+                    else
+                    {
+                        <option value="Hr">Hour</option>
+                    }
+                    @if (Model.UOM == "Each")
+                    {
+                        <option value="Each" selected>Each</option>
+                    }
+                    else
+                    {
+                        <option value="Each">Each</option>
+                    }
                 </select>
                 <span asp-validation-for="UOM" class="text-danger"></span>
             </div>

@@ -395,8 +395,7 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
-                if (!String.IsNullOrEmpty(UOM) && string.CompareOrdinal(UOM, "Hr") == 0)
-                    UOM = "Hour";
+               
                 RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
                 recordEntry.UOM = UOM;
 
