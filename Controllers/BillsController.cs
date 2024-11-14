@@ -341,7 +341,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
+        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate, bool quantityChanged = false)
         {
             try
             {
@@ -356,7 +356,7 @@ namespace Service_Billing.Controllers
                  * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
                  * will typically be set to three, unless it has an end date sooner than the end of that quarter
                  * */
-                if(category?.UOM?.ToLower() == "month")
+                if(category?.UOM?.ToLower() == "month" && !quantityChanged)
                 {
                     DateTimeOffset start = new DateTimeOffset();
                     DateTimeOffset end = new DateTimeOffset();

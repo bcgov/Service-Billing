@@ -110,11 +110,11 @@
             // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
-            calculateAmount = () => {
+            calculateAmount = (quantityChanged) => {
                 if(!$("#quantity")){
                     $("#quantity").val(1);
                 }
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val();
+                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
 
                 xhr.onreadystatechange = function () {
@@ -134,20 +134,20 @@
                 }
                 var id = $('#categorySelect').val();
                 $("#categoryIdInput").val(id);   
-                calculateAmount();
+                calculateAmount(false);
             });
 
             $("#quantity").on("change", (e) => {
                 userSetQuantity = true;
-                calculateAmount();
+                calculateAmount(true);
             });
 
             $("#StartDate").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(false);
             });
 
             $("#endDate").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(false);
             });
 
             var clientsMatchingSearch = [];
