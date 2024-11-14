@@ -20,6 +20,7 @@
     <partial name="_Header"/>
     <div class="container">
         <main role="main" class="pb-3">
+          <h1>@System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")</h1>
             @RenderBody()
         </main>
         <!-- you can use this for a general puprose loading spinner -->
