@@ -7,16 +7,25 @@
     bool isAdmin = user != null && user.IsInRole("GDXBillingService.FinancialOfficer");
     bool isServiceOwner = user != null && user.IsInRole("GDXBillingService.Owner");
     bool isMinistryClient = user != null && user.IsInRole("GDXBillingService.User");
+    <!--Should be one of "DEV" or "TEST" or empty string for banner div colour -->
+    string? environmentName = @System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"); 
 }
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
 @inject IAuthorizationService AuthorizationService
-<header>
+<header class="@environmentName">
     <div class="banner">
         <a href="/">
             <img src="~/assets/BCID_H_rgb_rev.svg" alt="Go to the Government of British Columbia website" />
         </a>
-        <h1 class="site-title">GDX Service Billing</h1>
+        @if(!String.IsNullOrEmpty(environmentName))
+        {
+            <h1 class="site-title">GDX Service Billing: @environmentName</h1>
+        }
+        else
+        {
+            <h1 class="site-title">GDX Service Billing</h1>
+        }
     </div>
     <div class="other">
         <!--
