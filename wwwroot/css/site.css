@@ -92,10 +92,10 @@ header {
     z-index: 1000;
 }
 
-.Development {
+.development {
   background-color: cadetblue;
 }
-.Testing{
+.testing{
   background-color: darkmagenta;
 }
     header h1 {
