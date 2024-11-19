@@ -60,7 +60,8 @@ o	Note: not all naming convention components are required. The naming convention
 
         public string? Notes { get; set; }
 
-        public virtual ICollection<Bill>? Bills { get; set; }
+        public virtual ICollection<Bill>? Bills { get; set; } 
+        public virtual ICollection<Contact>? Contacts { get; set; }
 
         /* This is the Primary Contact for the Client Account.  Normally there is only one.  
            This role can authorize billable service requests and changes to client account details including new services, 
