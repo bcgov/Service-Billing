@@ -36,7 +36,6 @@ namespace Service_Billing.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PersonId = table.Column<int>(type: "int", nullable: false),
-                 //   AccountId = table.Column<int>(type: "int", nullable: false),
                     ClientAccountId = table.Column<int>(type: "int", nullable: false),
                     ContactType = table.Column<string>(type: "nvarchar(10)", nullable: false),
                 },
@@ -56,19 +55,7 @@ namespace Service_Billing.Migrations
                 });
 
             migrationBuilder.Sql("ALTER TABLE Contacts ADD CONSTRAINT CHK_ContactType CHECK (ContactType IN ('primary', 'approver', 'financial', 'expense'))");
-            //migrationBuilder.AddForeignKey(
-            //   name: "FK_Contacts_ClientAccounts_ClientAccountId",
-            //   table: "Contacts",
-            //   column: "ClientAccountId",
-            //   principalTable: "ClientAccounts",
-            //   principalColumn: "Id");
-
-            //migrationBuilder.DropForeignKey(
-            //    name: "FK_Contacts_ClientAccounts_ClientAccountId",
-            //    table: "Contacts");
-            //migrationBuilder.DropColumn(
-            //name: "ClientAccountId",
-            //table: "Contacts");
+          
             migrationBuilder.CreateIndex(
                 name: "IX_Contact_ClientAccountId",
                 table: "Contacts",
