@@ -87,7 +87,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("ServiceCategoryId");
 
-                    b.ToTable("Bills");
+                    b.ToTable("Bills", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.BusinessArea", b =>
@@ -108,7 +108,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BusAreas");
+                    b.ToTable("BusAreas", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
@@ -169,7 +169,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ClientAccounts");
+                    b.ToTable("ClientAccounts", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Contact", b =>
@@ -199,7 +199,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("PersonId");
 
-                    b.ToTable("Contact");
+                    b.ToTable("Contact", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
@@ -231,7 +231,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("PeriodId");
 
-                    b.ToTable("FiscalHistory");
+                    b.ToTable("FiscalHistory", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalPeriod", b =>
@@ -248,7 +248,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("FiscalPeriods");
+                    b.ToTable("FiscalPeriods", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Ministry", b =>
@@ -269,7 +269,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Ministries");
+                    b.ToTable("Ministries", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Person", b =>
@@ -291,7 +291,7 @@ namespace Service_Billing.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("People");
+                    b.ToTable("People", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.ServiceCategory", b =>
@@ -327,7 +327,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("BusAreaId");
 
-                    b.ToTable("ServiceCategories");
+                    b.ToTable("ServiceCategories", (string)null);
                 });
 
             modelBuilder.Entity("Service_Billing.Models.Bill", b =>

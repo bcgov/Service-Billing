@@ -13,7 +13,7 @@ namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
     [Migration("20241119011554_AddContactTable")]
-    partial class AddContactTable
+    partial class AddContactsTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

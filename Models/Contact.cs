@@ -10,9 +10,12 @@ namespace Service_Billing.Models
         public int PersonId { get; set; }
         [Required]
         [ForeignKey("PersonId")]
-        public Person Person { get; set; }
+        public virtual Person Person { get; set; }
 
-        public int AccountId { get; set; }
+        public int ClientAccountId { get; set; }
+        [Required]
+        [ForeignKey("ClientAccountId")]
+        public ClientAccount Account;
         public string ContactType { get; set; } = String.Empty; // ('primary', 'approver', 'financial', 'expense')
     }
 }
