@@ -101,6 +101,12 @@ o	Note: not all naming convention components are required. The naming convention
         public int? OrganizationId { get; set; } = 0;//for ministry/organization tracking
     }
 }
+/* Client limits 
+ * Primary Contacts (up to 2 allowed)
+Approvers (multiples allowed)
+Financial Contacts (multiples allowed)
+Expense Authority (1 only)
+*/
 /* some validation concerns:
  * Client= 3 digits
 Responsibility Centre= 5 digits
