@@ -75,7 +75,7 @@ o	Note: not all naming convention components are required. The naming convention
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
-        [BindRequired]
+        //[BindRequired]
         public string? Approver { get; set; }
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 

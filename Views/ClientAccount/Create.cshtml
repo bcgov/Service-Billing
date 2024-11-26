@@ -1,4 +1,4 @@
-﻿@using Microsoft.Graph;
+﻿﻿@using Microsoft.Graph;
 
 @model Service_Billing.ViewModels.ClientCreateViewModel
 
@@ -51,15 +51,19 @@
                 Contacts matching your input will display in a dropdown menu for you to pick.
                 </div>
                  <div class="form-group">
-                  <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
+                  <label class="control-label">Primary Contact</label>
                   <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
                   data-val-required="Pleasae include a Primary Contact"/>
                   <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
                 </div>
                  <div class="form-group">
-                  <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
-                  <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" 
-                   data-val-required="Please include an Approver contact"/>
+                  <label asp-for="@Model.Approvers" class="control-label">Approvers</label>
+                  <span id="approver-inputs">
+                    <input class="form-control" asp-for="@Model.Approvers[0]" data-val="true"
+                          data-val-required="Please include an Approver contact"/>
+                   
+                  </span>
+                  <a onclick="addApproverInput()">Add another approver?</a>
                   <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
                 </div>
                  <div class="form-group">
@@ -117,11 +121,12 @@
 @section Scripts {
 
     <script>
+        var i = 1;
+        const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
              // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#create-account-link').addClass("active-nav-link");
-            const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
             $("#Account_PrimaryContact").autocomplete({
                 source: contactListUrl,
@@ -131,7 +136,7 @@
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_Approver").autocomplete({
+            $("#Approvers_0_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -160,6 +165,30 @@
                     $("#Account_ResponsibilityCentre").val($("#Account_ResponsibilityCentre").val().substring(0, 5));
                 }
             });
+        });
+        const addApproverInput = (() => {
+            console.log("add approver");
+            var count = $("#approver-inputs").children.length;
+            console.log(i);
+            var html = `<input class="form-control" asp-for="Approvers_${i}_" name="Approvers\[${i}\]" id="approver_${i}" />`;
+            $("#approver-inputs").append(html);
+            console.log(`#approver_${i}`);
+             $(`#approver_${i}`).autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            i++;
+            // var url = "../../ClientAccount/UpdateContactList";
+            //     var xhr = new XMLHttpRequest();
+
+            //     xhr.onreadystatechange = function () {
+            //         if (this.readyState == 4 && this.status == 200) {
+            //             var response = JSON.parse(xhr.response);
+           
+            //         }
+            //     };
+            //     xhr.open('post', url);
+            //     xhr.send();
         });
     </script>
 }

@@ -43,7 +43,7 @@ namespace Service_Billing.Migrations
                 {
                     table.PrimaryKey("PK_Contacts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Contacts_ClientAccounts_AccountId",
+                        name: "FK_Contacts_ClientAccounts_ClientAccountId",
                         column: x => x.ClientAccountId,
                         principalTable: "ClientAccounts",
                         principalColumn: "Id");

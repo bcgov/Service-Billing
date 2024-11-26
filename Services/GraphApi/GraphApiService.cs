@@ -89,7 +89,7 @@ namespace Service_Billing.Services.GraphApi
 
                 var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')" +
                 $"or startswith(givenName, '{Uri.EscapeDataString(term)}')" +
-                $"&$select=displayName,id";
+                $"&$select=displayName,id,mail,givenName,surname";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)

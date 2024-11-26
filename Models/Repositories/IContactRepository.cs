@@ -2,7 +2,7 @@
 {
     public interface IContactRepository
     {
-        void Add(Contact contact);
+        Task AddContact(Contact contact);
         Contact Get(int id);
         Contact GetByEmail(string email);
 

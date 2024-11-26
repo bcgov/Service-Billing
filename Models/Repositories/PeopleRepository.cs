@@ -14,6 +14,18 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<Person> AllPeople => _billingContext.People.AsNoTracking();
 
+        public async Task<int> AddPerson(Person person)
+        {
+            await _billingContext.People.AddAsync(person);
+            await _billingContext.SaveChangesAsync();
+            return person.Id;
+        }
+
+        public Person? GetPersonByDisplayName(string displayName)
+        {
+            return _billingContext.People.FirstOrDefault(p => p.DisplayName == displayName);
+        }
+
         public async Task Update(Person editedPerson)
         {
             var person = await _billingContext.People.FindAsync(editedPerson.Id);

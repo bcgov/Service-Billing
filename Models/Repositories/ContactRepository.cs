@@ -13,9 +13,10 @@ namespace Service_Billing.Models.Repositories
             _logger = logger;
         }
 
-        public void Add(Contact contact)
+        public async Task AddContact(Contact contact)
         {
-            throw new NotImplementedException();
+            await _billingContext.Contacts.AddAsync(contact);
+            await _billingContext.SaveChangesAsync();
         }
 
         public Contact Get(int id)

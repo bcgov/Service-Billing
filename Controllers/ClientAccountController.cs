@@ -31,6 +31,8 @@ namespace Service_Billing.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _configuration;
         private readonly IBusinessAreaRepository _businessAreaRepository;
+        private readonly IPeopleRepository _peopleRepository;
+        private readonly IContactRepository _contactRepository;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -40,6 +42,8 @@ namespace Service_Billing.Controllers
             IAuthorizationService authorizationService,
             IServiceCategoryRepository categoryRepository,
             IBusinessAreaRepository businessAreaRepository,
+            IPeopleRepository peopleRepository,
+            IContactRepository contactRepository,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -60,6 +64,8 @@ namespace Service_Billing.Controllers
             _authorizationService = authorizationService;
             _configuration = configuration;
             _businessAreaRepository = businessAreaRepository;
+            _peopleRepository = peopleRepository;
+            _contactRepository = contactRepository;
         }
 
         // GET: ClientAccountController
@@ -210,12 +216,14 @@ namespace Service_Billing.Controllers
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
-
                 var cca = ConfidentialClientApplicationBuilder
                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
                     .Build();
+                await AddContactsToAccount(accountId, model.Approvers, "approver", cca);
+                
+
 
                 //if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                 //{
@@ -265,7 +273,39 @@ namespace Service_Billing.Controllers
 
             return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
+        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType, IConfidentialClientApplication cca)
+        {
+            try
+            {
+                foreach (string contact in contacts)
+                {
+                    Models.Person? person = _peopleRepository.GetPersonByDisplayName(contact);
+                    if (person == null) // add new Person to DB
+                    { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.
+                        string term = contact.Substring(0, contact.IndexOf(' ', contact.IndexOf(' ') + 1));
+                        GraphApiListResponse<GraphUser> users = await _graphApiService.GetUsersByDisplayName(term, cca);
+                        if (users == null || users.Value.Count == 0)
+                            throw new Exception($"A graph user could not be discerned for {term}.");
+                        GraphUser user = users.Value.First();
+                        person = new Models.Person();
+                        person.Name = $"{user.GivenName} {user.Surname}";
+                        person.DisplayName = user.DisplayName;
+                        person.Mail = user.Mail;
 
+                        await _peopleRepository.AddPerson(person);
+                    }
+                    Models.Contact contactEntry = new Models.Contact();
+                    contactEntry.ContactType = contactType;
+                    contactEntry.PersonId = person.Id;
+                    contactEntry.ClientAccountId = accountId;
+                    await _contactRepository.AddContact(contactEntry);
+                } 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
+        }
         private short GetNextClientNumber()
         {
             short ret = 2054;
@@ -340,7 +380,7 @@ namespace Service_Billing.Controllers
             }
             catch (ServiceException svcex)
             {
-                _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
+                _logger.LogError("Graph API service exception: ");
                 _logger.LogWarning(svcex.Message);
 
                 string[] scopes = { "user.read", "user.readbasic.all" };
