@@ -1,6 +1,12 @@
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Graph;
 using Service_Billing.Data;
+using System;
+using System.Reflection;
 
 namespace Service_Billing.Models.Repositories
 {
@@ -9,16 +15,19 @@ namespace Service_Billing.Models.Repositories
         private readonly ServiceBillingContext _billingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
         private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
+        private readonly IChangeLogRepository _changeLogRepository;
         private readonly ILogger<BillRepository> _logger;
         public BillRepository(ServiceBillingContext billingContext,
             IFiscalPeriodRepository fiscalPeriodRepository,
             ILogger<BillRepository> logger,
-            IFiscalHistoryRepository fiscalHistoryRepository)
+            IFiscalHistoryRepository fiscalHistoryRepository,
+            IChangeLogRepository changeLogRepository)
         {
             _billingContext = billingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository;
             _logger = logger;
             _fiscalHistoryRepository = fiscalHistoryRepository;
+            _changeLogRepository = changeLogRepository;
         }
 
         public IEnumerable<Bill> AllBills => _billingContext.Bills.AsNoTracking()
@@ -359,7 +368,7 @@ namespace Service_Billing.Models.Repositories
                 .Include(bill => bill.ClientAccount)
                 .Include(c => c.PreviousFiscalRecords!).ThenInclude(h => h.FiscalPeriod)
                 .Include(bill => bill.MostRecentActiveFiscalPeriod)
-                .FirstOrDefault(b => b.Id == id);
+                .First(b => b.Id == id);
         }
 
         public IEnumerable<Bill> SearchBillsByTitle(string searchQuery)
@@ -417,43 +426,18 @@ namespace Service_Billing.Models.Repositories
             return newBill.Id;
         }
 
-        public async Task Update(Bill editedBill)
+        public async Task Update(Bill editedBill, string userName = "system")
         {
-            Bill? bill = GetBill(editedBill.Id);
-            if (bill == null)
+            EntityEntry? entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedBill, userName);
+            Bill? bill = entry?.Entity as Bill;
+            if (bill != null)
             {
-                throw new Exception("Could not retrieve bill from database");
-            }
-
-            if (editedBill != null)
-            {
-                // Detach tracked ServiceCategory and FiscalPeriod to avoid conflicts
-                _billingContext.Entry(bill.ServiceCategory).State = EntityState.Detached;
-                _billingContext.Entry(bill.MostRecentActiveFiscalPeriod).State = EntityState.Detached;
-
-                // Update scalar properties
-                bill.Title = editedBill.Title;
-                bill.ServiceCategoryId = editedBill.ServiceCategoryId;
-                bill.ServiceCategory = editedBill.ServiceCategory;  // Re-assign ServiceCategory
-                bill.BillingCycle = editedBill.BillingCycle;
-                bill.Amount = editedBill.Amount;
-                bill.EndDate = editedBill.EndDate;
-                bill.StartDate = editedBill.StartDate;
-                bill.CreatedBy = editedBill.CreatedBy;
-                bill.ClientAccountId = editedBill.ClientAccountId;
-                bill.CurrentFiscalPeriodId = editedBill.CurrentFiscalPeriodId;
-                bill.IdirOrUrl = editedBill.IdirOrUrl;
-                bill.IsActive = editedBill.IsActive;
-                bill.Quantity = editedBill.Quantity;
-                bill.TicketNumberAndRequester = editedBill.TicketNumberAndRequester;
-                bill.Notes = editedBill.Notes;
-                bill.DateModified = editedBill.DateModified ?? DateTime.Now;
                 _billingContext.Update(bill);
-
                 await _billingContext.SaveChangesAsync();
             }
+            else
+                throw new Exception($"Something went wrong while trying to update Charge with Id {editedBill.Id}");
         }
-
 
         public async Task UpdateAllChargesForServiceCategory(int serviceCategoryId)
         {
@@ -471,6 +455,11 @@ namespace Service_Billing.Models.Repositories
                     }
                 }
             }
+        }
+
+        public Task Update(Bill bill)
+        {
+            return Update(bill, "Billing System"); // for the test suite.
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Service_Billing.Data;
 using Service_Billing.Models;
 
@@ -7,9 +8,12 @@ namespace Service_Billing.Models.Repositories
     public class ServiceCategoryRepository: IServiceCategoryRepository
     {
         private readonly ServiceBillingContext _context;
-        public ServiceCategoryRepository(ServiceBillingContext context)
+        private readonly IChangeLogRepository _changeLogRepository;
+        public ServiceCategoryRepository(ServiceBillingContext context
+        , IChangeLogRepository changeLogRepository)
         {
             _context = context;
+            _changeLogRepository = changeLogRepository;
         }
 
         public int Add(ServiceCategory serviceCategory)
@@ -39,10 +43,17 @@ namespace Service_Billing.Models.Repositories
             return _context.ServiceCategories.Where(s => s.Name == queryString);
         }
 
-        public void Update(ServiceCategory serviceCategory)
+        public async Task Update(ServiceCategory serviceCategory, string userName)
         {
-            _context.Update(serviceCategory);
-            _context.SaveChanges(true);
+            EntityEntry? entry =  await _changeLogRepository.MakeChangeLogAndReturnEntry(serviceCategory, userName);
+            ServiceCategory? service = entry?.Entity as ServiceCategory;
+            if (service != null)
+            {
+                _context.Update(service);
+                _context.SaveChanges(true);
+            }
+            else
+                throw new Exception($"Something went wrong while trying to update ServiceCategory with ServiceId {serviceCategory.ServiceId}");
         }
     }
 }
