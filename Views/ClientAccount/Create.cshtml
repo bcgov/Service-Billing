@@ -7,8 +7,9 @@
     Layout = "_Layout";
 }
 @{
-    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+    
 }
+
 
 <h1>Create Client Account</h1>
 <hr />
@@ -21,9 +22,9 @@
                 <select asp-for="@Model.Account.OrganizationId" class="form-control" data-val="true"
                 data-val-required="You must select a ministry or other organization from the list">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
-                    @if (ministries != null)
+                    @if (Model.Organizations != null)
                     {
-                        foreach (Ministry ministry in ministries)
+                        foreach (Ministry ministry in Model.Organizations)
                         {
                             <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                         }
@@ -66,10 +67,20 @@
                   <a onclick="addApproverInput()">Add another approver?</a>
                   <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
                 </div>
-                 <div class="form-group">
+                 @* <div class="form-group">
                   <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
                   <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"
                    data-val-required="Please include a financial contact"/>
+                  <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
+                </div> *@
+                 <div class="form-group">
+                  <label asp-for="@Model.FinancialContacts" class="control-label">Financial Contacts</label>
+                  <span id="financial-inputs">
+                    <input class="form-control" asp-for="@Model.FinancialContacts[0]" data-val="true"
+                          data-val-required="Please include financial contact"/>
+                   
+                  </span>
+                  <a onclick="addFinancialInput()">Add another financial contact?</a>
                   <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
                 </div>
            <div class="form-group">
@@ -122,6 +133,7 @@
 
     <script>
         var i = 1;
+        var j = 1;
         const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
              // nav link highlighting
@@ -132,7 +144,7 @@
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_FinancialContact").autocomplete({
+            $("#FinancialContacts_0_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -167,28 +179,22 @@
             });
         });
         const addApproverInput = (() => {
-            console.log("add approver");
-            var count = $("#approver-inputs").children.length;
-            console.log(i);
             var html = `<input class="form-control" asp-for="Approvers_${i}_" name="Approvers\[${i}\]" id="approver_${i}" />`;
             $("#approver-inputs").append(html);
-            console.log(`#approver_${i}`);
              $(`#approver_${i}`).autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
             i++;
-            // var url = "../../ClientAccount/UpdateContactList";
-            //     var xhr = new XMLHttpRequest();
-
-            //     xhr.onreadystatechange = function () {
-            //         if (this.readyState == 4 && this.status == 200) {
-            //             var response = JSON.parse(xhr.response);
-           
-            //         }
-            //     };
-            //     xhr.open('post', url);
-            //     xhr.send();
+        });
+         const addFinancialInput = (() => {
+            var html = `<input class="form-control" asp-for="FinancialContacts_${j}_" name="FinancialContacts\[${j}\]" id="financial_${j}" />`;
+            $("#financial-inputs").append(html);
+             $(`#financial_${j}`).autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            j++;
         });
     </script>
 }

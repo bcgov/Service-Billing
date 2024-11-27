@@ -189,8 +189,8 @@ namespace Service_Billing.Controllers
         {
             _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            ViewData["Ministries"] = ministries;
             ClientCreateViewModel model = new ClientCreateViewModel();
+            model.Organizations = ministries;
 
             return View(model);
         }
@@ -222,6 +222,7 @@ namespace Service_Billing.Controllers
                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
                     .Build();
                 await AddContactsToAccount(accountId, model.Approvers, "approver", cca);
+                await AddContactsToAccount(accountId, model.FinancialContacts, "financial", cca);
                 
 
 
@@ -278,7 +279,7 @@ namespace Service_Billing.Controllers
             try
             {
                 foreach (string contact in contacts)
-                {
+                { //Todo: handle the contact not being found because the user put in something dumb.
                     Models.Person? person = _peopleRepository.GetPersonByDisplayName(contact);
                     if (person == null) // add new Person to DB
                     { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.

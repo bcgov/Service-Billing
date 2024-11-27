@@ -17,6 +17,8 @@ namespace Service_Billing.ViewModels
       //  public string? ApproverName { get; set; }
         [NotMapped]
         public IEnumerable<SelectListItem>? Contacts { get; set; }
+        [NotMapped]
+        public IEnumerable<Ministry>? Organizations { get; set; }
 
         //[BindRequired]
         //[Display(Prompt = "Start typing in your contact's last name")]
@@ -30,12 +32,18 @@ namespace Service_Billing.ViewModels
         [BindRequired]
         public List<string> Approvers { get; set; }
 
+        [BindRequired]
+        public List<string> FinancialContacts { get; set; }
+
 
         public ClientCreateViewModel()
         {
             Account = new ClientAccount();
             Approvers = new List<string>();
-            Approvers.Add(string.Empty);
+            FinancialContacts = new List<string>();
+            Approvers.Add(String.Empty);
+            FinancialContacts.Add(string.Empty);
+            
         }
     }
 }
