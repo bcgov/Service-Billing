@@ -52,10 +52,14 @@
                 Contacts matching your input will display in a dropdown menu for you to pick.
                 </div>
                  <div class="form-group">
-                  <label class="control-label">Primary Contact</label>
-                  <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
+                  <label class="control-label">Primary Contacts</label>
+                 @*  <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
                   data-val-required="Pleasae include a Primary Contact"/>
-                  <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
+                  <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span> *@
+                  <input asp-for="@Model.PrimaryContacts[0]" class="form-control" data-val="true"
+                  data-val-required="Please include at least one Primary Contact"/>
+                  <input asp-for="@Model.PrimaryContacts[1]" class="form-control" />
+                  <a onclick="showSecondPrimaryInput()">Add a second Primary Contact?</a>
                 </div>
                  <div class="form-group">
                   <label asp-for="@Model.Approvers" class="control-label">Approvers</label>
@@ -77,17 +81,17 @@
                   <label asp-for="@Model.FinancialContacts" class="control-label">Financial Contacts</label>
                   <span id="financial-inputs">
                     <input class="form-control" asp-for="@Model.FinancialContacts[0]" data-val="true"
-                          data-val-required="Please include financial contact"/>
+                          data-val-required="Please include a financial contact"/>
                    
                   </span>
                   <a onclick="addFinancialInput()">Add another financial contact?</a>
                   <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
                 </div>
            <div class="form-group">
-                <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" 
+                <label asp-for="@Model.ExpenseAuthorityContact" class="control-label">CAS Expense Authority</label>
+                <input class="form-control" asp-for="@Model.ExpenseAuthorityContact" data-val="true" 
                  data-val-required="Please include the name of a CAS Expense Authority"/>
-                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
+                <span asp-validation-for="@Model.ExpenseAuthorityContact" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
@@ -140,7 +144,11 @@
             $('li').removeClass("active-nav-link");
             $('#create-account-link').addClass("active-nav-link");
 
-            $("#Account_PrimaryContact").autocomplete({
+            $("#PrimaryContacts_0_").autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            $("#PrimaryContacts_1_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -152,7 +160,7 @@
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_ExpenseAuthorityName").autocomplete({
+            $("#ExpenseAuthorityContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -177,6 +185,7 @@
                     $("#Account_ResponsibilityCentre").val($("#Account_ResponsibilityCentre").val().substring(0, 5));
                 }
             });
+            $("#PrimaryContacts_1_").hide();
         });
         const addApproverInput = (() => {
             var html = `<input class="form-control" asp-for="Approvers_${i}_" name="Approvers\[${i}\]" id="approver_${i}" />`;
@@ -195,6 +204,9 @@
                 delay: 500
             });
             j++;
+        });
+        const showSecondPrimaryInput = (() => {
+            $("#PrimaryContacts_1_").show();
         });
     </script>
 }

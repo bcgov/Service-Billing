@@ -30,10 +30,20 @@ namespace Service_Billing.ViewModels
         //public string ExpenseAuthorityInput { get; set; }
 
         [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
         public List<string> Approvers { get; set; }
 
         [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
         public List<string> FinancialContacts { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public string[] PrimaryContacts { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public string ExpenseAuthorityContact { get; set; }
 
 
         public ClientCreateViewModel()
@@ -43,6 +53,7 @@ namespace Service_Billing.ViewModels
             FinancialContacts = new List<string>();
             Approvers.Add(String.Empty);
             FinancialContacts.Add(string.Empty);
+            PrimaryContacts = new string[2];
             
         }
     }

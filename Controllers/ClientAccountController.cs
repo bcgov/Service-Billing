@@ -13,6 +13,7 @@ using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml.Office2019.Drawing.Model3D;
 
 namespace Service_Billing.Controllers
 {
@@ -212,7 +213,13 @@ namespace Service_Billing.Controllers
                 string accountName = $"{org.Acronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
-               
+
+                //lets continue collecting values for the contact fields on the account model for now. Just in case.
+                account = PopulateContactFields(account, model.Approvers, "approver");
+                account = PopulateContactFields(account, model.FinancialContacts, "financial");
+                account = PopulateContactFields(account, model.PrimaryContacts.ToList(), "primary");
+                account.ExpenseAuthorityName = model.ExpenseAuthorityContact;
+
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
@@ -223,6 +230,10 @@ namespace Service_Billing.Controllers
                     .Build();
                 await AddContactsToAccount(accountId, model.Approvers, "approver", cca);
                 await AddContactsToAccount(accountId, model.FinancialContacts, "financial", cca);
+                await AddContactsToAccount(accountId, model.PrimaryContacts.ToList(), "primary", cca);
+                List<string> expenseAsList = new List<string>();
+                expenseAsList.Add(model.ExpenseAuthorityContact);
+                await AddContactsToAccount(accountId, expenseAsList, "expense", cca);
                 
 
 
@@ -280,6 +291,8 @@ namespace Service_Billing.Controllers
             {
                 foreach (string contact in contacts)
                 { //Todo: handle the contact not being found because the user put in something dumb.
+                    if (string.IsNullOrEmpty(contact))
+                        continue; 
                     Models.Person? person = _peopleRepository.GetPersonByDisplayName(contact);
                     if (person == null) // add new Person to DB
                     { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.
@@ -306,6 +319,28 @@ namespace Service_Billing.Controllers
             {
                 _logger.LogError(ex.Message);
             }
+        }
+
+        //We'll get rid of this whole hoopla once we're rock solid in the new contact tracking scheme, where contacts are tracked by
+        //foreign key to the Contacts table
+        private ClientAccount PopulateContactFields(ClientAccount account, List<string> contacts, string contactType)
+        {
+            string contactsString = string.Empty;
+            foreach (string name in contacts)
+            {
+                contactsString += name == contacts.Last() ? name : $"{name}, ";
+            }
+            switch(contactType)
+            {
+                case "approver":
+                    account.Approver = contactsString;
+                    break;
+                case "financial":
+                    account.FinancialContact = contactsString;
+                    break;
+            }
+            
+            return account;
         }
         private short GetNextClientNumber()
         {
