@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Configuration;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
@@ -63,6 +64,12 @@ o	Note: not all naming convention components are required. The naming convention
         public virtual ICollection<Bill>? Bills { get; set; } 
         public virtual ICollection<Contact>? Contacts { get; set; }
 
+        [NotMapped]
+        public virtual IEnumerable<string>? PrimaryContacts { get { return Contacts?.Where(x => x.ContactType == "primary").Select(x => x.Person.DisplayName); } }
+        [NotMapped]
+        public virtual IEnumerable<string>? FinancialContacts { get { return Contacts?.Where(x => x.ContactType == "financial").Select(x => x.Person.DisplayName); } }
+        [NotMapped]
+        public virtual IEnumerable<string>? ApproverContacts { get { return Contacts?.Where(x => x.ContactType == "approver").Select(x => x.Person.DisplayName); } }
         /* This is the Primary Contact for the Client Account.  Normally there is only one.  
            This role can authorize billable service requests and changes to client account details including new services, 
            client account team membership, financial coding changes and SharePoint site access for their team.

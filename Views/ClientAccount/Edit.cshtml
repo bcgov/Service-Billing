@@ -55,20 +55,33 @@
                 <span asp-validation-for="@Model.Notes" class="text-danger"></span>
  
 
-                <label asp-for="@Model.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
-       
+                <label asp-for="@Model.PrimaryContacts" class="control-label">Primary Contacts</label>
+                @* <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" /> *@
+                @foreach(string? primary in Model.PrimaryContacts)
+                {
+                  if(!string.IsNullOrEmpty(primary))
+                    {  
+                      <input asp-for="@primary" class="form-control" class="primaryInput" placeholder="start entering surname to search" />
+                    }
+                }
+
                 <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Approver" id="approverContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.ApproverContacts" class="control-label">Approvers</label>
+                @foreach(string approver in Model.ApproverContacts)
+                {
+                  <input class="form-control approverInput" asp-for="@approver" placeholder="start entering surname to search" />  
+                }
+                <span asp-validation-for="@Model.ApproverContacts" class="text-danger"></span>
          
-                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
 
-                <label asp-for="@Model.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+                <label asp-for="@Model.FinancialContacts" class="control-label">Financial Contacts</label>
+                @foreach(string financial in Model.FinancialContacts)
+                {
+                  <input class="form-control financialInput" asp-for="@financial" placeholder="start entering surname to search" />
+                }
           
-                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
+                <span asp-validation-for="@Model.FinancialContacts" class="text-danger"></span>
               
                 <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
 
