@@ -15,6 +15,7 @@
     var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
     var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
     var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
+    IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Client Account Information</h1>
 <div>
@@ -105,7 +106,7 @@
                 @Html.DisplayNameFor(model => Model.Notes)
             </td>
             <td>
-                @Html.DisplayFor(model => Model.Notes)
+                @Html.Raw(Model.Notes?.Replace("\r\n", "<br />"))
             </td>
         </tr>
         <!-- For the life of me, I cannot figure out how else to get any break between these rows-->
@@ -271,6 +272,21 @@
     <div id="reactivate-client-dialog" title="Reactivate Client?">
         <p>This client will be set to active, and can be billed for new charges.</p>
         <p>Any charges associated with this client that were set to inactive can be reactivated from the list of inactive charges below.</p>
+    </div>
+}
+@if (changeLogs != null && changeLogs.Any())
+{
+    <h4>Change logs</h4>
+    <div id="change-logs">
+        @foreach (ChangeLogEntry logEntry in changeLogs)
+        {
+            <div>
+                @logEntry.DateModified
+            </div>
+            <div>
+                @logEntry.ChangedBy @Html.Raw(logEntry.LogEntry)
+            </div>
+        }
     </div>
 }
 @section Scripts

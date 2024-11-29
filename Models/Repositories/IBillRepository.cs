@@ -17,6 +17,7 @@ namespace Service_Billing.Models.Repositories
         Task<int> CreateBill(Bill bill);
         Task PromoteChargesToNewQuarter();
         Task PromoteCharge(Bill bill, FiscalPeriod newFiscalPeriod, DateTimeOffset? quarterStart = null, bool saveDBChanges = true);
+        Task Update(Bill bill, string userName = "system");
         Task Update(Bill bill);
         Task UpdateAllChargesForServiceCategory(int serviceCategoryId);
         string GetPreviousQuarterString();

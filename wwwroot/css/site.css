@@ -92,6 +92,12 @@ header {
     z-index: 1000;
 }
 
+.development {
+  background-color: cadetblue;
+}
+.testing{
+  background-color: darkmagenta;
+}
     header h1 {
         font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
         font-weight: normal; /* 400 */
@@ -623,4 +629,8 @@ a:not([href]):not([class]) {
     h1.site-title {
         font-size: 1.3em;
     }
+}
+
+.form-group{
+  margin-bottom: 12px;
 }

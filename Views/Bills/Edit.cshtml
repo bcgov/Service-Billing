@@ -124,8 +124,9 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
-            calculateAmount = () => {
-                var url = "../../Bills/GetBillAmount?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val();
+            calculateAmount = (quantityChanged) => {
+              console.log(quantityChanged);
+                var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "JSON";
                 xhr.onreadystatechange = function () {
@@ -140,7 +141,7 @@
                 xhr.send();
             }
             $("#categorySelect").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(false);
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
@@ -148,13 +149,13 @@
                     $("#categoryIdInput").val(id);
             });
             $("#quantity").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(true);
             });
              $("#startDate").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(false);
             });
             $("#endDate").on("change", (e) => {
-                calculateAmount();
+                calculateAmount(false);
             });
 
             createClientSelect = () => {
@@ -189,7 +190,6 @@
                 });
             }
             createClientSelect();
-            calculateAmount();
         });
     </script>
 }

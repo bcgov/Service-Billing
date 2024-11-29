@@ -18,5 +18,6 @@ namespace Service_Billing.Data
         public DbSet<BusinessArea> BusAreas { get; set; }
         public DbSet<FiscalHistory> FiscalHistory { get; set;}
         public DbSet<Person> People { get; set; }
+        public DbSet<ChangeLogEntry> ChangeLogs { get; set; }
     }
 }

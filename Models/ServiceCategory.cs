@@ -29,7 +29,12 @@ namespace Service_Billing.Models
         [Display(Name = "Is Active?")]
         public bool IsActive { get; set; }
 
-        public string? UOM { get; set; }
+        private string? _uom;
+        public string? UOM
+        {
+            get => _uom == "Hr" ? "Hour" : _uom; // Return "Hour" if _uom is "Hr"
+            set => _uom = value == "Hour" ? "Hr" : value; // 
+        }
         [Display(Name = "Service Owner", Prompt = "Start typing in your contact's last name")]
         public string? ServiceOwner { get; set; }
 

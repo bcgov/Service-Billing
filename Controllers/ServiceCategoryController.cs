@@ -20,17 +20,20 @@ namespace Service_Billing.Controllers
         private readonly IServiceCategoryRepository _categoryRepository;
         private readonly IBillRepository _billRepository;
         private readonly IBusinessAreaRepository _businessAreaRepository;
+        private readonly IChangeLogRepository _changeLogRepository;
         private readonly ILogger<ServiceCategoryController> _logger;
 
         public ServiceCategoryController(ILogger<ServiceCategoryController> logger, 
             IServiceCategoryRepository categoryRepository,
             IBillRepository billRepository,
-            IBusinessAreaRepository businessAreaRepository)
+            IBusinessAreaRepository businessAreaRepository,
+            IChangeLogRepository changeLogRepository)
         {
             _categoryRepository = categoryRepository;
             _billRepository = billRepository;
             _logger = logger;
             _businessAreaRepository = businessAreaRepository;
+            _changeLogRepository = changeLogRepository;
         }
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
@@ -57,6 +60,7 @@ namespace Service_Billing.Controllers
             ServiceCategory serviceCategory = _categoryRepository.GetById(id);
             ViewData["isNew"] = isNew;
             ViewData["isEdited"] = isEdited;
+            ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(serviceCategory.ServiceId, "service");
             return View(serviceCategory);
         }
 
@@ -78,7 +82,8 @@ namespace Service_Billing.Controllers
             try
             {
                 serviceCategory.BusArea = _businessAreaRepository.GetById(serviceCategory.BusAreaId);
-                _categoryRepository.Update(serviceCategory);
+                string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                _categoryRepository.Update(serviceCategory, user);
                 if(serviceCategory.UpdateCharges)
                 {
                     await _billRepository.UpdateAllChargesForServiceCategory(serviceCategory.ServiceId);
