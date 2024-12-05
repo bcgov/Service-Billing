@@ -10,7 +10,6 @@
     
 }
 
-
 <h1>Create Client Account</h1>
 <hr />
 
@@ -187,6 +186,7 @@
             });
             $("#PrimaryContacts_1_").hide();
         });
+
         const addApproverInput = (() => {
             var html = `<input class="form-control" asp-for="Approvers_${i}_" name="Approvers\[${i}\]" id="approver_${i}" />`;
             $("#approver-inputs").append(html);

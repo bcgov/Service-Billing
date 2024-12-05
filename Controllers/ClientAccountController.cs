@@ -14,6 +14,8 @@ using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
 using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Office2019.Drawing.Model3D;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 
 namespace Service_Billing.Controllers
 {
@@ -34,6 +36,7 @@ namespace Service_Billing.Controllers
         private readonly IBusinessAreaRepository _businessAreaRepository;
         private readonly IPeopleRepository _peopleRepository;
         private readonly IContactRepository _contactRepository;
+        private readonly IConfidentialClientApplication cca;
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -67,6 +70,11 @@ namespace Service_Billing.Controllers
             _businessAreaRepository = businessAreaRepository;
             _peopleRepository = peopleRepository;
             _contactRepository = contactRepository;
+            cca = ConfidentialClientApplicationBuilder
+                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
         }
 
         // GET: ClientAccountController
@@ -223,17 +231,17 @@ namespace Service_Billing.Controllers
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
-                var cca = ConfidentialClientApplicationBuilder
-                   .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                    .Build();
-                await AddContactsToAccount(accountId, model.Approvers, "approver", cca);
-                await AddContactsToAccount(accountId, model.FinancialContacts, "financial", cca);
-                await AddContactsToAccount(accountId, model.PrimaryContacts.ToList(), "primary", cca);
+                //var cca = ConfidentialClientApplicationBuilder
+                //   .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                //   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                //   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                //    .Build();
+                await AddContactsToAccount(accountId, model.Approvers, "approver");
+                await AddContactsToAccount(accountId, model.FinancialContacts, "financial");
+                await AddContactsToAccount(accountId, model.PrimaryContacts.ToList(), "primary");
                 List<string> expenseAsList = new List<string>();
                 expenseAsList.Add(model.ExpenseAuthorityContact);
-                await AddContactsToAccount(accountId, expenseAsList, "expense", cca);
+                await AddContactsToAccount(accountId, expenseAsList, "expense");
                 
 
 
@@ -285,7 +293,7 @@ namespace Service_Billing.Controllers
 
             return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
-        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType, IConfidentialClientApplication cca)
+        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType)
         {
             try
             {
@@ -297,16 +305,10 @@ namespace Service_Billing.Controllers
                     if (person == null) // add new Person to DB
                     { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.
                         string term = contact.Substring(0, contact.IndexOf(' ', contact.IndexOf(' ') + 1));
-                        GraphApiListResponse<GraphUser> users = await _graphApiService.GetUsersByDisplayName(term, cca);
-                        if (users == null || users.Value.Count == 0)
-                            throw new Exception($"A graph user could not be discerned for {term}.");
-                        GraphUser user = users.Value.First();
-                        person = new Models.Person();
-                        person.Name = $"{user.GivenName} {user.Surname}";
-                        person.DisplayName = user.DisplayName;
-                        person.Mail = user.Mail;
-
-                        await _peopleRepository.AddPerson(person);
+                        int personId = await _peopleRepository.AddPersonByDisplayName(term);
+                        person = _peopleRepository.GetPersonById(personId);
+                        if (person == null)
+                            throw new Exception($"failed to add person to database: {term}");
                     }
                     Models.Contact contactEntry = new Models.Contact();
                     contactEntry.ContactType = contactType;
@@ -342,21 +344,7 @@ namespace Service_Billing.Controllers
             
             return account;
         }
-        private short GetNextClientNumber()
-        {
-            short ret = 2054;
-            IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
-            if (accounts != null && accounts.Any())
-            {
-                ret = (short)accounts.Count();
-
-                while (accounts.FirstOrDefault(a => a.ClientNumber == ret) != null)
-                    ret++;
-            }
-
-            return ret;
-        }
-
+   
         public ActionResult Approve(int id)
         {
             return View();
@@ -386,20 +374,46 @@ namespace Service_Billing.Controllers
             }
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult?> GetAccountContact(string displayName, string email)
+        {
+            try
+            {
+                Models.Person? person = _peopleRepository.GetPersonByDisplayName(displayName);
+                if(person == null) // The long arm of BCS always gets its person!
+                {
+                    GraphUser user = await _graphApiService.GetUserByDisplayName(displayName, cca);
+                    person = new Models.Person();
+                    person.Name = $"{user.GivenName} {user.Surname}";
+                    person.Mail = user.Mail;
+                    user.DisplayName = user.DisplayName;
+                   // await _peopleRepository.AddPerson(person);
+                }
+                else if (person != null && string.IsNullOrEmpty(person.Mail))
+                {
+                    GraphUser user = await _graphApiService.GetUserByDisplayName(displayName, cca);
+                    person.Mail = user.Mail;
+                    await _peopleRepository.Update(person);
+                }
+
+                return new JsonResult(person);
+                
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;    
+            }
+        }
+
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
             try
             {
-                var cca = ConfidentialClientApplicationBuilder
-                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                    .Build();
-
                 var queriedUsers = await _graphApiService.GetUsersByDisplayName(term, cca);
 
-                List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
                 if(queriedUsers.Value != null)
                 {

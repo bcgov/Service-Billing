@@ -46,36 +46,45 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ExpenseAuthorityName" class="control-label"></label>
-                <input asp-for="@Model.ExpenseAuthorityName" class="form-control" value="@Model.ExpenseAuthorityName" />
+                <input asp-for="@Model.ExpenseAuthorityName" class="form-control contact-input" value="@Model.ExpenseAuthorityName" />
                 <span asp-validation-for="@Model.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Notes" class="control-label"></label>
                 <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
                 <span asp-validation-for="@Model.Notes" class="text-danger"></span>
- 
-
+            </div>
                 <label asp-for="@Model.PrimaryContacts" class="control-label">Primary Contacts</label>
-                @* <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" /> *@
                 @foreach(string? primary in Model.PrimaryContacts)
                 {
                   if(!string.IsNullOrEmpty(primary))
                     {  
-                      <input asp-for="@primary" class="form-control" class="primaryInput" placeholder="start entering surname to search" />
+                      <input asp-for="@primary" class="form-control contact-input" class="primaryInput" placeholder="start entering surname to search" />
                     }
                 }
 
                 <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
 
                 <label asp-for="@Model.ApproverContacts" class="control-label">Approvers</label>
-                @foreach(string approver in Model.ApproverContacts)
+                @{int i = 0;}
+                @foreach(Contact contact in Model.Contacts)
                 {
-                  <input class="form-control approverInput" asp-for="@approver" placeholder="start entering surname to search" />  
+                  if (contact.ContactType == "approver")
+                {   
+                  <div class="form-group">
+                      <input class="form-control contact-input" asp-for="@Model.Contacts[i].Person.DisplayName" id="contact_@i" placeholder="start entering surname to search" />  
+                      <input asp-for="@contact.ContactType" type="hidden" value="contact"/>
+                      <input asp-for="@Model.Contacts[i].Person.Id" class="id-input"readonly="true" />
+                      <input asp-for="@Model.Contacts[i].Person.Mail" id="contact_0_Person_Mail" class="mail-input" readonly="true" />
+                      <input asp-for="@Model.Contacts[i].Person" class="form-control" />    
+                  </div>   
                 }
+                  i++;
+            }
                 <span asp-validation-for="@Model.ApproverContacts" class="text-danger"></span>
          
 
-                <label asp-for="@Model.FinancialContacts" class="control-label">Financial Contacts</label>
+                <label asp-for="@Model.FinancialContacts" class="control-label contact-input">Financial Contacts</label>
                 @foreach(string financial in Model.FinancialContacts)
                 {
                   <input class="form-control financialInput" asp-for="@financial" placeholder="start entering surname to search" />
@@ -95,7 +104,7 @@
                 </div>
                 <input type="hidden" asp-for="@Model.Id" class="form-control" />
                 <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />
-            </div>
+            
             <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -109,25 +118,38 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
+        const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
-            const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
-
-            $("#primaryContact").autocomplete({
+            $(".contact-input").each(function () {
+              $(this).autocomplete({
                 source: contactListUrl,
-                delay: 500
-            });
-            $("#financialContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
-            $("#approverContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
-            $("#authorityContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
+                delay: 100
+              });
             });
         });
+        $( ".contact-input" ).on( "autocompleteselect", function( event, ui ) {
+            updateContactPerson(ui.item.label, event);
+        } );
+
+       const updateContactPerson = ((displayName, e) => {
+          var url = `@Url.Action("GetAccountContact", "ClientAccount")` + `?displayName=${displayName}`;
+          var xhr = new XMLHttpRequest();
+
+          xhr.onreadystatechange = function () {
+              if (this.readyState == 4 && this.status == 200) {
+                  var data = JSON.parse(xhr.response);
+                  var id = data.id;
+                  var mail = data.mail;
+                  var inputGroup = $(e.target); // .closest($('.form-group'));
+            
+                  // Use string selectors for siblings
+                  inputGroup.siblings('.id-input').val(id);
+                  inputGroup.siblings('.mail-input').val(mail);
+              }
+          };
+
+          xhr.open('get', url);
+          xhr.send();
+      });
     </script>
 }
