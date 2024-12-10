@@ -4,6 +4,9 @@
     ViewData["Title"] = "Edit Client Account";
     Layout = "_Layout";
 }
+@{
+  int i = 0; // for contact indices
+}
 
 <h1>Edit</h1>
 
@@ -54,43 +57,66 @@
                 <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
                 <span asp-validation-for="@Model.Notes" class="text-danger"></span>
             </div>
-                <label asp-for="@Model.PrimaryContacts" class="control-label">Primary Contacts</label>
-                @foreach(string? primary in Model.PrimaryContacts)
+                <input asp-form="@Model.Contacts" type="hidden"/>
+                <label asp-for="@Model.Contacts" class="control-label">Primary Contacts</label>
+                @foreach(Contact? contact in Model.Contacts)
                 {
-                  if(!string.IsNullOrEmpty(primary))
-                    {  
-                      <input asp-for="@primary" class="form-control contact-input" class="primaryInput" placeholder="start entering surname to search" />
-                    }
+                  if (contact.ContactType == "primary")
+                  {
+                    <div class="form-group">
+                      <input asp-for="@contact.Person.DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
+                      <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="primary"/>
+                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
+                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
+                      <input asp-for="@contact.Person" class="form-control" />    
+                      <label asp-for="@contact.Id" />
+                      <input asp-for="@contact.Id" name="contactIds"  />
+                    </div>
+                  }
                 }
 
                 <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
 
-                <label asp-for="@Model.ApproverContacts" class="control-label">Approvers</label>
-                @{int i = 0;}
+                <label asp-for="@Model.Contacts" class="control-label">Approvers</label>
+                
                 @foreach(Contact contact in Model.Contacts)
                 {
                   if (contact.ContactType == "approver")
                 {   
                   <div class="form-group">
-                      <input class="form-control contact-input" asp-for="@Model.Contacts[i].Person.DisplayName" id="contact_@i" placeholder="start entering surname to search" />  
-                      <input asp-for="@contact.ContactType" type="hidden" value="contact"/>
-                      <input asp-for="@Model.Contacts[i].Person.Id" class="id-input"readonly="true" />
-                      <input asp-for="@Model.Contacts[i].Person.Mail" id="contact_0_Person_Mail" class="mail-input" readonly="true" />
-                      <input asp-for="@Model.Contacts[i].Person" class="form-control" />    
+                      <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" id="contact_@i" placeholder="start entering surname to search" />  
+                      <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="approver"/>
+                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
+                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
+                      <input asp-for="@contact.Person" class="form-control" />   
+                      <label asp-for="@contact.Id" />
+                      <input asp-for="@contact.Id" name="contactIds"  />
                   </div>   
                 }
                   i++;
             }
-                <span asp-validation-for="@Model.ApproverContacts" class="text-danger"></span>
+                <span asp-validation-for="@Model.Contacts" class="text-danger"></span>
          
 
-                <label asp-for="@Model.FinancialContacts" class="control-label contact-input">Financial Contacts</label>
-                @foreach(string financial in Model.FinancialContacts)
+                <label asp-for="@Model.Contacts" class="control-label contact-input">Financial Contacts</label>
+                @foreach(Contact contact in Model.Contacts)
                 {
-                  <input class="form-control financialInput" asp-for="@financial" placeholder="start entering surname to search" />
+                  if(contact.ContactType == "financial")
+                  {
+                    
+                  <div class="form-group">
+                      <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" placeholder="start entering surname to search" />
+                      <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="financial"/>
+                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
+                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
+                      <input asp-for="@contact.Person" class="form-control" />    
+                      <label asp-for="@contact.Id" />
+                      <input asp-for="@contact.Id" name="contactIds"  />
+                    </div>
+                  }
                 }
           
-                <span asp-validation-for="@Model.FinancialContacts" class="text-danger"></span>
+                <span asp-validation-for="@Model.Contacts" class="text-danger"></span>
               
                 <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
 

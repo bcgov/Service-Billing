@@ -28,5 +28,15 @@ namespace Service_Billing.Models.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public IEnumerable<Contact> GetContactsByAccountId(int accountId)
+        {
+            return _billingContext.Contacts.Where(x => x.ClientAccountId == accountId);
+        }
+
+        public void UpdateContact(Contact contact)
+        {
+            _billingContext.Update(contact);
+        }
     }
 }

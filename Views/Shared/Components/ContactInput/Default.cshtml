@@ -1,0 +1,11 @@
+﻿@model Contact?
+
+<div class="form-group">
+    <input class="form-control contact-input" asp-for="@Model.Person.DisplayName" placeholder="start entering surname to search" onchange="MakeControllerCall()"/>
+   @*  <input asp-for="@Model.PersonId" type="hidden" />
+    <input asp-for="@Model.ContactType" type="hidden" />
+    <input asp-for="@Model.Person" type="hidden" /> *@
+    <input asp-for="@Model.PersonId" />
+    <input asp-for="@Model.ContactType" />
+    <input asp-for="@Model.Person" />
+</div>

@@ -153,10 +153,12 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ClientAccount model)
+        public async Task<IActionResult> Edit(ClientAccount model, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
         {
             try
             {
+                await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes, emailAddresses);
+
                 await _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
@@ -168,6 +170,35 @@ namespace Service_Billing.Controllers
             }
 
             return View(model);
+        }
+
+        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
+        {
+            IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
+                
+            for(int i = 0; i < contactIds.Length; i++)
+            {
+                int id = contactIds[i];
+                List<string> nameList = new List<string>();
+                nameList.Add(displayNames[i]);
+                if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
+                { // new contact, and we have something for that
+                    await AddContactsToAccount(accountId, nameList, contactTypes[i]);
+                }
+                else
+                {
+                    Models.Contact existingContact = existingContacts.First(c => c.Id == id);
+                    if (existingContact.PersonId != personIds[i])
+                    {
+                        if (personIds[i] == 0)
+                            await AddContactsToAccount(accountId, nameList, contactTypes[i], existingContact);
+                        else
+                            existingContact.PersonId = personIds[i];
+                    }   
+                }
+            }
+
+            return Ok();
         }
 
         // GET: ClientAccountController/Delete/5
@@ -293,7 +324,7 @@ namespace Service_Billing.Controllers
 
             return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
-        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType)
+        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType, Models.Contact? contactEntry = null)
         {
             try
             {
@@ -310,11 +341,19 @@ namespace Service_Billing.Controllers
                         if (person == null)
                             throw new Exception($"failed to add person to database: {term}");
                     }
-                    Models.Contact contactEntry = new Models.Contact();
-                    contactEntry.ContactType = contactType;
-                    contactEntry.PersonId = person.Id;
-                    contactEntry.ClientAccountId = accountId;
-                    await _contactRepository.AddContact(contactEntry);
+                    if(contactEntry == null)
+                    {
+                        contactEntry = new Models.Contact();
+                        contactEntry.ContactType = contactType;
+                        contactEntry.PersonId = person.Id;
+                        contactEntry.ClientAccountId = accountId;
+                        await _contactRepository.AddContact(contactEntry);
+                    }
+                    else
+                    {
+                        contactEntry.PersonId = person.Id;
+                        _contactRepository.UpdateContact(contactEntry);
+                    }
                 } 
             }
             catch (Exception ex)
