@@ -172,35 +172,6 @@ namespace Service_Billing.Controllers
             return View(model);
         }
 
-        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
-        {
-            IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
-                
-            for(int i = 0; i < contactIds.Length; i++)
-            {
-                int id = contactIds[i];
-                List<string> nameList = new List<string>();
-                nameList.Add(displayNames[i]);
-                if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
-                { // new contact, and we have something for that
-                    await AddContactsToAccount(accountId, nameList, contactTypes[i]);
-                }
-                else
-                {
-                    Models.Contact existingContact = existingContacts.First(c => c.Id == id);
-                    if (existingContact.PersonId != personIds[i])
-                    {
-                        if (personIds[i] == 0)
-                            await AddContactsToAccount(accountId, nameList, contactTypes[i], existingContact);
-                        else
-                            existingContact.PersonId = personIds[i];
-                    }   
-                }
-            }
-
-            return Ok();
-        }
-
         // GET: ClientAccountController/Delete/5
         public ActionResult Delete(int id)
         {
@@ -324,6 +295,7 @@ namespace Service_Billing.Controllers
 
             return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
+
         private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType, Models.Contact? contactEntry = null)
         {
             try
@@ -360,6 +332,36 @@ namespace Service_Billing.Controllers
             {
                 _logger.LogError(ex.Message);
             }
+        }
+
+
+        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
+        {
+            IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
+            //todo: add rigamoral to remove a contact
+            for (int i = 0; i < contactIds.Length; i++)
+            {
+                int id = contactIds[i];
+                List<string> nameList = new List<string>(); // for reusing AddContactsToAccount.
+                nameList.Add(displayNames[i]);
+                if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
+                { // new contact, and we have something for that
+                    await AddContactsToAccount(accountId, nameList, contactTypes[i]);
+                }
+                else
+                {
+                    Models.Contact existingContact = existingContacts.First(c => c.Id == id);
+                    if (existingContact.PersonId != personIds[i])
+                    {
+                        if (personIds[i] == 0)
+                            await AddContactsToAccount(accountId, nameList, contactTypes[i], existingContact);
+                        else
+                            existingContact.PersonId = personIds[i];
+                    }
+                }
+            }
+
+            return Ok();
         }
 
         //We'll get rid of this whole hoopla once we're rock solid in the new contact tracking scheme, where contacts are tracked by

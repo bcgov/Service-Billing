@@ -122,6 +122,10 @@
                 @foreach (Contact contact in financialContacts)
                 {
                     @contact.Person.DisplayName
+                    if (contact != financialContacts.Last())
+                    {
+                        <br />
+                    }
                 }
             </td>
         </tr>
@@ -133,17 +137,25 @@
                 @foreach (Contact contact in primaryContacts)
                 {
                     @contact.Person.DisplayName
+                    if(contact != primaryContacts.Last())
+                    {  
+                      <br/>
+                    }
                 }
             </td>
         </tr>
         <tr>
             <td class="table-left">
-                @Html.DisplayNameFor(model => model.Approver)
+                @Html.DisplayNameFor(model => model.ApproverContacts)
             </td>
             <td>
                 @foreach (Contact contact in approverContacts)
                 {
                     @contact.Person.DisplayName
+                    if (contact != approverContacts.Last())
+                    {
+                        <br />
+                    }
                 }
             </td>
         </tr>

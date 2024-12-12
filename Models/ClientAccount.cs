@@ -64,12 +64,15 @@ o	Note: not all naming convention components are required. The naming convention
         public virtual ICollection<Bill>? Bills { get; set; } 
         public virtual ICollection<Contact>? Contacts { get; set; }
 
-        //[NotMapped]
-        //public virtual  IEnumerable<Contact>? PrimaryContacts { get { return Contacts?.Where(x => x.ContactType == "primary"); } }
-        //[NotMapped]
-        //public virtual IEnumerable<Contact>? FinancialContacts { get { return Contacts?.Where(x => x.ContactType == "financial"); } }
-        //[NotMapped]
-        //public virtual IEnumerable<Contact>? ApproverContacts { get { return Contacts?.Where(x => x.ContactType == "approver"); } }
+        [NotMapped]
+        [Display(Name = "Primary Contact")]
+        public virtual IEnumerable<Contact>? PrimaryContacts { get { return Contacts?.Where(x => x.ContactType == "primary"); } }
+        [NotMapped]
+        [Display(Name = "Financial Contacts")]
+        public virtual IEnumerable<Contact>? FinancialContacts { get { return Contacts?.Where(x => x.ContactType == "financial"); } }
+        [NotMapped]
+        [Display(Name = "Approver Contacts")]
+        public virtual IEnumerable<Contact>? ApproverContacts { get { return Contacts?.Where(x => x.ContactType == "approver"); } }
         /* This is the Primary Contact for the Client Account.  Normally there is only one.  
            This role can authorize billable service requests and changes to client account details including new services, 
            client account team membership, financial coding changes and SharePoint site access for their team.

@@ -59,21 +59,35 @@
             </div>
                 <input asp-form="@Model.Contacts" type="hidden"/>
                 <label asp-for="@Model.Contacts" class="control-label">Primary Contacts</label>
+                <div id="primary-contacts">
                 @foreach(Contact? contact in Model.Contacts)
                 {
                   if (contact.ContactType == "primary")
                   {
-                    <div class="form-group">
-                      <input asp-for="@contact.Person.DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
-                      <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="primary"/>
-                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
-                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
-                      <input asp-for="@contact.Person" class="form-control" />    
-                      <label asp-for="@contact.Id" />
-                      <input asp-for="@contact.Id" name="contactIds"  />
-                    </div>
+                    if(contact != Model.PrimaryContacts.First())
+                    {      
+                      <div class="form-group">
+                        <input asp-for="@contact.Person.DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
+                        <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="primary"/>
+                        <input asp-for="@contact.PersonId" name="personIds" class="id-input" />
+                        <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" type="hidden"readonly="true" />
+                        <input asp-for="@contact.Id" name="contactIds" type="hidden" />
+                      </div>
+                    }
+                    else
+                    {
+                      <div class="form-group">
+                        <input asp-for="@contact.Person.DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
+                        <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="primary"/>
+                        <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden"/>
+                        <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" type="hidden"readonly="true" />
+                        <input asp-for="@contact.Id" name="contactIds" type="hidden" />
+                      </div>
+                    }
                   }
                 }
+                <a id="add-primary" onclick="addSecondPrimary()">Add a second Primary Contact?</a>
+                </div>
 
                 <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
 
@@ -86,11 +100,9 @@
                   <div class="form-group">
                       <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" id="contact_@i" placeholder="start entering surname to search" />  
                       <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="approver"/>
-                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
-                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
-                      <input asp-for="@contact.Person" class="form-control" />   
-                      <label asp-for="@contact.Id" />
-                      <input asp-for="@contact.Id" name="contactIds"  />
+                      <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
+                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" type="hidden" />
+                      <input asp-for="@contact.Id" name="contactIds" type="hidden" />
                   </div>   
                 }
                   i++;
@@ -107,10 +119,8 @@
                   <div class="form-group">
                       <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" placeholder="start entering surname to search" />
                       <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="financial"/>
-                      <input asp-for="@contact.PersonId" name="personIds" class="id-input"readonly="true" />
-                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" readonly="true" />
-                      <input asp-for="@contact.Person" class="form-control" />    
-                      <label asp-for="@contact.Id" />
+                      <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
+                      <input asp-for="@contact.Person.Mail" name="emailAddresses" class="mail-input" type="hidden" />
                       <input asp-for="@contact.Id" name="contactIds"  />
                     </div>
                   }
@@ -129,8 +139,7 @@
                     <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
                 </div>
                 <input type="hidden" asp-for="@Model.Id" class="form-control" />
-                <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />
-            
+                <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />        
             <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
@@ -144,20 +153,30 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
+        var i = 0;
         const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
-            $(".contact-input").each(function () {
+            makeContactInputs();
+          if(@Model.PrimaryContacts?.Count() > 1){
+              $("#add-primary").hide();
+          }
+        });
+
+       const makeContactInputs = (() => {
+           console.log("Make contact inputs");
+          $(".contact-input").each(function () {
               $(this).autocomplete({
                 source: contactListUrl,
                 delay: 100
               });
             });
-        });
-        $( ".contact-input" ).on( "autocompleteselect", function( event, ui ) {
+             $( ".contact-input" ).on( "autocompleteselect", function( event, ui ) {
             updateContactPerson(ui.item.label, event);
         } );
+        });
 
        const updateContactPerson = ((displayName, e) => {
+           console.log("update contact person");
           var url = `@Url.Action("GetAccountContact", "ClientAccount")` + `?displayName=${displayName}`;
           var xhr = new XMLHttpRequest();
 
@@ -177,5 +196,18 @@
           xhr.open('get', url);
           xhr.send();
       });
+
+      const addSecondPrimary = (() => {
+          var html = `<div class="form-group">
+                       <input asp-for="contact_Person_DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
+                       <input asp-for="contact_Person_ContactType" name="contactTypes" type="hidden" value="primary"/>
+                       <input asp-for="contact_Person_PersonId" name="personIds" class="id-input" />
+                       <input asp-for="contact_Person_Mail" name="emailAddresses" class="mail-input" />
+                       <input asp-for="contact_Id" name="contactIds" class="contact-id-input" type="hidden" value="0"  />
+                     </div>`;
+           $("#primary-contacts").append(html);
+          $("#add-primary").hide();
+          makeContactInputs();
+      }); 
     </script>
 }

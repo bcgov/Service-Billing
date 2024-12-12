@@ -52,9 +52,6 @@
                 </div>
                  <div class="form-group">
                   <label class="control-label">Primary Contacts</label>
-                 @*  <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
-                  data-val-required="Pleasae include a Primary Contact"/>
-                  <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span> *@
                   <input asp-for="@Model.PrimaryContacts[0]" class="form-control" data-val="true"
                   data-val-required="Please include at least one Primary Contact"/>
                   <input asp-for="@Model.PrimaryContacts[1]" class="form-control" />
