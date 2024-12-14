@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using DocumentFormat.OpenXml.Office2019.Drawing.Model3D;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using DocumentFormat.OpenXml.InkML;
 
 namespace Service_Billing.Controllers
 {
@@ -99,7 +100,7 @@ namespace Service_Billing.Controllers
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
 
             IEnumerable<ClientAccount> clients = GetFilteredAccounts(ministryFilter, numberFilter, responsibilityFilter, authorityFilter, teamFilter, keyword, primaryContactFilter, ministryUserName ?? "");
- 
+
             return View(clients);
         }
 
@@ -116,7 +117,7 @@ namespace Service_Billing.Controllers
             // check if user ought to be able to view this record
             if (!User.IsInRole("GDXBillingService.FinancialOfficer"))
             {
-                
+
                 if (!String.IsNullOrEmpty(User.GetDisplayName()))
                 {
                     if (!IsUserAccountContact(account))
@@ -133,8 +134,8 @@ namespace Service_Billing.Controllers
                     return View("Unauthorized");
                 }
             }
-            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            //IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
+            //IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
 
             return View(account);
         }
@@ -146,19 +147,18 @@ namespace Service_Billing.Controllers
 
             if (account == null)
                 return NotFound();
-        
+
             return View(account);
         }
 
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ClientAccount model, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
+        public async Task<IActionResult> Edit(ClientAccount model, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes)
         {
             try
             {
-                await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes, emailAddresses);
-
+                await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
                 await _clientAccountRepository.Update(model);
 
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
@@ -198,7 +198,6 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult Create()
         {
-            _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             ClientCreateViewModel model = new ClientCreateViewModel();
             model.Organizations = ministries;
@@ -211,15 +210,14 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientCreateViewModel model)
         {
-            _logger.LogInformation("User submitted Intake form.");
             try
             {
-                if(!model.Account.OrganizationId.HasValue)
+                if (!model.Account.OrganizationId.HasValue)
                     throw new Exception("Somehow and account with no organization Id was submitted");
                 Ministry? org = _ministryRepository.GetById(model.Account.OrganizationId.Value);
                 if (org == null)
                     throw new Exception($"No ministry or organization was found with an ID matching {model.Account.OrganizationId.Value}");
-               // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
+                // BusinessArea busArea = _businessAreaRepository.GetById(model.Account.OrganizationId.Value);
                 string accountName = $"{org.Acronym} - {model.DivisionOrBranch}";
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
@@ -233,18 +231,14 @@ namespace Service_Billing.Controllers
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
-                //var cca = ConfidentialClientApplicationBuilder
-                //   .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                //   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                //   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                //    .Build();
+
                 await AddContactsToAccount(accountId, model.Approvers, "approver");
                 await AddContactsToAccount(accountId, model.FinancialContacts, "financial");
                 await AddContactsToAccount(accountId, model.PrimaryContacts.ToList(), "primary");
                 List<string> expenseAsList = new List<string>();
                 expenseAsList.Add(model.ExpenseAuthorityContact);
                 await AddContactsToAccount(accountId, expenseAsList, "expense");
-                
+
 
 
                 //if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
@@ -263,17 +257,17 @@ namespace Service_Billing.Controllers
                 //            "Please Review: New GDX Service Billing Account Information",
                 //            $@"
                 //            Hello Andre Lashley,
-                    
+
                 //            We hope this message finds you well. We're writing to inform you that a new account has been created for you in the GDX Service Billing system, designed to enhance your access and features.
-                    
+
                 //            To complete the setup of your account, please verify its creation. We prioritize your security and do not include direct links in our emails. You can safely access the GDX Service Billing portal through our official website or your internal systems.
-                    
+
                 //            If this account was not requested by you or if you believe you have received this email by mistake, please get in touch with our support team at [Support Contact Information] for immediate assistance.
-                    
+
                 //            We appreciate your attention to this matter. Should you have any questions or require further assistance, do not hesitate to contact us.
-                    
+
                 //            Warm regards,
-                    
+
                 //            GDX Service Billing Team"
                 //        );
                 //    }
@@ -303,7 +297,7 @@ namespace Service_Billing.Controllers
                 foreach (string contact in contacts)
                 { //Todo: handle the contact not being found because the user put in something dumb.
                     if (string.IsNullOrEmpty(contact))
-                        continue; 
+                        continue;
                     Models.Person? person = _peopleRepository.GetPersonByDisplayName(contact);
                     if (person == null) // add new Person to DB
                     { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.
@@ -313,7 +307,7 @@ namespace Service_Billing.Controllers
                         if (person == null)
                             throw new Exception($"failed to add person to database: {term}");
                     }
-                    if(contactEntry == null)
+                    if (contactEntry == null)
                     {
                         contactEntry = new Models.Contact();
                         contactEntry.ContactType = contactType;
@@ -326,7 +320,7 @@ namespace Service_Billing.Controllers
                         contactEntry.PersonId = person.Id;
                         _contactRepository.UpdateContact(contactEntry);
                     }
-                } 
+                }
             }
             catch (Exception ex)
             {
@@ -335,10 +329,16 @@ namespace Service_Billing.Controllers
         }
 
 
-        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes, string[] emailAddresses)
+        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes)
         {
             IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
-            //todo: add rigamoral to remove a contact
+            IEnumerable<Models.Contact> removedContacts = existingContacts.Where(x => !contactIds.Contains(x.Id));
+
+            foreach (Models.Contact contact in removedContacts)
+            {
+                _contactRepository.DeleteContact(contact);
+            }
+
             for (int i = 0; i < contactIds.Length; i++)
             {
                 int id = contactIds[i];

@@ -38,5 +38,10 @@ namespace Service_Billing.Models.Repositories
         {
             _billingContext.Update(contact);
         }
+
+        public void DeleteContact(Contact contact)
+        {
+            _billingContext.Remove(contact);
+        }
     }
 }

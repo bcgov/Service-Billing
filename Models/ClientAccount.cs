@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Configuration;
+using Service_Billing.Validation;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -61,10 +62,12 @@ o	Note: not all naming convention components are required. The naming convention
 
         public string? Notes { get; set; }
 
-        public virtual ICollection<Bill>? Bills { get; set; } 
+        public virtual ICollection<Bill>? Bills { get; set; }
+        [ContactValidation]
         public virtual ICollection<Contact>? Contacts { get; set; }
 
         [NotMapped]
+        [Required, MinLength(1, ErrorMessage = "Please include a primary contact")]
         [Display(Name = "Primary Contact")]
         public virtual IEnumerable<Contact>? PrimaryContacts { get { return Contacts?.Where(x => x.ContactType == "primary"); } }
         [NotMapped]
@@ -79,9 +82,8 @@ o	Note: not all naming convention components are required. The naming convention
         */
         [BindRequired]
         [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
-       
         public string? PrimaryContact { get; set; }
-
+       
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
@@ -109,6 +111,7 @@ o	Note: not all naming convention components are required. The naming convention
         [Display( Name = "Organization")]
         [BindRequired]
         public int? OrganizationId { get; set; } = 0;//for ministry/organization tracking
+
     }
 }
 /* Client limits 

@@ -9,5 +9,7 @@
         IEnumerable<Contact> GetContactsByAccountId(int accountId);
         void UpdateContact(Contact contact);
 
+        void DeleteContact(Contact contact);
+
     }
 }
