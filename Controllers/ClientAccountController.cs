@@ -157,7 +157,46 @@ namespace Service_Billing.Controllers
         public async Task<IActionResult> Edit(ClientAccount model, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes)
         {
             try
-            {
+            { // validation for contacts as foreign entities gave me a lot of trouble and ultimately I found this the most reasonable solution.
+                ModelState.Clear();
+                bool hasApprover = false;
+                bool hasFinancial = false;
+                bool hasPrimary = false;
+
+                for(int i = 0; i < contactIds.Length; i++)
+                {
+                        switch(contactTypes[i])
+                        {
+                        case "approver":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasApprover = true;
+                            break;
+                        case "financial":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasFinancial = true;
+                            break;
+                        case "primary":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasPrimary = true;
+                            break;
+
+                    }
+                }
+
+                if (!hasPrimary)
+                    ModelState.AddModelError("NoPrimaryContactError", "Please include a primary contact");
+                if (!hasApprover)
+                    ModelState.AddModelError("NoApproverContactError", "Please include at least one approver contact");
+                if (!hasFinancial)
+                    ModelState.AddModelError("NoFinancialContactError", "Please include at least one financial contact");
+                if (!ModelState.IsValid)
+                {
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);
+                    IEnumerable<Models.Contact>? remaingingContacts = account?.Contacts?.Where(x => contactIds.Contains(x.Id));
+                    model.Contacts = remaingingContacts?.ToList(); //don't include contacts that were removed.
+                    return View(model);
+                }
+
                 await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
                 await _clientAccountRepository.Update(model);
 
