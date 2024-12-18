@@ -10,6 +10,7 @@
     var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
     var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
     var clientName = clientAccount?.Name;
+    IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Details</h1>
 <div>
@@ -224,6 +225,21 @@
     </table>
 </div>
 
+@if (changeLogs != null && changeLogs.Any())
+{
+    <h4>Change logs</h4>
+    <div id="change-logs">
+        @foreach (ChangeLogEntry logEntry in changeLogs)
+        {
+            <div>
+                @logEntry.DateModified
+            </div>
+            <div>
+                @logEntry.ChangedBy @Html.Raw(logEntry.LogEntry)
+            </div>
+        }
+    </div>
+}
 <div class="bottom-nav">
     @if (!User.IsInRole("GDXBillingService.User"))
     {

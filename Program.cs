@@ -108,6 +108,7 @@ builder.Services.AddScoped<IBusinessAreaRepository, BusinessAreaRepository>();
 builder.Services.AddScoped<IFiscalHistoryRepository, FiscalHistoryRepository>();
 builder.Services.AddScoped<IPeopleRepository, PeopleRepository>();
 builder.Services.AddScoped<IContactRepository, ContactRepository>();
+builder.Services.AddScoped<IChangeLogRepository, ChangeLogRepository>();
 
 builder.Services.AddScoped<IScopedProcessingService, ScopedProcessingService>();
 

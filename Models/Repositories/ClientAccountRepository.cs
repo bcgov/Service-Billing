@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Graph;
 using Service_Billing.Data;
 using Service_Billing.Models;
 
@@ -7,9 +9,11 @@ namespace Service_Billing.Models.Repositories
     public class ClientAccountRepository : IClientAccountRepository
     {
         private readonly ServiceBillingContext _context;
-        public ClientAccountRepository(ServiceBillingContext context)
+        private readonly IChangeLogRepository _changeLogRepository;
+        public ClientAccountRepository(ServiceBillingContext context, IChangeLogRepository changeLogRepository)
         {
             _context = context;
+            _changeLogRepository = changeLogRepository;
         }
 
         public IEnumerable<ClientAccount> GetAll()
@@ -55,10 +59,17 @@ namespace Service_Billing.Models.Repositories
             return userAccounts.Distinct();
         }
 
-        public async Task Update(ClientAccount account)
+        public async Task Update(ClientAccount editedAccount, string userName = "system")
         {
-            _context.Update(account);
-            await _context.SaveChangesAsync(true);
+            EntityEntry entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedAccount, userName);
+            ClientAccount? account = entry.Entity as ClientAccount;
+            if (account != null)
+            {
+                _context.Update(account);
+                await _context.SaveChangesAsync(true);
+            }
+            else
+                throw new Exception($"Something went wrong while trying to update ClientAccount with Id {editedAccount.Id}");        
         }
 
         public void Approve(ClientAccount account)

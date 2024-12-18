@@ -38,6 +38,8 @@ namespace Service_Billing.Controllers
         private readonly IPeopleRepository _peopleRepository;
         private readonly IContactRepository _contactRepository;
         private readonly IConfidentialClientApplication cca;
+        private readonly IChangeLogRepository _changeLogRepository;
+
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -48,7 +50,8 @@ namespace Service_Billing.Controllers
             IServiceCategoryRepository categoryRepository,
             IBusinessAreaRepository businessAreaRepository,
             IPeopleRepository peopleRepository,
-            IContactRepository contactRepository,
+            IChangeLogRepository changeLogRepository,
+
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -76,6 +79,8 @@ namespace Service_Billing.Controllers
                     .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
                     .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
                     .Build();
+            _changeLogRepository = changeLogRepository;
+
         }
 
         // GET: ClientAccountController
@@ -134,8 +139,7 @@ namespace Service_Billing.Controllers
                     return View("Unauthorized");
                 }
             }
-            //IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
-            //IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(account.Id, "clientAccount");
 
             return View(account);
         }
@@ -199,6 +203,9 @@ namespace Service_Billing.Controllers
 
                 await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
                 await _clientAccountRepository.Update(model);
+            {
+                string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                await _clientAccountRepository.Update(model, user);
 
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
@@ -656,7 +663,8 @@ namespace Service_Billing.Controllers
                             }
                         }
                     }
-                    _clientAccountRepository.Update(account);
+                    string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                    _clientAccountRepository.Update(account, user);
                 }
                 else
                 {

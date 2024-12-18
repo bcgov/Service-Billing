@@ -4,7 +4,7 @@
     {
         IEnumerable<ServiceCategory> GetAll();
         int Add(ServiceCategory serviceCategory);
-        void Update(ServiceCategory serviceCategory);
+        Task Update(ServiceCategory serviceCategory, string userName);
         void Delete(ServiceCategory serviceCategory);
         IEnumerable<ServiceCategory> Search(string queryString);
         ServiceCategory? GetById(int? id);

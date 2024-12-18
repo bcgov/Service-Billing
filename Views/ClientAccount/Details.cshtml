@@ -15,6 +15,7 @@
     IEnumerable<Contact>? primaryContacts = Model.Contacts?.Where(x => x.ContactType == "primary");
     IEnumerable<Contact>? approverContacts = Model.Contacts?.Where(x => x.ContactType == "approver");
     IEnumerable<Contact>? financialContacts = Model.Contacts?.Where(x => x.ContactType == "financial");
+    IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Client Account Information</h1>
 <div>
@@ -295,6 +296,21 @@
     <div id="reactivate-client-dialog" title="Reactivate Client?">
         <p>This client will be set to active, and can be billed for new charges.</p>
         <p>Any charges associated with this client that were set to inactive can be reactivated from the list of inactive charges below.</p>
+    </div>
+}
+@if (changeLogs != null && changeLogs.Any())
+{
+    <h4>Change logs</h4>
+    <div id="change-logs">
+        @foreach (ChangeLogEntry logEntry in changeLogs)
+        {
+            <div>
+                @logEntry.DateModified
+            </div>
+            <div>
+                @logEntry.ChangedBy @Html.Raw(logEntry.LogEntry)
+            </div>
+        }
     </div>
 }
 @section Scripts

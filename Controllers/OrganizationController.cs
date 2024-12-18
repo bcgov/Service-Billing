@@ -79,8 +79,9 @@ namespace Service_Billing.Controllers
                     {
                         if(!String.IsNullOrEmpty(account.Name))
                         {
+                            string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
                             account.Name = account.Name.Replace(account.Name.Substring(0, account.Name.IndexOf(' ')), organization.Acronym);
-                            await _clientAccountRepository.Update(account);
+                            await _clientAccountRepository.Update(account, user);
                         }
                     }
                 }

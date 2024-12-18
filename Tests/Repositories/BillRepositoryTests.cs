@@ -53,8 +53,9 @@ namespace ServiceBillingUnitTests.Repositories
                 var mockLogger = new Mock<ILogger<BillRepository>>();
                 var fiscalPeriodRepository = new FiscalPeriodRepository(context);
                 var fiscalHistoryRepository = new FiscalHistoryRepository(context, mockLogger.Object);
+                var changeLogRepository = new ChangeLogRepository(context, mockLogger.Object);
 
-                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository);
+                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository, changeLogRepository);
 
                 // Act
                 await billRepository.PromoteChargesToNewQuarter();
@@ -107,9 +108,9 @@ namespace ServiceBillingUnitTests.Repositories
                 var mockLogger = new Mock<ILogger<BillRepository>>();
                 var fiscalPeriodRepository = new FiscalPeriodRepository(context);
                 var fiscalHistoryRepository = new FiscalHistoryRepository(context, mockLogger.Object);
+                var changeLogRepository = new ChangeLogRepository(context, mockLogger.Object);
 
-                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository);
-
+                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository, changeLogRepository);
                 // Act
                 await billRepository.PromoteChargesToNewQuarter();
 
@@ -161,8 +162,9 @@ namespace ServiceBillingUnitTests.Repositories
                 var mockLogger = new Mock<ILogger<BillRepository>>();
                 var fiscalPeriodRepository = new FiscalPeriodRepository(context);
                 var fiscalHistoryRepository = new FiscalHistoryRepository(context, mockLogger.Object);
+                var changeLogRepository = new ChangeLogRepository(context, mockLogger.Object);
 
-                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository);
+                var billRepository = new BillRepository(context, fiscalPeriodRepository, mockLogger.Object, fiscalHistoryRepository, changeLogRepository);
 
                 // Act
                 await billRepository.PromoteChargesToNewQuarter();
