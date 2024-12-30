@@ -51,6 +51,7 @@ namespace Service_Billing.Controllers
             IBusinessAreaRepository businessAreaRepository,
             IPeopleRepository peopleRepository,
             IChangeLogRepository changeLogRepository,
+            IContactRepository contactRepository,
 
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -202,11 +203,9 @@ namespace Service_Billing.Controllers
                 }
 
                 await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
-                await _clientAccountRepository.Update(model);
-            {
                 string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
                 await _clientAccountRepository.Update(model, user);
-
+            
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
             catch (DbUpdateException ex)

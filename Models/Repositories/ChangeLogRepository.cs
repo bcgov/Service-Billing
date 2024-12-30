@@ -137,6 +137,10 @@ namespace Service_Billing.Models.Repositories
                         && property.PropertyType != typeof(ICollection<Bill>)
                         )
                         {
+                            if(property.PropertyType == typeof(ICollection<Contact>))
+                            {
+                                string x = "welcome to the contacts property!";
+                            }
                             var originalValue = property.GetValue(originalEntity);
                             var modifiedValue = property.GetValue(currentEntity);
 
