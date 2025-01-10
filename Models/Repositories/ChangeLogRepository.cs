@@ -135,12 +135,10 @@ namespace Service_Billing.Models.Repositories
                         && property.Name != "DateCreated"
                         && property.PropertyType != typeof(ICollection<FiscalHistory>)
                         && property.PropertyType != typeof(ICollection<Bill>)
+                        && property.PropertyType != typeof(ICollection<Contact>)
+                        && property.PropertyType != typeof(IEnumerable<Contact>)
                         )
                         {
-                            if(property.PropertyType == typeof(ICollection<Contact>))
-                            {
-                                string x = "welcome to the contacts property!";
-                            }
                             var originalValue = property.GetValue(originalEntity);
                             var modifiedValue = property.GetValue(currentEntity);
 
@@ -162,6 +160,7 @@ namespace Service_Billing.Models.Repositories
                                         throw new Exception("Could not parse dates from model");
                                     }
                                 }
+                                string x = $"{property.Name}: {originalValue} => {modifiedValue}";
                                 property.SetValue(originalEntity, modifiedValue);
                                 _billingContext.Entry(originalEntity).Property(property.Name).IsModified = true;
                             }

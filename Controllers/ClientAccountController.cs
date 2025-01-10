@@ -197,8 +197,8 @@ namespace Service_Billing.Controllers
                 if (!ModelState.IsValid)
                 {
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);
-                    IEnumerable<Models.Contact>? remaingingContacts = account?.Contacts?.Where(x => contactIds.Contains(x.Id));
-                    model.Contacts = remaingingContacts?.ToList(); //don't include contacts that were removed.
+                    IEnumerable<Models.Contact>? remainingContacts = account?.Contacts?.Where(x => contactIds.Contains(x.Id));
+                    model.Contacts = remainingContacts?.ToList(); //don't include contacts that were removed.
                     return View(model);
                 }
 
@@ -378,9 +378,13 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
             IEnumerable<Models.Contact> removedContacts = existingContacts.Where(x => !contactIds.Contains(x.Id));
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificZone);
+            string changes = string.Empty;
 
             foreach (Models.Contact contact in removedContacts)
             {
+                changes += $"{contact.ContactType} contact {contact.Person?.DisplayName} was removed as a contact.</br>";
                 _contactRepository.DeleteContact(contact);
             }
 
@@ -392,6 +396,7 @@ namespace Service_Billing.Controllers
                 if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
                 { // new contact, and we have something for that
                     await AddContactsToAccount(accountId, nameList, contactTypes[i]);
+                    changes += $"{displayNames[i]} was added as a {contactTypes[i]} contact.</br>";
                 }
                 else
                 {
@@ -402,8 +407,18 @@ namespace Service_Billing.Controllers
                             await AddContactsToAccount(accountId, nameList, contactTypes[i], existingContact);
                         else
                             existingContact.PersonId = personIds[i];
+
+                        changes += $"A {contactTypes[i]} contact was changed to {displayNames[i]}.</br>";
                     }
                 }
+            }
+
+            if(!String.IsNullOrEmpty(changes))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                ChangeLogEntry logEntry = new ChangeLogEntry(accountId, pacificTime, userName, changes, "clientAccount");
+
+                await _changeLogRepository.CreateEntry(logEntry);
             }
 
             return Ok();
