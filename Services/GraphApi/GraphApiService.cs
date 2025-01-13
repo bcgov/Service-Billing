@@ -1,4 +1,5 @@
-﻿using Microsoft.Identity.Client;
+﻿using Microsoft.Graph.TermStore;
+using Microsoft.Identity.Client;
 using Service_Billing.Models;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -89,7 +90,7 @@ namespace Service_Billing.Services.GraphApi
 
                 var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(term)}')" +
                 $"or startswith(givenName, '{Uri.EscapeDataString(term)}')" +
-                $"&$select=displayName,id";
+                $"&$select=displayName,id,mail,givenName,surname";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
@@ -112,9 +113,9 @@ namespace Service_Billing.Services.GraphApi
             }
         }
 
-        public async Task<GraphUser> GetUserByDisplayName(string displayName, IConfidentialClientApplication cca)
+        public async Task<GraphUser?> GetUserByDisplayName(string displayName, IConfidentialClientApplication cca)
         {
-            var emptyResponse = new GraphUser();
+            var emptyResponse = new GraphApiListResponse<GraphUser>();
 
             try
             {
@@ -122,26 +123,28 @@ namespace Service_Billing.Services.GraphApi
                                       .ExecuteAsync();
                 _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
-                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(displayName)}')&$top=1&$select=id";
+                var url = $"https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '{Uri.EscapeDataString(displayName)}')" +
+                $"or startswith(givenName, '{Uri.EscapeDataString(displayName)}')" +
+                $"&$select=displayName,id,mail,givenName,surname&$top=1";
 
                 var response = await _httpClient.GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                 {
                     Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
-                    return emptyResponse;
+                    return null;
                 }
 
                 var json = await response.Content.ReadAsStringAsync();
-                var user = await response.Content.ReadFromJsonAsync<GraphUser>(
+                var rvl = await response.Content.ReadFromJsonAsync<GraphApiListResponse<GraphUser>>(
                     new JsonSerializerOptions(defaults: JsonSerializerDefaults.Web)
-                );
+                ) ?? emptyResponse;
 
-                return user ?? emptyResponse;
+                return rvl.Value.FirstOrDefault();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Exception in GetUserByDisplayName method: {ex.Message}");
-                return emptyResponse;
+                Console.WriteLine($"Exception in GetUsersByDisplayName method: {ex.Message}");
+                return null;
             }
         }
     }

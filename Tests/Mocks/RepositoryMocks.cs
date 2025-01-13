@@ -11,7 +11,7 @@ namespace ServiceBillingUnitTests.Mocks
             var people = new List<Person>
             {
                 new Person {
-                    Id = Guid.NewGuid(),
+                    Id = 28,
                     DisplayName = "Lashley, Andre CITZ:EX",
                     Mail = "Andre.Lashley@gov.bc.ca",
                     Name = "André Lashley" },

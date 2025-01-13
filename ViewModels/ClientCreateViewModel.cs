@@ -17,10 +17,44 @@ namespace Service_Billing.ViewModels
       //  public string? ApproverName { get; set; }
         [NotMapped]
         public IEnumerable<SelectListItem>? Contacts { get; set; }
+        [NotMapped]
+        public IEnumerable<Ministry>? Organizations { get; set; }
+
+        //[BindRequired]
+        //[Display(Prompt = "Start typing in your contact's last name")]
+        //public string PrimaryContactInput { get; set; }
+        //public string PrimaryContactInputSecond { get; set; }
+
+        //[BindRequired]
+        //[Display(Prompt = "Start typing in your contact's last name")]
+        //public string ExpenseAuthorityInput { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public List<string> Approvers { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public List<string> FinancialContacts { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public string[] PrimaryContacts { get; set; }
+
+        [BindRequired]
+        [Display(Prompt = "Start typing in your contact's last name")]
+        public string ExpenseAuthorityContact { get; set; }
+
 
         public ClientCreateViewModel()
         {
             Account = new ClientAccount();
+            Approvers = new List<string>();
+            FinancialContacts = new List<string>();
+            Approvers.Add(String.Empty);
+            FinancialContacts.Add(string.Empty);
+            PrimaryContacts = new string[2];
+            
         }
     }
 }

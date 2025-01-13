@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using NuGet.Configuration;
+using Service_Billing.Validation;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -62,28 +64,44 @@ o	Note: not all naming convention components are required. The naming convention
 
         public virtual ICollection<Bill>? Bills { get; set; }
 
+        public virtual ICollection<Contact>? Contacts { get; set; }
+
+        [NotMapped]
+        [Display(Name = "Primary Contact")]
+        public virtual IEnumerable<Contact>? PrimaryContacts { get { return Contacts?.Where(x => x.ContactType == "primary"); } set { PrimaryContacts = value; } }
+
+        [NotMapped]
+        [Display(Name = "Financial Contacts")]
+        public virtual IEnumerable<Contact>? FinancialContacts { get { return Contacts?.Where(x => x.ContactType == "financial"); } set { FinancialContacts = value; } }
+        [NotMapped]
+        [Display(Name = "Approver Contacts")]
+        public virtual IEnumerable<Contact>? ApproverContacts { get { return Contacts?.Where(x => x.ContactType == "approver"); } set { ApproverContacts = value; } }
         /* This is the Primary Contact for the Client Account.  Normally there is only one.  
            This role can authorize billable service requests and changes to client account details including new services, 
            client account team membership, financial coding changes and SharePoint site access for their team.
         */
         [BindRequired]
         [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
-       
         public string? PrimaryContact { get; set; }
+        [NotMapped]
+        public string? NoPrimaryContactError { get; set; }
 
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
         [BindRequired]
         public string? Approver { get; set; }
+        [NotMapped]
+        public string? NoApproverContactError { get; set; }
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
          * or approvers are not available. The role can provide updated billing information.  
          * For quarterly billing, this role is a contact. */
         //  [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Financial Contacts", Prompt = "Start typing in your contact's last name")]
-       
         public string? FinancialContact { get; set; }
+        [NotMapped]
+        public string? NoFinancialContactError { get; set; }
         [BindRequired]
 
         [NotMapped]
@@ -98,8 +116,15 @@ o	Note: not all naming convention components are required. The naming convention
         [Display( Name = "Organization")]
         [BindRequired]
         public int? OrganizationId { get; set; } = 0;//for ministry/organization tracking
+
     }
 }
+/* Client limits 
+ * Primary Contacts (up to 2 allowed)
+Approvers (multiples allowed)
+Financial Contacts (multiples allowed)
+Expense Authority (1 only)
+*/
 /* some validation concerns:
  * Client= 3 digits
 Responsibility Centre= 5 digits

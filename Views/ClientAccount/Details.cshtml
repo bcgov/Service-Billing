@@ -2,10 +2,6 @@
 @{
     ViewData["Title"] = "Client Details";
     Layout = "_Layout";
-    var parms = new Dictionary<string, string>
-{
-{ "clientNumber", Model.ClientNumber.ToString() }
-};
 }
 @using Microsoft.AspNetCore.Authorization
 @using System.Security.Claims
@@ -15,6 +11,10 @@
     var isMinistryClient = user?.IsMinistryClient(AuthorizationService) ?? false;
     var isNew = (ViewData["isNew"] != null && (bool?)ViewData["isNew"] == true) ? "true" : "false";
     var isEdited = (ViewData["isEdited"] != null && (bool?)ViewData["isEdited"] == true) ? "true" : "false";
+    IEnumerable<Contact>? expenseAuthority = Model.Contacts?.Where(x => x.ContactType == "expense");
+    IEnumerable<Contact>? primaryContacts = Model.Contacts?.Where(x => x.ContactType == "primary");
+    IEnumerable<Contact>? approverContacts = Model.Contacts?.Where(x => x.ContactType == "approver");
+    IEnumerable<Contact>? financialContacts = Model.Contacts?.Where(x => x.ContactType == "financial");
     IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Client Account Information</h1>
@@ -75,7 +75,10 @@
                 @Html.DisplayNameFor(model => Model.ExpenseAuthorityName)
             </td>
             <td>
-                @Html.DisplayFor(model => Model.ExpenseAuthorityName)
+                @foreach (Contact contact in expenseAuthority)
+                {
+                    @contact.Person.DisplayName
+                }
             </td>
         </tr>
         <tr>
@@ -117,7 +120,14 @@
                 @Html.DisplayNameFor(model => model.FinancialContact)
             </td>
             <td>
-                @Html.DisplayFor(model => model.FinancialContact)
+                @foreach (Contact contact in financialContacts)
+                {
+                    @contact.Person.DisplayName
+                    if (contact != financialContacts.Last())
+                    {
+                        <br />
+                    }
+                }
             </td>
         </tr>
         <tr>
@@ -125,15 +135,29 @@
                 @Html.DisplayNameFor(model => model.PrimaryContact)
             </td>
             <td>
-                @Html.DisplayFor(model => model.PrimaryContact)
+                @foreach (Contact contact in primaryContacts)
+                {
+                    @contact.Person.DisplayName
+                    if(contact != primaryContacts.Last())
+                    {  
+                      <br/>
+                    }
+                }
             </td>
         </tr>
         <tr>
             <td class="table-left">
-                @Html.DisplayNameFor(model => model.Approver)
+                @Html.DisplayNameFor(model => model.ApproverContacts)
             </td>
             <td>
-                @Html.DisplayFor(model => model.Approver)
+                @foreach (Contact contact in approverContacts)
+                {
+                    @contact.Person.DisplayName
+                    if (contact != approverContacts.Last())
+                    {
+                        <br />
+                    }
+                }
             </td>
         </tr>
     </table>
