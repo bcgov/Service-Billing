@@ -5,7 +5,8 @@ namespace Service_Billing.Models
 {
     public class Contact
     {
-        [Key] public int Id { get; set; }
+        [Key] 
+        public int Id { get; set; }
 
         public int PersonId { get; set; }
         [Required]

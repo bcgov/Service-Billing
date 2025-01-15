@@ -24,11 +24,6 @@ namespace Service_Billing.Models.Repositories
             return _billingContext.Contacts.FirstOrDefault(x => x.Id == id);
         }
 
-        public Contact GetByEmail(string email)
-        {
-            throw new NotImplementedException();
-        }
-
         public IEnumerable<Contact> GetContactsByAccountId(int accountId)
         {
             return _billingContext.Contacts.Where(x => x.ClientAccountId == accountId);

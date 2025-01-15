@@ -4,7 +4,6 @@
     {
         Task AddContact(Contact contact);
         Contact Get(int id);
-        Contact GetByEmail(string email);
 
         IEnumerable<Contact> GetContactsByAccountId(int accountId);
         void UpdateContact(Contact contact);

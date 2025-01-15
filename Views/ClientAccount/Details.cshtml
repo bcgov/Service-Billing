@@ -123,7 +123,7 @@
                 @foreach (Contact contact in financialContacts)
                 {
                     @contact.Person.DisplayName
-                    if (contact != financialContacts.Last())
+                    if (contact != financialContacts.LastOrDefault())
                     {
                         <br />
                     }

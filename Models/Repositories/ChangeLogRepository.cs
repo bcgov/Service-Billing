@@ -160,7 +160,7 @@ namespace Service_Billing.Models.Repositories
                                         throw new Exception("Could not parse dates from model");
                                     }
                                 }
-                                string x = $"{property.Name}: {originalValue} => {modifiedValue}";
+
                                 property.SetValue(originalEntity, modifiedValue);
                                 _billingContext.Entry(originalEntity).Property(property.Name).IsModified = true;
                             }
