@@ -83,16 +83,15 @@ o	Note: not all naming convention components are required. The naming convention
         [BindRequired]
         [Display(Name = "Primary Contact", Prompt = "Start typing in your contact's last name")]
         public string? PrimaryContact { get; set; }
-        [NotMapped]
-        public string? NoPrimaryContactError { get; set; }
+
+     
 
         /* This role can authorize billable service requests and changes to client account details including new services, 
          * client account team membership, financial coding changes and SharePoint site access for their team.  */
         [Display (Prompt = "Start typing in your contact's last name")]
         [BindRequired]
         public string? Approver { get; set; }
-        [NotMapped]
-        public string? NoApproverContactError { get; set; }
+       
 
         /* This role is not normally involved with service request approvals, though an exception can be made if the primary, 
          * or approvers are not available. The role can provide updated billing information.  
@@ -100,10 +99,8 @@ o	Note: not all naming convention components are required. The naming convention
         //  [Required(ErrorMessage = "Please include this contact")]
         [Display(Name = "Financial Contacts", Prompt = "Start typing in your contact's last name")]
         public string? FinancialContact { get; set; }
-        [NotMapped]
-        public string? NoFinancialContactError { get; set; }
+     
         [BindRequired]
-
         [NotMapped]
         public string AggregatedGLCode
         {

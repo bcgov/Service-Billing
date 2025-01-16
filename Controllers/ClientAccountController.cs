@@ -189,11 +189,11 @@ namespace Service_Billing.Controllers
                 }
 
                 if (!hasPrimary)
-                    ModelState.AddModelError("NoPrimaryContactError", "Please include a primary contact");
+                    ModelState.AddModelError("PrimaryContact", "Please include a primary contact");
                 if (!hasApprover)
-                    ModelState.AddModelError("NoApproverContactError", "Please include at least one approver contact");
+                    ModelState.AddModelError("Approver", "Please include at least one approver contact");
                 if (!hasFinancial)
-                    ModelState.AddModelError("NoFinancialContactError", "Please include at least one financial contact");
+                    ModelState.AddModelError("FinancialContact", "Please include at least one financial contact");
                 if (!ModelState.IsValid)
                 {
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);

@@ -83,7 +83,7 @@
                 
               <a id="add-primary" onclick="addContact('primary')">Add a second Primary Contact?</a>
               <div>
-                <span asp-validation-for="@Model.NoPrimaryContactError" class="text-danger"></span>
+                <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
               </div>
             </div>
 
@@ -97,7 +97,7 @@
                     <div class="form-group">
                         <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" id="contact_@i" placeholder="start entering surname to search"
                           data-val="true"
-                      data-val-required="Please at least one approver contact"/>
+                      data-val-required="Please include at least one approver contact"/>
                     <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="approver"/>
                     <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
                     <input asp-for="@contact.Id" name="contactIds" class="contact-id" type="hidden" />
@@ -111,7 +111,7 @@
             }
               <a id="add-approver" onclick="addContact('approver')">Add an approver contact?</a>
               <div>
-                <span asp-validation-for="@Model.NoApproverContactError" class="text-danger"></span>
+                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
               </div>
             </div>
 
@@ -125,7 +125,7 @@
                   <div class="form-group">
                   <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" placeholder="start entering surname to search" 
                     data-val="true"
-                      data-val-required="Please at least one financial contact"/>
+                      data-val-required="Please include at least one financial contact"/>
                   <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="financial"/>
                   <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
                   <input asp-for="@contact.Id" name="contactIds" type="hidden" class="contact-id" />
@@ -139,7 +139,7 @@
 
               <a id="add-financial" onclick="addContact('financial')">Add a financial contact?</a>
               <div>
-                <span asp-validation-for="@Model.NoFinancialContactError" class="text-danger"></span>
+                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
               </div>
             </div>
               
