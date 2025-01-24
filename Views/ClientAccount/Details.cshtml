@@ -305,10 +305,8 @@
         @foreach (ChangeLogEntry logEntry in changeLogs)
         {
             <div>
-                @logEntry.DateModified
-            </div>
-            <div>
-                @logEntry.ChangedBy @Html.Raw(logEntry.LogEntry)
+            <p>Changed by @logEntry.ChangedBy on @logEntry.DateModified</p>
+            <p>@Html.Raw(logEntry.LogEntry)</p>
             </div>
         }
     </div>

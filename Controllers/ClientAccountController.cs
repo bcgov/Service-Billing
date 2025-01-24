@@ -384,6 +384,7 @@ namespace Service_Billing.Controllers
 
             foreach (Models.Contact contact in removedContacts)
             {
+                contact.Person = _peopleRepository.GetPersonById(contact.PersonId);
                 changes += $"{contact.ContactType} contact {contact.Person?.DisplayName} was removed as a contact.</br>";
                 _contactRepository.DeleteContact(contact);
             }
