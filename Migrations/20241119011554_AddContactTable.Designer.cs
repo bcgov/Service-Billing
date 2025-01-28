@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20241119011554_AddContactTable")]
+    partial class AddContactsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,7 +183,10 @@ namespace Service_Billing.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("ClientAccountId")
+                    b.Property<int>("AccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ClientAccountId")
                         .HasColumnType("int");
 
                     b.Property<string>("ContactType")
@@ -196,7 +202,7 @@ namespace Service_Billing.Migrations
 
                     b.HasIndex("PersonId");
 
-                    b.ToTable("Contacts");
+                    b.ToTable("Contact");
                 });
 
             modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
@@ -358,9 +364,7 @@ namespace Service_Billing.Migrations
                 {
                     b.HasOne("Service_Billing.Models.ClientAccount", null)
                         .WithMany("Contacts")
-                        .HasForeignKey("ClientAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ClientAccountId");
 
                     b.HasOne("Service_Billing.Models.Person", "Person")
                         .WithMany()

@@ -11,6 +11,7 @@ using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
 using System.Collections.Immutable;
 using System.Data;
+using System.Reflection;
 
 namespace Service_Billing.Controllers
 {
@@ -28,6 +29,7 @@ namespace Service_Billing.Controllers
         private readonly ServiceBillingContext _serviceBillingContext;
         private readonly IFiscalPeriodRepository _fiscalPeriodRepository;
         private readonly IFiscalHistoryRepository _fiscalHistoryRepository;
+        private readonly IChangeLogRepository _changeLogRepository;
 
         public BillsController(ILogger<BillsController> logger,
             IBillRepository billRepository,
@@ -38,6 +40,7 @@ namespace Service_Billing.Controllers
             IBusinessAreaRepository businessAreaRepository,
             IFiscalPeriodRepository fiscalPeriodRepository,
             IFiscalHistoryRepository fiscalHistoryRepository,
+            IChangeLogRepository changeLogRepository,
             ServiceBillingContext serviceBillingContext,
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
@@ -55,6 +58,7 @@ namespace Service_Billing.Controllers
             _serviceBillingContext = serviceBillingContext;
             _fiscalPeriodRepository = fiscalPeriodRepository;
             _fiscalHistoryRepository = fiscalHistoryRepository;
+            _changeLogRepository = changeLogRepository;
         }
 
         [Authorize]
@@ -166,7 +170,7 @@ namespace Service_Billing.Controllers
                 ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
                 ViewData["isNew"] = isNew;
                 ViewData["isEdited"] = isEdited;
-                if(historyId != null)
+                if(historyId > 0)
                 {
                     FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
                     if (fiscalHistory == null)
@@ -179,6 +183,8 @@ namespace Service_Billing.Controllers
                         ViewData["periodString"] = fiscalHistory?.FiscalPeriod?.Period;
                     }   
                 }
+
+                ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(bill.Id, "charge");
             }
             catch (Exception ex)
             {
@@ -230,11 +236,10 @@ namespace Service_Billing.Controllers
             try
             {
                 model.Bill.ServiceCategory = _categoryRepository.GetById(model.Bill.ServiceCategoryId);
-                DateTime utcDate = DateTime.UtcNow;
-                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-                model.Bill.DateModified = pacificTime;
-                await _billRepository.Update(model.Bill);
+                model.Bill.DateModified = GetUserLocalTime();
+                string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                
+                await _billRepository.Update(model.Bill, user);
                 if (model.FiscalHistory != null && model.FiscalHistory.Id > 0)
                 {
                     FiscalHistory? fh = _fiscalHistoryRepository.GetFiscalHistoryById(model.FiscalHistory.Id);
@@ -261,6 +266,7 @@ namespace Service_Billing.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+
 
         [HttpGet]
         public async Task<ActionResult> Create(int accountId)
@@ -321,7 +327,7 @@ namespace Service_Billing.Controllers
                 bill = _billRepository.GetBill(billId);
 
                 // Has a StartDate Earlier than the start of this Quarter been selected?
-                if(bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter())
+                if(bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter()) 
                 {
                     await _billRepository.PromoteCharge(
                         bill, 
@@ -341,7 +347,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpGet]
-        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate)
+        public ActionResult? GetBillAmount(short? serviceId, decimal? quantity, string? startDate, string? endDate, bool quantityChanged = false)
         {
             try
             {
@@ -356,7 +362,7 @@ namespace Service_Billing.Controllers
                  * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
                  * will typically be set to three, unless it has an end date sooner than the end of that quarter
                  * */
-                if(category?.UOM?.ToLower() == "month")
+                if(category?.UOM?.ToLower() == "month" && !quantityChanged)
                 {
                     DateTimeOffset start = new DateTimeOffset();
                     DateTimeOffset end = new DateTimeOffset();
@@ -395,8 +401,7 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
-                if (!String.IsNullOrEmpty(UOM) && string.CompareOrdinal(UOM, "Hr") == 0)
-                    UOM = "Hour";
+               
                 RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
                 recordEntry.UOM = UOM;
 
@@ -620,6 +625,15 @@ namespace Service_Billing.Controllers
                 _logger.LogError(ex.Message);
                 return Enumerable.Empty<Bill>();
             }
+        }
+
+        private DateTime GetUserLocalTime()
+        {
+            DateTime utcDate = DateTime.UtcNow;
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+
+            return pacificTime;
         }
 
         private bool IsAccountContact(string ministryUserName, ClientAccount account)

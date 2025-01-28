@@ -1,4 +1,4 @@
-﻿@using Microsoft.Graph;
+﻿﻿@using Microsoft.Graph;
 
 @model Service_Billing.ViewModels.ClientCreateViewModel
 
@@ -7,7 +7,7 @@
     Layout = "_Layout";
 }
 @{
-    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+    
 }
 
 <h1>Create Client Account</h1>
@@ -21,9 +21,9 @@
                 <select asp-for="@Model.Account.OrganizationId" class="form-control" data-val="true"
                 data-val-required="You must select a ministry or other organization from the list">
                     <option value="" disabled selected hidden>Select a ministry or organization</option>
-                    @if (ministries != null)
+                    @if (Model.Organizations != null)
                     {
-                        foreach (Ministry ministry in ministries)
+                        foreach (Ministry ministry in Model.Organizations)
                         {
                             <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                         }
@@ -51,28 +51,43 @@
                 Contacts matching your input will display in a dropdown menu for you to pick.
                 </div>
                  <div class="form-group">
-                  <label asp-for="@Model.Account.PrimaryContact" class="control-label">Primary Contact</label>
-                  <input asp-for="@Model.Account.PrimaryContact" class="form-control" data-val="true"
-                  data-val-required="Pleasae include a Primary Contact"/>
-                  <span asp-validation-for="@Model.Account.PrimaryContact" class="text-danger"></span>
+                  <label class="control-label">Primary Contacts</label>
+                  <input asp-for="@Model.PrimaryContacts[0]" class="form-control" data-val="true"
+                  data-val-required="Please include at least one Primary Contact"/>
+                  <input asp-for="@Model.PrimaryContacts[1]" class="form-control" />
+                  <a onclick="showSecondPrimaryInput()">Add a second Primary Contact?</a>
                 </div>
                  <div class="form-group">
-                  <label asp-for="@Model.Account.Approver" class="control-label">Approver</label>
-                  <input class="form-control" asp-for="@Model.Account.Approver" data-val="true" 
-                   data-val-required="Please include an Approver contact"/>
+                  <label asp-for="@Model.Approvers" class="control-label">Approvers</label>
+                  <span id="approver-inputs">
+                    <input class="form-control" asp-for="@Model.Approvers[0]" data-val="true"
+                          data-val-required="Please include an Approver contact"/>
+                   
+                  </span>
+                  <a onclick="addApproverInput()">Add another approver?</a>
                   <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
                 </div>
-                 <div class="form-group">
+                 @* <div class="form-group">
                   <label asp-for="@Model.Account.FinancialContact" class="control-label">Financial Contacts</label>
                   <input class="form-control" asp-for="@Model.Account.FinancialContact" data-val="true"
                    data-val-required="Please include a financial contact"/>
                   <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
+                </div> *@
+                 <div class="form-group">
+                  <label asp-for="@Model.FinancialContacts" class="control-label">Financial Contacts</label>
+                  <span id="financial-inputs">
+                    <input class="form-control" asp-for="@Model.FinancialContacts[0]" data-val="true"
+                          data-val-required="Please include a financial contact"/>
+                   
+                  </span>
+                  <a onclick="addFinancialInput()">Add another financial contact?</a>
+                  <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
                 </div>
            <div class="form-group">
-                <label asp-for="@Model.Account.ExpenseAuthorityName" class="control-label">CAS Expense Authority</label>
-                <input class="form-control" asp-for="@Model.Account.ExpenseAuthorityName" data-val="true" 
+                <label asp-for="@Model.ExpenseAuthorityContact" class="control-label">CAS Expense Authority</label>
+                <input class="form-control" asp-for="@Model.ExpenseAuthorityContact" data-val="true" 
                  data-val-required="Please include the name of a CAS Expense Authority"/>
-                <span asp-validation-for="@Model.Account.ExpenseAuthorityName" class="text-danger"></span>
+                <span asp-validation-for="@Model.ExpenseAuthorityContact" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Account.ResponsibilityCentre" class="control-label">CAS Responsibility Centre</label>
@@ -117,25 +132,31 @@
 @section Scripts {
 
     <script>
+        var i = 1;
+        var j = 1;
+        const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
              // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#create-account-link').addClass("active-nav-link");
-            const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
 
-            $("#Account_PrimaryContact").autocomplete({
+            $("#PrimaryContacts_0_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_FinancialContact").autocomplete({
+            $("#PrimaryContacts_1_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_Approver").autocomplete({
+            $("#FinancialContacts_0_").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
-            $("#Account_ExpenseAuthorityName").autocomplete({
+            $("#Approvers_0_").autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            $("#ExpenseAuthorityContact").autocomplete({
                 source: contactListUrl,
                 delay: 500
             });
@@ -160,6 +181,29 @@
                     $("#Account_ResponsibilityCentre").val($("#Account_ResponsibilityCentre").val().substring(0, 5));
                 }
             });
+            $("#PrimaryContacts_1_").hide();
+        });
+
+        const addApproverInput = (() => {
+            var html = `<input class="form-control" asp-for="Approvers_${i}_" name="Approvers\[${i}\]" id="approver_${i}" />`;
+            $("#approver-inputs").append(html);
+             $(`#approver_${i}`).autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            i++;
+        });
+         const addFinancialInput = (() => {
+            var html = `<input class="form-control" asp-for="FinancialContacts_${j}_" name="FinancialContacts\[${j}\]" id="financial_${j}" />`;
+            $("#financial-inputs").append(html);
+             $(`#financial_${j}`).autocomplete({
+                source: contactListUrl,
+                delay: 500
+            });
+            j++;
+        });
+        const showSecondPrimaryInput = (() => {
+            $("#PrimaryContacts_1_").show();
         });
     </script>
 }

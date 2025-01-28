@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Service_Billing.Data;
 
@@ -11,9 +12,11 @@ using Service_Billing.Data;
 namespace Service_Billing.Migrations
 {
     [DbContext(typeof(ServiceBillingContext))]
-    partial class ServiceBillingContextModelSnapshot : ModelSnapshot
+    [Migration("20241101222908_AddChangeLogTable")]
+    partial class AddChangeLogTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,33 +175,6 @@ namespace Service_Billing.Migrations
                     b.ToTable("ClientAccounts");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.Contact", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClientAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("ContactType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientAccountId");
-
-                    b.HasIndex("PersonId");
-
-                    b.ToTable("Contacts");
-                });
-
             modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
                 {
                     b.Property<int>("Id")
@@ -271,11 +247,9 @@ namespace Service_Billing.Migrations
 
             modelBuilder.Entity("Service_Billing.Models.Person", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("DisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -354,23 +328,6 @@ namespace Service_Billing.Migrations
                     b.Navigation("ServiceCategory");
                 });
 
-            modelBuilder.Entity("Service_Billing.Models.Contact", b =>
-                {
-                    b.HasOne("Service_Billing.Models.ClientAccount", null)
-                        .WithMany("Contacts")
-                        .HasForeignKey("ClientAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Service_Billing.Models.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("Service_Billing.Models.FiscalHistory", b =>
                 {
                     b.HasOne("Service_Billing.Models.Bill", "Bill")
@@ -414,8 +371,6 @@ namespace Service_Billing.Migrations
             modelBuilder.Entity("Service_Billing.Models.ClientAccount", b =>
                 {
                     b.Navigation("Bills");
-
-                    b.Navigation("Contacts");
                 });
 #pragma warning restore 612, 618
         }

@@ -13,6 +13,10 @@ using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
 using System.Text.RegularExpressions;
+using DocumentFormat.OpenXml.Office2019.Drawing.Model3D;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Razor.TagHelpers;
+using DocumentFormat.OpenXml.InkML;
 
 namespace Service_Billing.Controllers
 {
@@ -31,6 +35,11 @@ namespace Service_Billing.Controllers
         private readonly IAuthorizationService _authorizationService;
         private readonly IConfiguration _configuration;
         private readonly IBusinessAreaRepository _businessAreaRepository;
+        private readonly IPeopleRepository _peopleRepository;
+        private readonly IContactRepository _contactRepository;
+        private readonly IConfidentialClientApplication cca;
+        private readonly IChangeLogRepository _changeLogRepository;
+
 
 
         public ClientAccountController(ILogger<ClientAccountController> logger,
@@ -40,6 +49,10 @@ namespace Service_Billing.Controllers
             IAuthorizationService authorizationService,
             IServiceCategoryRepository categoryRepository,
             IBusinessAreaRepository businessAreaRepository,
+            IPeopleRepository peopleRepository,
+            IChangeLogRepository changeLogRepository,
+            IContactRepository contactRepository,
+
             IConfiguration configuration,
                             GraphServiceClient graphServiceClient,
                             MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler,
@@ -60,6 +73,15 @@ namespace Service_Billing.Controllers
             _authorizationService = authorizationService;
             _configuration = configuration;
             _businessAreaRepository = businessAreaRepository;
+            _peopleRepository = peopleRepository;
+            _contactRepository = contactRepository;
+            cca = ConfidentialClientApplicationBuilder
+                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
+                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
+                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
+                    .Build();
+            _changeLogRepository = changeLogRepository;
+
         }
 
         // GET: ClientAccountController
@@ -118,8 +140,7 @@ namespace Service_Billing.Controllers
                     return View("Unauthorized");
                 }
             }
-            IEnumerable<Bill> charges = _billRepository.GetBillsByClientId(id);
-            IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+            ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(account.Id, "clientAccount");
 
             return View(account);
         }
@@ -139,12 +160,53 @@ namespace Service_Billing.Controllers
         // POST: ClientAccountController/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(ClientAccount model)
+        public async Task<IActionResult> Edit(ClientAccount model, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes)
         {
             try
-            {
-                await _clientAccountRepository.Update(model);
+            { // validation for contacts as foreign entities gave me a lot of trouble and ultimately I found this the most reasonable solution.
+                ModelState.Clear();
+                bool hasApprover = false;
+                bool hasFinancial = false;
+                bool hasPrimary = false;
 
+                for(int i = 0; i < contactIds.Length; i++)
+                {
+                        switch(contactTypes[i])
+                        {
+                        case "approver":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasApprover = true;
+                            break;
+                        case "financial":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasFinancial = true;
+                            break;
+                        case "primary":
+                            if (!String.IsNullOrEmpty(displayNames[i]))
+                                hasPrimary = true;
+                            break;
+
+                    }
+                }
+
+                if (!hasPrimary)
+                    ModelState.AddModelError("PrimaryContact", "Please include a primary contact");
+                if (!hasApprover)
+                    ModelState.AddModelError("Approver", "Please include at least one approver contact");
+                if (!hasFinancial)
+                    ModelState.AddModelError("FinancialContact", "Please include at least one financial contact");
+                if (!ModelState.IsValid)
+                {
+                    ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);
+                    IEnumerable<Models.Contact>? remainingContacts = account?.Contacts?.Where(x => contactIds.Contains(x.Id));
+                    model.Contacts = remainingContacts?.ToList(); //don't include contacts that were removed.
+                    return View(model);
+                }
+
+                await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
+                string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                await _clientAccountRepository.Update(model, user);
+            
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
             catch (DbUpdateException ex)
@@ -182,10 +244,9 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public ActionResult Create()
         {
-            _logger.LogInformation("User visited Intake form.");
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-            ViewData["Ministries"] = ministries;
             ClientCreateViewModel model = new ClientCreateViewModel();
+            model.Organizations = ministries;
 
             return View(model);
         }
@@ -195,7 +256,6 @@ namespace Service_Billing.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientCreateViewModel model)
         {
-            _logger.LogInformation("User submitted Intake form.");
             try
             {
                 if (!model.Account.OrganizationId.HasValue)
@@ -208,15 +268,25 @@ namespace Service_Billing.Controllers
                 model.Account.Name = accountName;
                 ClientAccount account = model.Account;
 
+                //lets continue collecting values for the contact fields on the account model for now. Just in case.
+                account = PopulateContactFields(account, model.Approvers, "approver");
+                account = PopulateContactFields(account, model.FinancialContacts, "financial");
+                account = PopulateContactFields(account, model.PrimaryContacts.ToList(), "primary");
+                account.ExpenseAuthorityName = model.ExpenseAuthorityContact;
+
+
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
                 int accountId = _clientAccountRepository.AddClientAccount(account);
 
-                var cca = ConfidentialClientApplicationBuilder
-                   .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                   .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                   .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                    .Build();
+                await AddContactsToAccount(accountId, model.Approvers, "approver");
+                await AddContactsToAccount(accountId, model.FinancialContacts, "financial");
+                await AddContactsToAccount(accountId, model.PrimaryContacts.ToList(), "primary");
+                List<string> expenseAsList = new List<string>();
+                expenseAsList.Add(model.ExpenseAuthorityContact);
+                await AddContactsToAccount(accountId, expenseAsList, "expense");
+
+
 
                 //if(!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                 //{
@@ -267,21 +337,118 @@ namespace Service_Billing.Controllers
             return RedirectToAction("details", new { model.Account.Id, isNew = true });
         }
 
-        private short GetNextClientNumber()
+        private async Task AddContactsToAccount(int accountId, List<string> contacts, string contactType, Models.Contact? contactEntry = null)
         {
-            short ret = 2054;
-            IEnumerable<ClientAccount> accounts = _clientAccountRepository.GetAll();
-            if (accounts != null && accounts.Any())
+            try
             {
-                ret = (short)accounts.Count();
-
-                while (accounts.FirstOrDefault(a => a.ClientNumber == ret) != null)
-                    ret++;
+                foreach (string contact in contacts)
+                { //Todo: handle the contact not being found because the user put in something dumb.
+                    if (string.IsNullOrEmpty(contact))
+                        continue;
+                    Models.Person? person = _peopleRepository.GetPersonByDisplayName(contact);
+                    if (person == null) // add new Person to DB
+                    { // This is a bit hacky. It'd be better to get the GraphUser stuff from the model, but I can't be bothered right now.
+                        string term = contact.Substring(0, contact.IndexOf(' ', contact.IndexOf(' ') + 1));
+                        int personId = await _peopleRepository.AddPersonByDisplayName(term);
+                        person = _peopleRepository.GetPersonById(personId);
+                        if (person == null)
+                            throw new Exception($"failed to add person to database: {term}");
+                    }
+                    if (contactEntry == null)
+                    {
+                        contactEntry = new Models.Contact();
+                        contactEntry.ContactType = contactType;
+                        contactEntry.PersonId = person.Id;
+                        contactEntry.ClientAccountId = accountId;
+                        await _contactRepository.AddContact(contactEntry);
+                    }
+                    else
+                    {
+                        contactEntry.PersonId = person.Id;
+                        _contactRepository.UpdateContact(contactEntry);
+                    }
+                }
             }
-
-            return ret;
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
         }
 
+
+        private async Task<ActionResult> ResolveContactUpdates(int accountId, int[] contactIds, int[] personIds, string[] displayNames, string[] contactTypes)
+        {
+            IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
+            IEnumerable<Models.Contact> removedContacts = existingContacts.Where(x => !contactIds.Contains(x.Id));
+            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificZone);
+            string changes = string.Empty;
+
+            foreach (Models.Contact contact in removedContacts)
+            {
+                contact.Person = _peopleRepository.GetPersonById(contact.PersonId);
+                changes += $"{contact.ContactType} contact {contact.Person?.DisplayName} was removed as a contact.</br>";
+                _contactRepository.DeleteContact(contact);
+            }
+
+            for (int i = 0; i < contactIds.Length; i++)
+            {
+                int id = contactIds[i];
+                List<string> nameList = new List<string>(); // for reusing AddContactsToAccount.
+                nameList.Add(displayNames[i]);
+                if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
+                { // new contact, and we have something for that
+                    await AddContactsToAccount(accountId, nameList, contactTypes[i]);
+                    changes += $"{displayNames[i]} was added as a {contactTypes[i]} contact.</br>";
+                }
+                else
+                {
+                    Models.Contact existingContact = existingContacts.First(c => c.Id == id);
+                    if (existingContact.PersonId != personIds[i])
+                    {
+                        if (personIds[i] == 0)
+                            await AddContactsToAccount(accountId, nameList, contactTypes[i], existingContact);
+                        else
+                            existingContact.PersonId = personIds[i];
+
+                        changes += $"A {contactTypes[i]} contact was changed to {displayNames[i]}.</br>";
+                    }
+                }
+            }
+
+            if(!String.IsNullOrEmpty(changes))
+            {
+                string userName = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                ChangeLogEntry logEntry = new ChangeLogEntry(accountId, pacificTime, userName, changes, "clientAccount");
+
+                await _changeLogRepository.CreateEntry(logEntry);
+            }
+
+            return Ok();
+        }
+
+        //We'll get rid of this whole hoopla once we're rock solid in the new contact tracking scheme, where contacts are tracked by
+        //foreign key to the Contacts table
+        private ClientAccount PopulateContactFields(ClientAccount account, List<string> contacts, string contactType)
+        {
+            string contactsString = string.Empty;
+            foreach (string name in contacts)
+            {
+                contactsString += name == contacts.Last() ? name : $"{name}, ";
+            }
+            switch(contactType)
+            {
+                case "approver":
+                    account.Approver = contactsString;
+                    break;
+                case "financial":
+                    account.FinancialContact = contactsString;
+                    break;
+            }
+            
+            return account;
+        }
+   
         public ActionResult Approve(int id)
         {
             return View();
@@ -311,20 +478,46 @@ namespace Service_Billing.Controllers
             }
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult?> GetAccountContact(string displayName, string email)
+        {
+            try
+            {
+                Models.Person? person = _peopleRepository.GetPersonByDisplayName(displayName);
+                if(person == null) // The long arm of BCS always gets its person!
+                {
+                    GraphUser user = await _graphApiService.GetUserByDisplayName(displayName, cca);
+                    person = new Models.Person();
+                    person.Name = $"{user.GivenName} {user.Surname}";
+                    person.Mail = user.Mail;
+                    user.DisplayName = user.DisplayName;
+                   // await _peopleRepository.AddPerson(person);
+                }
+                else if (person != null && string.IsNullOrEmpty(person.Mail))
+                {
+                    GraphUser user = await _graphApiService.GetUserByDisplayName(displayName, cca);
+                    person.Mail = user.Mail;
+                    await _peopleRepository.Update(person);
+                }
+
+                return new JsonResult(person);
+                
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return null;    
+            }
+        }
+
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
             try
             {
-                var cca = ConfidentialClientApplicationBuilder
-                    .Create(_configuration.GetSection("AzureAd")["ClientId"])
-                    .WithClientSecret(_configuration.GetSection("AzureAd")["ClientSecret"])
-                    .WithAuthority(new Uri($"https://login.microsoftonline.com/{_configuration.GetSection("AzureAd")["TenantId"]}"))
-                    .Build();
-
                 var queriedUsers = await _graphApiService.GetUsersByDisplayName(term, cca);
 
-                List<SelectListItem> contactItems = new List<SelectListItem>();
                 List<string> contacts = new List<string>();
                 if (queriedUsers.Value != null)
                 {
@@ -341,7 +534,7 @@ namespace Service_Billing.Controllers
             }
             catch (ServiceException svcex)
             {
-                _logger.LogError("THIS IS THE SERVICE EXCEPTION!!!");
+                _logger.LogError("Graph API service exception: ");
                 _logger.LogWarning(svcex.Message);
 
                 string[] scopes = { "user.read", "user.readbasic.all" };
@@ -487,7 +680,8 @@ namespace Service_Billing.Controllers
                             }
                         }
                     }
-                    _clientAccountRepository.Update(account);
+                    string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
+                    _clientAccountRepository.Update(account, user);
                 }
                 else
                 {
