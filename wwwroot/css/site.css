@@ -93,7 +93,8 @@ header {
 }
 
 .development {
-  background-color: magenta;
+    background-color: #4B7C7C;
+    filter: brightness(1.25);
 }
 .testing{
   background-color: green;
