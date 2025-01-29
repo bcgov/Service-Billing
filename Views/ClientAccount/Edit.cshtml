@@ -236,16 +236,12 @@
             });
         const updateOrg = (() =>
         {
-          console.log('update');
           $('#OrganizationId').val($('#orgSelect').val());
-          console.log($('#OrganizationId').val());
-          console.log($('#Name').val());
-          var url = "../../ClientAccount/UpdateNameOnOrgChange?orgId=" + $("#OrganizationId").val() +'&clientName=' + $('#Name').val();
+          var url = `@Url.Action("UpdateNameOnOrgChange", "ClientAccount")` + "?orgId=" + $("#OrganizationId").val() +'&clientName=' + $('#Name').val();
           var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
                         var response = JSON.parse(xhr.response);
-                        console.log(JSON.stringify(response));
                         $("#Name").val(response);
                         $("#dialog").dialog("close");
                     }
@@ -298,7 +294,6 @@
       });
 
       const addContact = ((contactType) => {
-          console.log(contactType);
           var html = `<div class="form-group">
                        <input asp-for="contact_Person_DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
                        <input asp-for="contact_Person_ContactType" name="contactTypes" type="hidden" value="${contactType}"/>
