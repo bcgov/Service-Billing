@@ -149,6 +149,7 @@ namespace Service_Billing.Controllers
         public ActionResult Edit(int id)
         {
             ClientAccount? account = _clientAccountRepository.GetClientAccount(id);
+            ViewData["Organizations"] = _ministryRepository.GetAll();
 
             if (account == null)
                 return NotFound();
@@ -272,6 +273,7 @@ namespace Service_Billing.Controllers
                 account = PopulateContactFields(account, model.FinancialContacts, "financial");
                 account = PopulateContactFields(account, model.PrimaryContacts.ToList(), "primary");
                 account.ExpenseAuthorityName = model.ExpenseAuthorityContact;
+
 
                 _logger.LogInformation($"Client Account with Id: {account.Id} is being added to DB");
 
@@ -517,7 +519,7 @@ namespace Service_Billing.Controllers
                 var queriedUsers = await _graphApiService.GetUsersByDisplayName(term, cca);
 
                 List<string> contacts = new List<string>();
-                if(queriedUsers.Value != null)
+                if (queriedUsers.Value != null)
                 {
                     foreach (var user in queriedUsers.Value)
                     {
@@ -591,8 +593,8 @@ namespace Service_Billing.Controllers
             {
                 clients = clients.Where(x => !String.IsNullOrEmpty(x.ExpenseAuthorityName) && x.ExpenseAuthorityName.ToLower().Contains(ministryUserName.ToLower()));
             }
-            if(!String.IsNullOrEmpty(primaryContactFilter))
-                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) &&  x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
+            if (!String.IsNullOrEmpty(primaryContactFilter))
+                clients = clients.Where(x => !String.IsNullOrEmpty(x.PrimaryContact) && x.PrimaryContact.ToLower().Contains(primaryContactFilter.ToLower()));
 
             return clients;
         }
@@ -607,7 +609,7 @@ namespace Service_Billing.Controllers
                 if (ministryFilter > 0)
                 {
                     Ministry? ministry = _ministryRepository.GetById(ministryFilter);
-                    if(ministry != null)
+                    if (ministry != null)
                         fileName += $"-Client{ministry.Title}";
                 }
                 if (!String.IsNullOrEmpty(responsibilityFilter))
@@ -622,7 +624,7 @@ namespace Service_Billing.Controllers
 
                 List<ClientInfoRowEntry> rows = new List<ClientInfoRowEntry>();
 
-                foreach(ClientAccount account in accounts)
+                foreach (ClientAccount account in accounts)
                 {
                     ClientInfoRowEntry row = new ClientInfoRowEntry(account);
                     if (account.OrganizationId.HasValue && account.OrganizationId.Value > 0)
@@ -669,7 +671,7 @@ namespace Service_Billing.Controllers
                     account.IsActive = active;
                     if (!active) //deactivate all charges associates with this client;
                     {
-                        if(account.Bills != null && account.Bills.Any())
+                        if (account.Bills != null && account.Bills.Any())
                         {
                             foreach (Bill charge in account.Bills)
                             {
@@ -717,11 +719,11 @@ namespace Service_Billing.Controllers
             if (!String.IsNullOrEmpty(lastName))
             {
                 if (!String.IsNullOrEmpty(lastName) &&
-                        (!String.IsNullOrEmpty(account.PrimaryContact) && 
+                        (!String.IsNullOrEmpty(account.PrimaryContact) &&
                         (account.PrimaryContact.ToLower().Contains(lastName.ToLower()) && account.PrimaryContact.ToLower().Contains(firstName.ToLower()))) ||
-                        (!String.IsNullOrEmpty(account.FinancialContact) && 
+                        (!String.IsNullOrEmpty(account.FinancialContact) &&
                         (account.FinancialContact.ToLower().Contains(lastName.ToLower()) && account.FinancialContact.ToLower().Contains(firstName.ToLower()))) ||
-                        (!String.IsNullOrEmpty(account.Approver) && 
+                        (!String.IsNullOrEmpty(account.Approver) &&
                         (account.Approver.ToLower().Contains(lastName.ToLower()) && account.Approver.ToLower().Contains(firstName.ToLower())))
                     )
                 {
@@ -746,6 +748,27 @@ namespace Service_Billing.Controllers
                 }
             }
             return lastName;
+        }
+
+        [HttpGet]
+        public ActionResult UpdateNameOnOrgChange(int orgId, string clientName)
+        {
+            try
+            {
+                Ministry? newOrg = _ministryRepository.GetById(orgId);
+                if (newOrg == null)
+                    throw new Exception($"No organization with id = {orgId} was found");
+                string oldAcronym = clientName.Substring(0, clientName.IndexOf('-'));
+                string newAcronym = newOrg?.Acronym;
+                clientName = clientName.Replace(oldAcronym, string.Empty);
+                return new JsonResult ($"{newOrg.Acronym} {clientName}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError("error when trying to change ClientAccount name on org change");
+                _logger.LogError(e.Message);
+                return new JsonResult (e.Message);
+            }
         }
     }
 

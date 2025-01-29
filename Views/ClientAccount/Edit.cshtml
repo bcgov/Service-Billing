@@ -5,7 +5,10 @@
     Layout = "_Layout";
 }
 @{
-    int i = 0; // for contact indices
+
+  IEnumerable<Ministry>? organizations = ViewData["Organizations"] as IEnumerable<Ministry>;
+  int i = 0; // for contact indices
+
 }
 
 <h1>Edit</h1>
@@ -21,6 +24,7 @@
                 <label asp-for="@Model.Name" class="control-label"></label>
                 <input asp-for="@Model.Name" class="form-control" value="@Model.Name"/>
                 <span asp-validation-for="@Model.Name" class="text-danger"></span>
+                <a onclick="openDialog()">Change Ministry or Organization?</a>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ClientNumber" class="control-label"></label>
@@ -56,6 +60,35 @@
                 <label asp-for="@Model.Notes" class="control-label"></label>
                 <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
                 <span asp-validation-for="@Model.Notes" class="text-danger"></span>
+
+                <label asp-for="@Model.PrimaryContact" class="control-label">Primary Contact</label>
+                <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
+       
+                <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
+
+                <label asp-for="@Model.Approver" class="control-label">Approvers</label>
+                <input class="form-control" asp-for="@Model.Approver" id="approverContact" placeholder="start entering surname to search" />
+         
+                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
+
+                <label asp-for="@Model.FinancialContact" class="control-label">Financial Contacts</label>
+                <input class="form-control" asp-for="@Model.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
+          
+                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
+              
+                <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
+
+                <input type="checkbox" asp-for="@Model.IsApprovedByEA" checked="@Model.IsApprovedByEA" />
+                <span asp-validation-for="@Model.IsApprovedByEA" class="text-danger"></span>
+               
+                <div class="form-group">
+                    <label asp-for="@Model.ServicesEnabled" class="control-label"></label>
+                    <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
+                    <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
+                </div>
+                <input type="hidden" asp-for="@Model.Id" class="form-control" />
+                <input  asp-for="@Model.OrganizationId" class="form-control" />
+
             </div>
 
             <label asp-for="@Model.Contacts" class="control-label">Primary Contacts</label>
@@ -162,6 +195,26 @@
         </form>
     </div>
 </div>
+<div id="dialog" title="Change Ministry or Organization">
+      <p>This will update the organization this account is under, and will update the name to reflect that.</p>
+      <select asp-for="@organizations" class="form-control" id="orgSelect" >
+        @if(organizations != null)
+        {
+          foreach(Ministry organization in organizations)
+            {
+                if (organization.Id == Model.OrganizationId)
+                {
+                    <option value="@organization.Id" selected>@organization.Acronym - @organization.Title</option>
+                }
+                else
+                {
+                    <option value="@organization.Id">@organization.Acronym - @organization.Title</option>
+                }
+            }
+        }
+      </select>            
+      <input type="submit" value="Update" onclick="updateOrg()" class="btn btn-primary" />
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
@@ -175,6 +228,31 @@
               $("#add-primary").hide();
           }
         });
+             $("#dialog").dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            autoOpen: false
+            });
+        const updateOrg = (() =>
+        {
+          $('#OrganizationId').val($('#orgSelect').val());
+          var url = `@Url.Action("UpdateNameOnOrgChange", "ClientAccount")` + "?orgId=" + $("#OrganizationId").val() +'&clientName=' + $('#Name').val();
+          var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        var response = JSON.parse(xhr.response);
+                        $("#Name").val(response);
+                        $("#dialog").dialog("close");
+                    }
+                };
+                xhr.open('get', url);
+                xhr.send();
+        });
+         const openDialog = (() => {
+               $("#dialog").dialog("open");
+            });
+
 
        const makeContactInputs = (() => {
           $(".contact-input").each(function () {
@@ -216,7 +294,6 @@
       });
 
       const addContact = ((contactType) => {
-          console.log(contactType);
           var html = `<div class="form-group">
                        <input asp-for="contact_Person_DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
                        <input asp-for="contact_Person_ContactType" name="contactTypes" type="hidden" value="${contactType}"/>
@@ -243,5 +320,6 @@
              $("#add-financial").show();
           }
       });
+
     </script>
 }
