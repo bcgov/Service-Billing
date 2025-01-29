@@ -273,7 +273,7 @@ else
                             @if (category != null)
                             {
                                 <td>
-                                    $@fiscalHistory?.UnitPriceAtFiscal
+                                    @String.Format("${0:.##}",fiscalHistory?.UnitPriceAtFiscal)
                                 </td>
                                 <td>
                                     @String.Format("{0:.##}", fiscalHistory?.QuantityAtFiscal)
