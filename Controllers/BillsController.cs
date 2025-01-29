@@ -611,7 +611,7 @@ namespace Service_Billing.Controllers
                         FiscalHistory? chargeHistory = previousQuarterChargeIds.FirstOrDefault(x => x.BillId == bill.Id);
                         if(chargeHistory != null)
                         {
-                            bill.Amount = chargeHistory.UnitPriceAtFiscal;
+                            bill.Amount = chargeHistory.UnitPriceAtFiscal * chargeHistory.QuantityAtFiscal;
                             bill.Quantity = chargeHistory.QuantityAtFiscal;
                         }
                     }
