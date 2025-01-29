@@ -216,7 +216,7 @@
       });
 
       const addContact = ((contactType) => {
-          console.log(contactType);
+
           var html = `<div class="form-group">
                        <input asp-for="contact_Person_DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
                        <input asp-for="contact_Person_ContactType" name="contactTypes" type="hidden" value="${contactType}"/>
