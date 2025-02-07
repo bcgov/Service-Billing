@@ -125,7 +125,6 @@
     <script>
         $(document).ready(function () {
             calculateAmount = (quantityChanged) => {
-              console.log(quantityChanged);
                 var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "JSON";

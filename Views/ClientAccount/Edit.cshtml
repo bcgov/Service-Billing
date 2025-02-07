@@ -4,6 +4,9 @@
     ViewData["Title"] = "Edit Client Account";
     Layout = "_Layout";
 }
+@{
+    int i = 0; // for contact indices
+}
 
 <h1>Edit</h1>
 
@@ -11,8 +14,8 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <form asp-action="Edit" id="editForm">
+            <div asp-validation-summary="All" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
                 <label asp-for="@Model.Name" class="control-label"></label>
@@ -46,48 +49,116 @@
             </div>
             <div class="form-group">
                 <label asp-for="@Model.ExpenseAuthorityName" class="control-label"></label>
-                <input asp-for="@Model.ExpenseAuthorityName" class="form-control" value="@Model.ExpenseAuthorityName" />
+                <input asp-for="@Model.ExpenseAuthorityName" class="form-control contact-input" value="@Model.ExpenseAuthorityName" />
                 <span asp-validation-for="@Model.ExpenseAuthorityName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="@Model.Notes" class="control-label"></label>
                 <textarea asp-for="@Model.Notes" class="form-control" value="@Model.Notes" > </textArea>
                 <span asp-validation-for="@Model.Notes" class="text-danger"></span>
- 
-
-                <label asp-for="@Model.PrimaryContact" class="control-label">Primary Contact</label>
-                <input asp-for="@Model.PrimaryContact" class="form-control" id="primaryContact" placeholder="start entering surname to search" />
-       
-                <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
-
-                <label asp-for="@Model.Approver" class="control-label">Approvers</label>
-                <input class="form-control" asp-for="@Model.Approver" id="approverContact" placeholder="start entering surname to search" />
-         
-                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
-
-                <label asp-for="@Model.FinancialContact" class="control-label">Financial Contacts</label>
-                <input class="form-control" asp-for="@Model.FinancialContact" id="financialContact" placeholder="start entering surname to search" />
-          
-                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
-              
-                <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
-
-                <input type="checkbox" asp-for="@Model.IsApprovedByEA" checked="@Model.IsApprovedByEA" />
-                <span asp-validation-for="@Model.IsApprovedByEA" class="text-danger"></span>
-               
-                <div class="form-group">
-                    <label asp-for="@Model.ServicesEnabled" class="control-label"></label>
-                    <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
-                    <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
-                </div>
-                <input type="hidden" asp-for="@Model.Id" class="form-control" />
-                <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />
             </div>
+
+            <label asp-for="@Model.Contacts" class="control-label">Primary Contacts</label>
+            <div id="primary-contacts">
+                   
+            <!-- Handling contacts as one collection with different types was a real pain. Not sure I would do it again. -->
+            @foreach(Contact? contact in Model.Contacts)
+            {
+              if(contact.ContactType == "primary")
+              {  
+                <div class="form-group">
+                  <input asp-for="@contact.Person.DisplayName" name="displayNames" id="contact.Person.DisplayName" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" 
+                    data-val="true"
+                    data-val-required="Please provide a primary contact"/>
+                  <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="primary"/>
+                  <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
+                  <input asp-for="@contact.Id" name="contactIds" type="hidden" class="contact-id" />
+                  @if(contact != Model.PrimaryContacts.First())
+                  {     
+                    <a id="remove-contact" onclick="removeContactInput(event)">remove</a>
+                  }
+                </div>
+              }
+            }  
+                
+              <a id="add-primary" onclick="addContact('primary')">Add a second Primary Contact?</a>
+              <div>
+                <span asp-validation-for="@Model.PrimaryContact" class="text-danger"></span>
+              </div>
+            </div>
+
+            <label asp-for="@Model.Contacts" class="control-label">Approvers</label>
+                
+            <div id="approver-contacts">
+            @foreach(Contact contact in Model.Contacts)
+            {
+                if (contact.ContactType == "approver")
+                {
+                    <div class="form-group">
+                        <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" id="contact_@i" placeholder="start entering surname to search"
+                          data-val="true"
+                      data-val-required="Please include at least one approver contact"/>
+                    <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="approver"/>
+                    <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
+                    <input asp-for="@contact.Id" name="contactIds" class="contact-id" type="hidden" />
+                    @if (contact != Model.ApproverContacts?.First())
+                    {
+                      <a id="remove-contact" onclick="removeContactInput(event)">remove</a>
+                    }
+                    </div> 
+                }
+              i++;
+            }
+              <a id="add-approver" onclick="addContact('approver')">Add an approver contact?</a>
+              <div>
+                <span asp-validation-for="@Model.Approver" class="text-danger"></span>
+              </div>
+            </div>
+
+            <label asp-for="@Model.Contacts" class="control-label contact-input">Financial Contacts</label>
+            <div id="financial-contacts">
+
+            @foreach(Contact contact in Model.Contacts)
+            {
+              if(contact.ContactType == "financial")
+              {
+                  <div class="form-group">
+                  <input class="form-control contact-input" asp-for="@contact.Person.DisplayName" name="displayNames" placeholder="start entering surname to search" 
+                    data-val="true"
+                      data-val-required="Please include at least one financial contact"/>
+                  <input asp-for="@contact.ContactType" name="contactTypes" type="hidden" value="financial"/>
+                  <input asp-for="@contact.PersonId" name="personIds" class="id-input" type="hidden" />
+                  <input asp-for="@contact.Id" name="contactIds" type="hidden" class="contact-id" />
+                  @if(contact != Model.FinancialContacts?.First())
+                  {
+                    <a id="remove-contact" onclick="removeContactInput(event)">remove</a>
+                  }
+                </div>
+              }
+            }
+
+              <a id="add-financial" onclick="addContact('financial')">Add a financial contact?</a>
+              <div>
+                <span asp-validation-for="@Model.FinancialContact" class="text-danger"></span>
+              </div>
+            </div>
+              
+            <label asp-for="@Model.IsApprovedByEA">EA Approved?</label>
+
+            <input type="checkbox" asp-for="@Model.IsApprovedByEA" checked="@Model.IsApprovedByEA" />
+            <span asp-validation-for="@Model.IsApprovedByEA" class="text-danger"></span>
+               
+            <div class="form-group">
+                <label asp-for="@Model.ServicesEnabled" class="control-label"></label>
+                <input asp-for="@Model.ServicesEnabled" class="form-control" value="@Model.ServicesEnabled" />
+                <span asp-validation-for="@Model.ServicesEnabled" class="text-danger"></span>
+            </div>
+            <input type="hidden" asp-for="@Model.Id" class="form-control" />
+            <input type="hidden" asp-for="@Model.OrganizationId" class="form-control" />        
             <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-            
+            </div>   
         </form>
     </div>
 </div>
@@ -96,25 +167,81 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
+        var i = 0;
+        const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
         $(document).ready(function () {
-            const contactListUrl = window.location.origin + "/ClientAccount/SearchForContact";
-
-            $("#primaryContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
-            $("#financialContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
-            $("#approverContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
-            $("#authorityContact").autocomplete({
-                source: contactListUrl,
-                delay: 500
-            });
+            makeContactInputs();
+          if(@Model.PrimaryContacts?.Count() > 1){
+              $("#add-primary").hide();
+          }
         });
+
+       const makeContactInputs = (() => {
+          $(".contact-input").each(function () {
+              $(this).autocomplete({
+                source: contactListUrl,
+                delay: 100
+              });
+            });
+             $( ".contact-input" ).on( "autocompleteselect", function( event, ui ) {
+            updateContactPerson(ui.item.label, event);
+        } );
+         $( ".contact-input" ).on( "change", function( event, ui ) {
+           if(!ui){
+             var inputGroup = $(event.target);
+             inputGroup.siblings('.id-input').val(0);
+           inputGroup.siblings('.contact-id').val(0);
+           }
+        } );
+        });
+
+       const updateContactPerson = ((displayName, e) => {
+         var inputGroup = $(e.target);
+        
+          var url = `@Url.Action("GetAccountContact", "ClientAccount")` + `?displayName=${displayName}`;
+          var xhr = new XMLHttpRequest();
+
+          xhr.onreadystatechange = function () {
+              if (this.readyState == 4 && this.status == 200) {
+                  var data = JSON.parse(xhr.response);
+                  var id = data.id;
+                  var mail = data.mail;
+                  // Use string selectors for siblings
+                  inputGroup.siblings('.id-input').val(id);
+              }
+          };
+
+          xhr.open('get', url);
+          xhr.send();
+      });
+
+      const addContact = ((contactType) => {
+
+          var html = `<div class="form-group">
+                       <input asp-for="contact_Person_DisplayName" name="displayNames" class="form-control contact-input" class="contactInput" placeholder="start entering surname to search" />
+                       <input asp-for="contact_Person_ContactType" name="contactTypes" type="hidden" value="${contactType}"/>
+                       <input asp-for="contact_Person_PersonId" name="personIds" class="id-input" type="hidden"/>
+                       <input asp-for="contact_Id" name="contactIds" class="contact-id-input" type="hidden" value="0"  />
+                        <a id="remove-contact" onclick="removeContactInput(event)">remove</a>
+                     </div>`;
+           $(`#${contactType}-contacts`).append(html);
+           if(contactType === 'primary'){
+            $("#add-primary").hide();
+           }
+           else if(contactType === 'financial'){
+            $("#add-financial").hide();
+           }
+          makeContactInputs();
+      }); 
+
+      const removeContactInput = ((e, contactType) => {
+        e.target.parentElement.remove();
+          if(contactType === 'primary'){
+            $("#add-primary").show();
+          }
+          else if (contactType === 'financial'){
+             $("#add-financial").show();
+          }
+      });
     </script>
 }

@@ -23,7 +23,10 @@ namespace Service_Billing.Models.Repositories
 
         public ClientAccount? GetClientAccount(int accountId)
         {
-            return _context.ClientAccounts.Include(c => c.Bills).ThenInclude(b => b.ServiceCategory).FirstOrDefault(c => c.Id == accountId);
+            return _context.ClientAccounts
+            .Include(c => c.Bills).ThenInclude(b => b.ServiceCategory)
+            .Include(c => c.Contacts).ThenInclude(p => p.Person)
+            .FirstOrDefault(c => c.Id == accountId);
         }
 
         public IEnumerable<ClientAccount> SearchClientAccounts(string queryString)

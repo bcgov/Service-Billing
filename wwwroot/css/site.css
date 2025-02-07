@@ -93,10 +93,11 @@ header {
 }
 
 .development {
-  background-color: cadetblue;
+    background-color: #4B7C7C;
+    filter: brightness(1.25);
 }
 .testing{
-  background-color: darkmagenta;
+  background-color: green;
 }
     header h1 {
         font-family: ‘BCSans’, ‘Noto Sans’, Verdana, Arial, sans-serif;
@@ -632,5 +633,5 @@ a:not([href]):not([class]) {
 }
 
 .form-group{
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
