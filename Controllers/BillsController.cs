@@ -506,7 +506,7 @@ namespace Service_Billing.Controllers
             try
             {
                 IQueryable<Bill> query = _serviceBillingContext.Bills
-                    .Include(b => b.ClientAccount)
+                    .Include(b => b.ClientAccount).ThenInclude(c => c.Contacts).ThenInclude(p => p.Person)
                     .Include(b => b.ServiceCategory)
                     .Include(b => b.PreviousFiscalRecords)
                     .ThenInclude(r => r.FiscalPeriod);
@@ -643,10 +643,20 @@ namespace Service_Billing.Controllers
             nameElements[1] = nameElements[1].TrimStart();
             string firstName = nameElements[1].Substring(0, nameElements[1].IndexOf(" ")).ToLower();
 
-            return (!String.IsNullOrEmpty(account.ExpenseAuthorityName) && (account.ExpenseAuthorityName.ToLower().Contains(surname) && account.ExpenseAuthorityName.ToLower().Contains(firstName)) ||
-                !String.IsNullOrEmpty(account.Approver) && (account.Approver.ToLower().Contains(surname) && account.Approver.ToLower().Contains(firstName)) ||
-                !String.IsNullOrEmpty(account.FinancialContact) && (account.FinancialContact.ToLower().Contains(surname) && account.FinancialContact.ToLower().Contains(firstName)) ||
-                !String.IsNullOrEmpty(account.PrimaryContact) && (account.PrimaryContact.ToLower().Contains(surname) && account.PrimaryContact.ToLower().Contains(firstName)));
+            {
+                foreach (Models.Contact contact in account.Contacts)
+                {
+                    if (contact.Person.DisplayName == ministryUserName)
+                        return true;
+                    if((!String.IsNullOrEmpty(account.ExpenseAuthorityName) && (account.ExpenseAuthorityName.ToLower().Contains(surname) && account.ExpenseAuthorityName.ToLower().Contains(firstName)) ||
+                        !String.IsNullOrEmpty(account.Approver) && (account.Approver.ToLower().Contains(surname) && account.Approver.ToLower().Contains(firstName)) ||
+                        !String.IsNullOrEmpty(account.FinancialContact) && (account.FinancialContact.ToLower().Contains(surname) && account.FinancialContact.ToLower().Contains(firstName)) ||
+                        !String.IsNullOrEmpty(account.PrimaryContact) && (account.PrimaryContact.ToLower().Contains(surname) && account.PrimaryContact.ToLower().Contains(firstName))))
+                        return true;                  
+                }
+            }
+
+            return false;
         }
         private IEnumerable<Bill> FilterChargesForCurrentMinistryUser(string ministryUserName, IEnumerable<Bill> bills)
         {
