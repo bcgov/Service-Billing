@@ -109,7 +109,7 @@
                     </td>
 
                     <td>@account.ExpenseAuthorityName</td>
-                    <td>@account.PrimaryContact</td>
+                    <td>@(account?.PrimaryContacts?.FirstOrDefault()?.Person?.Name ?? "")</td>
                     <td>@account.IsActive</td>
 
                 </tr>
