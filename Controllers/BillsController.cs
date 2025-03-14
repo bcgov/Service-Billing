@@ -727,8 +727,12 @@ namespace Service_Billing.Controllers
                             {
                                 if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                                     row.ExpenseAuthority = account.ExpenseAuthorityName;
-                                if (!String.IsNullOrEmpty(account.PrimaryContact))
-                                    row.PrimaryContact = account.PrimaryContact;
+
+
+                                var primaryContact = account.Contacts?
+                                    .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
+                                        .Person?.DisplayName;
+                                row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
                             }
                             row.Notes = bill.Notes;
                             rows.Add(row);
@@ -765,8 +769,11 @@ namespace Service_Billing.Controllers
                         {
                             if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
                                 row.ExpenseAuthority = account.ExpenseAuthorityName;
-                            if (!String.IsNullOrEmpty(account.PrimaryContact))
-                                row.PrimaryContact = account.PrimaryContact;
+
+                            var primaryContact = account.Contacts?
+                                    .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
+                                        .Person?.DisplayName;
+                            row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
                         }
                         row.Notes = bill.Notes;
                         rows.Add(row);
@@ -780,7 +787,6 @@ namespace Service_Billing.Controllers
                 ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
                 ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
                 ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
-
 
                 IXLTables tsTables = ws.Tables;
                 IXLTable firstTable = tsTables.FirstOrDefault();
