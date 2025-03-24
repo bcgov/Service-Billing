@@ -75,10 +75,7 @@
                 @Html.DisplayNameFor(model => Model.ExpenseAuthorityName)
             </td>
             <td>
-                @foreach (Contact contact in expenseAuthority)
-                {
-                    @contact.Person.DisplayName
-                }
+               @Model.ExpenseAuthorityName
             </td>
         </tr>
         <tr>
