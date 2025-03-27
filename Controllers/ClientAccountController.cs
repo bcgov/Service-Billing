@@ -194,6 +194,7 @@ namespace Service_Billing.Controllers
                     ModelState.AddModelError("Approver", "Please include at least one approver contact");
                 if (!hasFinancial)
                     ModelState.AddModelError("FinancialContact", "Please include at least one financial contact");
+                
                 if (!ModelState.IsValid)
                 {
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);
@@ -393,7 +394,7 @@ namespace Service_Billing.Controllers
             {
                 int id = contactIds[i];
                 List<string> nameList = new List<string>(); // for reusing AddContactsToAccount.
-                nameList.Add(displayNames[i]);
+                nameList.Add(displayNames[i].Trim());
                 if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
                 { // new contact, and we have something for that
                     await AddContactsToAccount(accountId, nameList, contactTypes[i]);
@@ -509,6 +510,27 @@ namespace Service_Billing.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<bool?> DidContactChange(int accountId, string name, string type)
+        {
+            try
+            {
+                //if type == "undefined" .. EA handling goes here. 
+                IEnumerable <Models.Contact> contacts = _contactRepository.GetContactsByAccountId(accountId).Where(x => x.ContactType == type);
+                foreach(Models.Contact contact in contacts)
+                {
+                    if(string.Compare(contact.Person?.DisplayName, name.Trim()) == 0)
+                        return false;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+
+            return true;
+        }
+        
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {

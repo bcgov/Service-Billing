@@ -587,6 +587,9 @@ namespace Service_Billing.Controllers
                     query = query.Where(b => b.ClientAccount.Contacts.Any(c =>
                         c.ContactType == "expense" && c.Person != null &&
                         c.Person.Name.ToLower().Contains(searchParams.AuthorityFilter.ToLower())));
+                    //because EA is still a field on ClientAccount model, but we might change that.
+                    query = query.Where(b => !String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName)
+                        && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()));
                 }
                 if (searchParams?.ClientNumber > 0)
                 {
