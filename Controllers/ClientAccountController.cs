@@ -515,6 +515,8 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                if (String.IsNullOrEmpty(name))
+                    return true;
                 //if type == "undefined" .. EA handling goes here. 
                 IEnumerable <Models.Contact> contacts = _contactRepository.GetContactsByAccountId(accountId).Where(x => x.ContactType == type);
                 foreach(Models.Contact contact in contacts)
