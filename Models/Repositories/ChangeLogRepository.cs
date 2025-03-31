@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.BouncyCastle.Asn1.X509.Qualified;
 using Service_Billing.Data;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace Service_Billing.Models.Repositories
@@ -88,7 +89,7 @@ namespace Service_Billing.Models.Repositories
                                 changes += GetServiceCategoryChangeString(property);
                             }
                             else
-                                changes += $"{property.Metadata.Name} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
+                                changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
                         }
                     }
                     if (changes != String.Empty)
@@ -107,7 +108,19 @@ namespace Service_Billing.Models.Repositories
         #endregion
 
         #region private methods
+        private string GetDisplayName<T>(T entity, string propertyName)
+        {
+            var propertyInfo = typeof(T).GetProperty(propertyName);
+            if (propertyInfo != null)
+            {
+                var displayAttribute = propertyInfo
+                    .GetCustomAttributes(typeof(DisplayAttribute), false)
+                    .FirstOrDefault() as DisplayAttribute;
 
+                return displayAttribute?.Name ?? propertyName; // Fallback to property name if no display name is found
+            }
+            return propertyName; // Fallback if property not found
+        }
         private EntityEntry? MarkModifiedFields<T>(T currentEntity, int id, string typeString, EntityEntry? entry)
         {
             try
