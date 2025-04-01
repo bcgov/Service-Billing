@@ -383,6 +383,12 @@ namespace Service_Billing.Controllers
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificZone);
             string changes = string.Empty;
 
+            for(int i = 0; i < contactIds.Length; i++)
+            {
+                if (String.IsNullOrEmpty(displayNames[i]))
+                    removedContacts.Append(existingContacts.FirstOrDefault(x => x.Id == contactIds[i]));
+            }
+
             foreach (Models.Contact contact in removedContacts)
             {
                 contact.Person = _peopleRepository.GetPersonById(contact.PersonId);
@@ -394,6 +400,8 @@ namespace Service_Billing.Controllers
             {
                 int id = contactIds[i];
                 List<string> nameList = new List<string>(); // for reusing AddContactsToAccount.
+                if (String.IsNullOrEmpty(displayNames[i]))
+                    throw new Exception("Failed to resolve contact updates. Somehow an account update tried to resolve contact details with a missing name");
                 nameList.Add(displayNames[i].Trim());
                 if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
                 { // new contact, and we have something for that

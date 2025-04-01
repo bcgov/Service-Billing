@@ -177,13 +177,19 @@
           }
         });
 
-        var DidContactActuallyChange = ((id, displayName, type) => {
+        var DidContactActuallyChange = ((id, displayName, type, event) => {
             var url = `@Url.Action("DidContactChange", "ClientAccount")` + `?accountId=${id}` + `&name=${displayName}` + `&type=${type}`;
           var xhr = new XMLHttpRequest();
-
+            var inputGroup = $(event.target);
           xhr.onreadystatechange = function () {
               if (this.readyState == 4 && this.status == 200) {
-                  return xhr.response;
+                  if(xhr.responseText === 'true'){
+                      inputGroup.siblings('.id-input').val(0);
+                      inputGroup.siblings('.contact-id').val(0);
+                      if(inputGroup.val() ===''){
+                          removeContactInput(event);
+                      }
+                  }
               }
           };
 
@@ -202,14 +208,10 @@
             updateContactPerson(ui.item.label, event);
         } );
          $( ".contact-input" ).on( "change", function( event, ui ) {
-           if(!ui){
-               
+           if(!ui){   
              var inputGroup = $(event.target);
                var accountId = $('#id').val();
-               if (DidContactActuallyChange(accountId, inputGroup.val(), inputGroup.siblings('.contact-type').val())) {
-                 inputGroup.siblings('.id-input').val(0);
-                 inputGroup.siblings('.contact-id').val(0);
-               }
+               DidContactActuallyChange(accountId, inputGroup.val(), inputGroup.siblings('.contact-type').val(), event)
            }
         } );
         });
