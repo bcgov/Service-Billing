@@ -82,6 +82,23 @@
         </tr>
         <tr>
             <td class="table-left">
+                Amount
+            </td>
+            @if(fiscalHistory != null)
+            {
+                <td>
+                    @String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal))
+                </td>
+            }
+            else
+            {
+                <td>
+                    @String.Format("${0:.##}", (Model.Amount))
+                </td>
+            }
+        </tr>
+        <tr>
+            <td class="table-left">
                 Most Recent Period
             </td>
             <td>
