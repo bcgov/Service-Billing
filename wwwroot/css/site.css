@@ -411,6 +411,10 @@ label {
 .bottom-nav{
     padding-top: 6px;
 }
+
+.bottom-nav input{
+    max-width: 150px;
+}
 #categoryFilter{
     margin-bottom: 6px;
 }
@@ -635,3 +639,4 @@ a:not([href]):not([class]) {
 .form-group{
   margin-bottom: 16px;
 }
+
