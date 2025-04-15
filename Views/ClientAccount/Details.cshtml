@@ -302,8 +302,11 @@
         @foreach (ChangeLogEntry logEntry in changeLogs)
         {
             <div>
-            <p>Changed by @logEntry.ChangedBy on @logEntry.DateModified.DateTime.ToString("dd-MM-yyyy : hh:mm")</p>
-            <p>@Html.Raw(logEntry.LogEntry)</p>
+                <div class="change-log-time-stamp">
+                    @logEntry.DateModified.DateTime.ToString("MMMM dd, yyyy hh:mm tt")
+                </div>
+                <p>Changed by @logEntry.ChangedBy</p>
+                <p>@Html.Raw(logEntry.LogEntry)</p>
             </div>
         }
     </div>

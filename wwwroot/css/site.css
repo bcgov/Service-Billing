@@ -640,3 +640,11 @@ a:not([href]):not([class]) {
   margin-bottom: 16px;
 }
 
+.add-contact-button{
+    margin: 20px
+}
+
+.change-log-time-stamp{
+    font-weight: 600;
+}
+
