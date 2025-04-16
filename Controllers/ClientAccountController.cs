@@ -391,6 +391,8 @@ namespace Service_Billing.Controllers
 
             foreach (Models.Contact contact in removedContacts)
             {
+                if (contact.ContactType == "expense")
+                    continue; //see note in README. Keeping these as a field on ClientAccount has been a headache...
                 contact.Person = _peopleRepository.GetPersonById(contact.PersonId);
                 changes += $"{contact.ContactType} contact {contact.Person?.DisplayName} was removed as a contact.</br>";
                 _contactRepository.DeleteContact(contact);

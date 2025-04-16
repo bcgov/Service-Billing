@@ -82,6 +82,11 @@ namespace Service_Billing.Models.Repositories
 
                     foreach (var property in entry.Properties)
                     {
+                        //we don't track these fields anymore since the contacts entities got more compilcated, but I'm too lacking in courage and integrity to drop them from the ClientAccount model right now
+                        if (property.Metadata.Name.ToLower() == "primarycontact" ||
+                            property.Metadata.Name.ToLower() == "financialcontact" ||
+                            property.Metadata.Name.ToLower() == "approver")
+                            continue;
                         if (modifiedProperties.Contains(property.Metadata.Name) && property.OriginalValue != property.CurrentValue)
                         {
                             if (property.Metadata.Name == "ServiceCategoryId")
@@ -148,6 +153,7 @@ namespace Service_Billing.Models.Repositories
                         && property.Name != "DateCreated"
                         && property.PropertyType != typeof(ICollection<FiscalHistory>)
                         && property.PropertyType != typeof(ICollection<Bill>)
+                        //contacts tracked separately
                         && property.PropertyType != typeof(ICollection<Contact>)
                         && property.PropertyType != typeof(IEnumerable<Contact>)
                         )

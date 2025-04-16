@@ -43,6 +43,12 @@ The terms "charge" and "bill" are used interchangeably throughout the applicatio
 Change logs, viewable in the Details views for Client Account, Charge and Service Category models was added relatively late in the development timeline before project handoff. 
 The way change logs are presented in these views is rather rough, and could use some UX improvements.
 
+### A word on ClientAccount contacts
+When adapting from the original Share Point lists, we iterated over how contacts would be tracked on client accounts a few times. Becuase
+there is a desire to support multiples of some types of contacts, we eventually started tracking these as related entities associated with the Client Account,
+except for Expense Authority. Since there is only one Expense Authority per account, we kept this as a simple string attached to the model.
+In retrospect, this was a bad decision as rather than keeping things simple, it created some issues with Change Log tracking when editing accounts. 
+
 ### Promoting charges to a new quarter
 Every new quarter, the application runs the Charge Promotion Service, which updates charge fiscal periods to the new quarter provided the charge is active, and does not have an end date earlier than the start of the new quarter.
 the ChargePromotionService is a background task setup as a "hosted service". See https://learn.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services for more information about these.
