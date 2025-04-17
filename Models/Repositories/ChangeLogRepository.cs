@@ -94,7 +94,14 @@ namespace Service_Billing.Models.Repositories
                                 changes += GetServiceCategoryChangeString(property);
                             }
                             else
-                                changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
+                            {
+                                if (property.CurrentValue is DateTimeOffset dateTimeOffsetCurrentValue && property.OriginalValue is DateTimeOffset dateTimeOffsetOriginalValue)
+                                {
+                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {dateTimeOffsetOriginalValue.ToString("MM/dd/yyyy")} to {dateTimeOffsetCurrentValue.ToString("MM/dd/yyyy")}</br>";
+                                }
+                                else
+                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
+                            }
                         }
                     }
                     if (changes != String.Empty)
