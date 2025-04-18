@@ -75,10 +75,7 @@
                 @Html.DisplayNameFor(model => Model.ExpenseAuthorityName)
             </td>
             <td>
-                @foreach (Contact contact in expenseAuthority)
-                {
-                    @contact.Person.DisplayName
-                }
+               @Model.ExpenseAuthorityName
             </td>
         </tr>
         <tr>
@@ -165,11 +162,11 @@
 
     @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive && !isMinistryClient)
     {
-        <input type="submit" value="Deactivate This Client" id="deactivate-client" class="btn btn-default" onclick="confirmDeactivateClient(@Model.Id)" />
+        <input type="submit" value="Deactivate This Client" id="deactivate-client"  onclick="confirmDeactivateClient(@Model.Id)" />
     }
     else if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
     {
-        <input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateClient(@Model.Id)" />
+        <input type="submit" value="Reactivate"  onclick="confirmReactivateClient(@Model.Id)" />
     }
     <table class="table table-striped">
         <thead>
@@ -217,7 +214,7 @@
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && !isMinistryClient)
                         {
-                            <td><input type="submit" value="Deactivate" class="btn btn-default" onclick="confirmInactive(@charge.Id)" /></td>
+                            <td><input type="submit" value="Deactivate" onclick="confirmInactive(@charge.Id)" /></td>
                         }
                     </tr>
                 }
@@ -267,7 +264,7 @@
                         <td><a asp-action="Details" asp-controller="Bills" asp-route-id="@charge.Id">see this charge</a></td>
                         @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded && Model.IsActive)
                         {
-                            <td><input type="submit" value="Reactivate" class="btn btn-default" onclick="confirmReactivateCharge(@charge.Id)" /></td>
+                            <td><input type="submit" value="Reactivate"  onclick="confirmReactivateCharge(@charge.Id)" /></td>
                         }
                     </tr>
                 }
@@ -278,10 +275,10 @@
 @if ((await AuthorizationService.AuthorizeAsync(User, "RequireFinancialOfficerRole")).Succeeded)
 {
     <div class="bottom-nav">
-        <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+        @Html.ActionLink("Edit", "Edit", "ClientAccount", new { id = Model?.Id}, new { @class = "btn btn-primary" })
         @if (!isMinistryClient)
         {
-            <a href="/Bills/AddServiceBilling?accountId=@Model?.Id">Order a Service</a>
+            @Html.ActionLink("Order a Service", "AddServiceBilling", "Bills", new { accountId = Model?.Id}, new { @class = "btn btn-primary" })
         }
     </div>
     <div id="dialog" title="Set this charge to Inactive?">
@@ -305,8 +302,11 @@
         @foreach (ChangeLogEntry logEntry in changeLogs)
         {
             <div>
-            <p>Changed by @logEntry.ChangedBy on @logEntry.DateModified.DateTime.ToString("dd-MM-yyyy : hh:mm")</p>
-            <p>@Html.Raw(logEntry.LogEntry)</p>
+                <div class="change-log-time-stamp">
+                    @logEntry.DateModified.DateTime.ToString("MMMM dd, yyyy hh:mm tt")
+                </div>
+                <p>Changed by @logEntry.ChangedBy</p>
+                <p>@Html.Raw(logEntry.LogEntry)</p>
             </div>
         }
     </div>

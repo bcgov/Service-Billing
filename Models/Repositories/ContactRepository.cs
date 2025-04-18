@@ -1,4 +1,5 @@
-﻿using Service_Billing.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Service_Billing.Data;
 
 namespace Service_Billing.Models.Repositories
 {
@@ -26,7 +27,7 @@ namespace Service_Billing.Models.Repositories
 
         public IEnumerable<Contact> GetContactsByAccountId(int accountId)
         {
-            return _billingContext.Contacts.Where(x => x.ClientAccountId == accountId);
+            return _billingContext.Contacts.Where(x => x.ClientAccountId == accountId).Include(x => x.Person);
         }
 
         public void UpdateContact(Contact contact)

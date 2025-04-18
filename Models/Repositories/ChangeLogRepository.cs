@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.BouncyCastle.Asn1.X509.Qualified;
 using Service_Billing.Data;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace Service_Billing.Models.Repositories
@@ -81,6 +82,11 @@ namespace Service_Billing.Models.Repositories
 
                     foreach (var property in entry.Properties)
                     {
+                        //we don't track these fields anymore since the contacts entities got more compilcated, but I'm too lacking in courage and integrity to drop them from the ClientAccount model right now
+                        if (property.Metadata.Name.ToLower() == "primarycontact" ||
+                            property.Metadata.Name.ToLower() == "financialcontact" ||
+                            property.Metadata.Name.ToLower() == "approver")
+                            continue;
                         if (modifiedProperties.Contains(property.Metadata.Name) && property.OriginalValue != property.CurrentValue)
                         {
                             if (property.Metadata.Name == "ServiceCategoryId")
@@ -88,7 +94,14 @@ namespace Service_Billing.Models.Repositories
                                 changes += GetServiceCategoryChangeString(property);
                             }
                             else
-                                changes += $"{property.Metadata.Name} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
+                            {
+                                if (property.CurrentValue is DateTimeOffset dateTimeOffsetCurrentValue && property.OriginalValue is DateTimeOffset dateTimeOffsetOriginalValue)
+                                {
+                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {dateTimeOffsetOriginalValue.ToString("MM/dd/yyyy")} to {dateTimeOffsetCurrentValue.ToString("MM/dd/yyyy")}</br>";
+                                }
+                                else
+                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
+                            }
                         }
                     }
                     if (changes != String.Empty)
@@ -107,7 +120,19 @@ namespace Service_Billing.Models.Repositories
         #endregion
 
         #region private methods
+        private string GetDisplayName<T>(T entity, string propertyName)
+        {
+            var propertyInfo = typeof(T).GetProperty(propertyName);
+            if (propertyInfo != null)
+            {
+                var displayAttribute = propertyInfo
+                    .GetCustomAttributes(typeof(DisplayAttribute), false)
+                    .FirstOrDefault() as DisplayAttribute;
 
+                return displayAttribute?.Name ?? propertyName; // Fallback to property name if no display name is found
+            }
+            return propertyName; // Fallback if property not found
+        }
         private EntityEntry? MarkModifiedFields<T>(T currentEntity, int id, string typeString, EntityEntry? entry)
         {
             try
@@ -135,6 +160,7 @@ namespace Service_Billing.Models.Repositories
                         && property.Name != "DateCreated"
                         && property.PropertyType != typeof(ICollection<FiscalHistory>)
                         && property.PropertyType != typeof(ICollection<Bill>)
+                        //contacts tracked separately
                         && property.PropertyType != typeof(ICollection<Contact>)
                         && property.PropertyType != typeof(IEnumerable<Contact>)
                         )

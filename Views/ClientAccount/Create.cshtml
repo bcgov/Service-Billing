@@ -55,7 +55,7 @@
                   <input asp-for="@Model.PrimaryContacts[0]" class="form-control" data-val="true"
                   data-val-required="Please include at least one Primary Contact"/>
                   <input asp-for="@Model.PrimaryContacts[1]" class="form-control" />
-                  <a onclick="showSecondPrimaryInput()">Add a second Primary Contact?</a>
+                  <a class="add-contact-button" onclick="showSecondPrimaryInput()">Add a second Primary Contact?</a>
                 </div>
                  <div class="form-group">
                   <label asp-for="@Model.Approvers" class="control-label">Approvers</label>
@@ -64,7 +64,7 @@
                           data-val-required="Please include an Approver contact"/>
                    
                   </span>
-                  <a onclick="addApproverInput()">Add another approver?</a>
+                  <a class="add-contact-button" onclick="addApproverInput()">Add another approver?</a>
                   <span asp-validation-for="@Model.Account.Approver" class="text-danger"></span>
                 </div>
                  @* <div class="form-group">
@@ -80,7 +80,7 @@
                           data-val-required="Please include a financial contact"/>
                    
                   </span>
-                  <a onclick="addFinancialInput()">Add another financial contact?</a>
+                  <a class="add-contact-button" onclick="addFinancialInput()">Add another financial contact?</a>
                   <span asp-validation-for="@Model.Account.FinancialContact" class="text-danger"></span>
                 </div>
            <div class="form-group">

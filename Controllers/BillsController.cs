@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
@@ -584,9 +585,9 @@ namespace Service_Billing.Controllers
                         (!String.IsNullOrEmpty(x.Notes) && x.Notes.ToLower().Contains(searchParams.Keyword.ToLower())));
                 if (!string.IsNullOrEmpty(searchParams?.AuthorityFilter))
                 {
-                    query = query.Where(b => b.ClientAccount.Contacts.Any(c =>
-                        c.ContactType == "expense" && c.Person != null &&
-                        c.Person.Name.ToLower().Contains(searchParams.AuthorityFilter.ToLower())));
+                    //because EA is still a field on ClientAccount model, but we might change that.
+                    query = query.Where(b => !String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName)
+                        && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.AuthorityFilter.ToLower()));
                 }
                 if (searchParams?.ClientNumber > 0)
                 {

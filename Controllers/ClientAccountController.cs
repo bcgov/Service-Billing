@@ -194,6 +194,7 @@ namespace Service_Billing.Controllers
                     ModelState.AddModelError("Approver", "Please include at least one approver contact");
                 if (!hasFinancial)
                     ModelState.AddModelError("FinancialContact", "Please include at least one financial contact");
+                
                 if (!ModelState.IsValid)
                 {
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(model.Id);
@@ -382,8 +383,16 @@ namespace Service_Billing.Controllers
             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificZone);
             string changes = string.Empty;
 
+            for(int i = 0; i < contactIds.Length; i++)
+            {
+                if (String.IsNullOrEmpty(displayNames[i]))
+                    removedContacts.Append(existingContacts.FirstOrDefault(x => x.Id == contactIds[i]));
+            }
+
             foreach (Models.Contact contact in removedContacts)
             {
+                if (contact.ContactType == "expense")
+                    continue; //see note in README. Keeping these as a field on ClientAccount has been a headache...
                 contact.Person = _peopleRepository.GetPersonById(contact.PersonId);
                 changes += $"{contact.ContactType} contact {contact.Person?.DisplayName} was removed as a contact.</br>";
                 _contactRepository.DeleteContact(contact);
@@ -393,7 +402,9 @@ namespace Service_Billing.Controllers
             {
                 int id = contactIds[i];
                 List<string> nameList = new List<string>(); // for reusing AddContactsToAccount.
-                nameList.Add(displayNames[i]);
+                if (String.IsNullOrEmpty(displayNames[i]))
+                    throw new Exception("Failed to resolve contact updates. Somehow an account update tried to resolve contact details with a missing name");
+                nameList.Add(displayNames[i].Trim());
                 if (!existingContacts.Any(c => c.Id == id) || (id == 0 && !string.IsNullOrEmpty(displayNames[i])))
                 { // new contact, and we have something for that
                     await AddContactsToAccount(accountId, nameList, contactTypes[i]);
@@ -509,6 +520,29 @@ namespace Service_Billing.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<bool?> DidContactChange(int accountId, string name, string type)
+        {
+            try
+            {
+                if (String.IsNullOrEmpty(name))
+                    return true;
+                //if type == "undefined" .. EA handling goes here. 
+                IEnumerable <Models.Contact> contacts = _contactRepository.GetContactsByAccountId(accountId).Where(x => x.ContactType == type);
+                foreach(Models.Contact contact in contacts)
+                {
+                    if(string.Compare(contact.Person?.DisplayName, name.Trim()) == 0)
+                        return false;
+                }
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e.Message);
+            }
+
+            return true;
+        }
+        
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
         public async Task<IActionResult> SearchForContact(string term)
         {
