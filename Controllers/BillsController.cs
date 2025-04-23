@@ -593,11 +593,12 @@ namespace Service_Billing.Controllers
                 {
                     query = query.Where(x => x.ClientAccountId == searchParams.ClientNumber);
                 }
-                if (!String.IsNullOrEmpty(searchParams?.PrimaryContact))
+                if (!String.IsNullOrEmpty(searchParams?.Contact))
                 {
                     query = query.Where(b => b.ClientAccount.Contacts.Any(c =>
-                        c.ContactType == "primary" && c.Person != null &&
-                        c.Person.Name.ToLower().Contains(searchParams.PrimaryContact.ToLower())));
+                        c.Person != null &&
+                        c.Person.Name.ToLower().Contains(searchParams.Contact.ToLower())) || 
+                        (!String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName) && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.Contact.ToLower())));
                 }
 
                 query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title).Include(c => c.MostRecentActiveFiscalPeriod);

@@ -12,6 +12,6 @@
         public string? Keyword {  get; set; }
         public bool? Inactive { get; set; } = false;
         public string QuarterString {  get; set; } = string.Empty;
-        public string? PrimaryContact { get; set; }
+        public string? Contact { get; set; }
     }
 }
