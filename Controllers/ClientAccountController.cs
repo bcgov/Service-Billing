@@ -205,7 +205,7 @@ namespace Service_Billing.Controllers
 
                 await ResolveContactUpdates(model.Id, contactIds, personIds, displayNames, contactTypes);
                 string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
-                await _clientAccountRepository.Update(model, user);
+                await _clientAccountRepository.Update(model, user, true);
             
                 return RedirectToAction("Details", new { model.Id, isEdited = true });
             }
@@ -715,7 +715,7 @@ namespace Service_Billing.Controllers
                         }
                     }
                     string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
-                    _clientAccountRepository.Update(account, user);
+                    _clientAccountRepository.Update(account, user, true);
                 }
                 else
                 {
