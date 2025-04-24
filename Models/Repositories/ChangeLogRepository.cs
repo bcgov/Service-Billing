@@ -95,9 +95,11 @@ namespace Service_Billing.Models.Repositories
                             }
                             else
                             {
-                                if (property.CurrentValue is DateTimeOffset dateTimeOffsetCurrentValue && property.OriginalValue is DateTimeOffset dateTimeOffsetOriginalValue)
+                                if (property.CurrentValue is DateTimeOffset dateTimeOffsetCurrentValue && property.OriginalValue != property.CurrentValue)
                                 {
-                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {dateTimeOffsetOriginalValue.ToString("MM/dd/yyyy")} to {dateTimeOffsetCurrentValue.ToString("MM/dd/yyyy")}</br>";
+                                    DateTimeOffset? dateTimeOffsetOriginalValue = property.OriginalValue as DateTimeOffset?;
+                                    string originalDateString = dateTimeOffsetOriginalValue != null ? dateTimeOffsetOriginalValue?.ToString("MM/dd/yyyy") : "null";
+                                    changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {originalDateString} to {dateTimeOffsetCurrentValue.ToString("MM/dd/yyyy")}</br>";
                                 }
                                 else
                                     changes += $"{GetDisplayName(entity, property.Metadata.Name)} was changed from {property.OriginalValue} to {property.CurrentValue}</br>";
