@@ -27,7 +27,7 @@
                     <div class="ui-section">
                         <div>
                             <label for="ministryFilter">Organization</label>
-                            <select name="ministryFilter">
+                            <select name="ministryFilter" title="Search by ministry">
                                 <option value="" selected>All (no filter)</option>
                                 @if (ministries != null)
                                 {
@@ -49,15 +49,15 @@
                                 }
                             </select>
                             <label for="numberFilter">GDX Client No.</label>
-                            <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" />
+                            <input type="number" name="numberFilter" value="@ViewData["NumberFilter"]" title="Search by Client Number"/>
                         </div>
                         <div>
                             <label for="authorityFilter">Expense Authority</label>
-                            <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" />
-                            <label for="primaryContactFilter">Primary Contact</label>
-                            <input type="text" name="primaryContactFilter" value="@ViewData["PrimaryContactFilter"]" />
+                            <input type="text" name="authorityFilter" value="@ViewData["AuthorityFilter"]" title="Search by ministry expense authority's first or last name" />
+                            <label for="contactFilter">Contact</label>
+                            <input type="text" name="contactFilter" value="@ViewData["ContactFilter"]" title="Search for ministry contact's first or last name" />
                             <label for="keyword">Keyword</label>
-                            <input type="text" name="keyword" value="@ViewData["Keyword"]" />
+                            <input type="text" name="keyword" value="@ViewData["Keyword"]" title="Search by Client name, Responsibility Centre, charge project name, or expense authority name" />
                         </div>
                         <div class="ui-section-buttons">
                             <div class="option-buttons">
