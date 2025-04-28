@@ -807,16 +807,16 @@ namespace Service_Billing.Controllers
             clientName = !String.IsNullOrEmpty(account.Name)? account.Name : String.Empty;
             casClientNumber = account.ClientNumber;
             expenseAuthority = !String.IsNullOrEmpty(account.ExpenseAuthorityName)? account.ExpenseAuthorityName : String.Empty;
-            primaryContact = ReportContactString(account.PrimaryContacts);
-            financialContact = ReportContactString(account.FinancialContacts);
-            approver = ReportContactString(account.ApproverContacts);
+            primaryContact = GetReportContactString(account.PrimaryContacts);
+            financialContact = GetReportContactString(account.FinancialContacts);
+            approver = GetReportContactString(account.ApproverContacts);
             approved = account.IsApprovedByEA;
             active = account.IsActive;
             aggregateGLCode = account.AggregatedGLCode;
             notes = !String.IsNullOrEmpty(account.Notes)? account.Notes : String.Empty;
         }
 
-        private string ReportContactString(IEnumerable<Models.Contact> contacts)
+        private string GetReportContactString(IEnumerable<Models.Contact> contacts)
         {
             string ret = string.Empty;
             if(contacts != null && contacts.Count() > 0)
