@@ -25,6 +25,11 @@
                 <input asp-for="@Model.Title" class="form-control" value="@Model.Title" />
                 <span asp-validation-for="@Model.Title" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                <label asp-for="@Model.IsActive" class="control-label"></label>
+                <input type="checkbox" asp-for="@Model.IsActive" checked="@Model.IsActive" />
+                <span asp-validation-for="@Model.IsActive" class="text-danger"></span>
+            </div>
             <br />
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />

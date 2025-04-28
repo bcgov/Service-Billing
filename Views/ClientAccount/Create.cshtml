@@ -25,7 +25,10 @@
                     {
                         foreach (Ministry ministry in Model.Organizations)
                         {
-                            <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
+                            if(ministry.IsActive)
+                            {
+                                <option value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
+                            }
                         }
                     }
                 </select>
