@@ -793,10 +793,10 @@ namespace Service_Billing.Controllers
         public string? organization;
         public string aggregateGLCode;
         public string? servicesEnabled;
+        public string? expenseAuthority;
         public string primaryContact;
         public string financialContact;
         public string approver;
-        public string? expenseAuthority;
         public bool approved;
         public bool active;
         public string notes;
@@ -806,13 +806,30 @@ namespace Service_Billing.Controllers
             clientId = account.Id;
             clientName = !String.IsNullOrEmpty(account.Name)? account.Name : String.Empty;
             casClientNumber = account.ClientNumber;
-            primaryContact = !String.IsNullOrEmpty(account.PrimaryContact)? account.PrimaryContact : String.Empty;
-            financialContact = !String.IsNullOrEmpty(account.FinancialContact)? account.FinancialContact : String.Empty;
-            approver = !String.IsNullOrEmpty(account.Approver)? account.Approver : String.Empty;
+            expenseAuthority = !String.IsNullOrEmpty(account.ExpenseAuthorityName)? account.ExpenseAuthorityName : String.Empty;
+            primaryContact = ReportContactString(account.PrimaryContacts);
+            financialContact = ReportContactString(account.FinancialContacts);
+            approver = ReportContactString(account.ApproverContacts);
             approved = account.IsApprovedByEA;
             active = account.IsActive;
             aggregateGLCode = account.AggregatedGLCode;
             notes = !String.IsNullOrEmpty(account.Notes)? account.Notes : String.Empty;
+        }
+
+        private string ReportContactString(IEnumerable<Models.Contact> contacts)
+        {
+            string ret = string.Empty;
+            if(contacts != null && contacts.Count() > 0)
+            {
+                foreach(Models.Contact contact in contacts)
+                {
+                    ret += contact.Person?.Name;
+                    if (contact != contacts.Last())
+                        ret += ", ";
+                }
+            }
+
+            return ret;
         }
     }
 }
