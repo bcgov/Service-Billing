@@ -23,6 +23,9 @@
             <th>
                 @Html.DisplayNameFor(model => model.Title)
             </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsActive)
+            </th>
         </tr>
     </thead>
     <tbody>
@@ -33,6 +36,7 @@
     <tr>
         <td>@item.Acronym</td>
         <td>@item.Title</td>
+        <td>@item.IsActive</td>
         <td><a asp-action="Edit" asp-route-id="@item.Id">edit</a></td>
     </tr>
 

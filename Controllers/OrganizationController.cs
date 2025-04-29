@@ -81,9 +81,10 @@ namespace Service_Billing.Controllers
                         {
                             string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
                             account.Name = account.Name.Replace(account.Name.Substring(0, account.Name.IndexOf(' ')), organization.Acronym);
-                            await _clientAccountRepository.Update(account, user);
+                            await _clientAccountRepository.Update(account, user, false);
                         }
                     }
+                    await _billingContext.SaveChangesAsync();
                 }
 
                 await _ministryRepository.Update(organization);

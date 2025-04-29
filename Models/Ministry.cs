@@ -12,5 +12,7 @@ namespace Service_Billing.Models
         public string? Title { get; set; }
         [Required(ErrorMessage = "There must be an acronym or other short name set for the organization")]
         public string? Acronym { get; set; }
+        [Display(Name = "Is Active?")]
+        public bool IsActive { get; set; } = true;
     }
 }

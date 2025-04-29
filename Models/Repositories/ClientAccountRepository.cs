@@ -59,14 +59,15 @@ namespace Service_Billing.Models.Repositories
             return userAccounts.Distinct();
         }
 
-        public async Task Update(ClientAccount editedAccount, string userName = "system")
+        public async Task Update(ClientAccount editedAccount, string userName = "system", bool saveChanges = true)
         {
             EntityEntry entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedAccount, userName);
             ClientAccount? account = entry.Entity as ClientAccount;
             if (account != null)
             {
                 _context.Update(account);
-                await _context.SaveChangesAsync(true);
+                if(saveChanges) // there's a problem if we try to bulk update client accounts, say when a ministry acronym changes
+                    await _context.SaveChangesAsync(true);
             }
             else
                 throw new Exception($"Something went wrong while trying to update ClientAccount with Id {editedAccount.Id}");        
