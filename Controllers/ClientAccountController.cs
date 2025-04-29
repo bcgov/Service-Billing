@@ -673,8 +673,36 @@ namespace Service_Billing.Controllers
                 using var wb = new XLWorkbook();
                 var ws = wb.AddWorksheet();
                 ws.Cell("A1").InsertTable(rows);
+
                 // Adjust column size to contents.
+                ws.Column("A").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                ws.Column("C").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
+                ws.Column("E").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                 ws.Columns().AdjustToContents();
+         
+                IXLTables tsTables = ws.Tables;
+                IXLTable firstTable = tsTables.FirstOrDefault();
+                if (firstTable == null)
+                {
+                    throw new Exception("No table was found for this worksheet.");
+                }
+                firstTable.Field("clientId").Name = "Client Id";
+                firstTable.Field("clientName").Name = "Client Name";
+                firstTable.Field("casClientNumber").Name = "CAS Client Number";
+                firstTable.Field("organization").Name = "Organization";
+                firstTable.Field("aggregateGLCode").Name = "Aggregate GL Code";
+                //firstTable.Field("servicesEnabled").Name = "Services Enabled";
+                firstTable.Field("expenseAuthority").Name = "Expense Authority";
+                firstTable.Field("primaryContact").Name = "Primary Contact";
+                firstTable.Field("financialContact").Name = "Financial Contact";
+                firstTable.Field("approver").Name = "Approver";
+                firstTable.Field("approved").Name = "Approved?";
+                firstTable.Field("active").Name = "Active?";
+                firstTable.Field("notes").Name = "Notes";
+
+
+        // Adjust column size to contents.
+        ws.Columns().AdjustToContents();
                 using var stream = new MemoryStream();
                 wb.SaveAs(stream);
                 var content = stream.ToArray();
@@ -792,7 +820,7 @@ namespace Service_Billing.Controllers
         public short? casClientNumber;
         public string? organization;
         public string aggregateGLCode;
-        public string? servicesEnabled;
+        //public string? servicesEnabled;
         public string? expenseAuthority;
         public string primaryContact;
         public string financialContact;
