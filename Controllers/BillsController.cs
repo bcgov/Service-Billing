@@ -690,7 +690,6 @@ namespace Service_Billing.Controllers
                 var dataTable = new DataTable();
                 List<ChargeRow> rows = new List<ChargeRow>();
                 // Inserts the collection to Excel as a table with a header row.
-                const string ExcelAccountingFormat = @"_(""$""* #,##0.00_);_(""$""* \(#,##0.00\);_(""$""* ""-""??_);_(@_)";
 
                 foreach (Bill bill in bills)
                 {
@@ -790,14 +789,14 @@ namespace Service_Billing.Controllers
                 ws.Column("B").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                 ws.Columns().AdjustToContents();
                 ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
-                ws.Column("H").Style.NumberFormat.SetFormat(ExcelAccountingFormat);
+                ws.Column("H").Style.NumberFormat.SetFormat("$##0");
 
                 //ws.Column("H").Style.NumberFormat.SetNumberFormatId(43); // "Accounting" 
                 //cell.Style.NumberFormat.SetNumberFormatId(43);
                 //ws.Column("H").Cells().DataType = XLDataType.Number;
                 ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
                 ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
-                ws.Column("K").Style.NumberFormat.SetFormat(ExcelAccountingFormat);
+                ws.Column("K").Style.NumberFormat.SetFormat("$##0");
 
                 IXLTables tsTables = ws.Tables;
                 IXLTable firstTable = tsTables.FirstOrDefault();
