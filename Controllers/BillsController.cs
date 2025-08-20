@@ -690,6 +690,7 @@ namespace Service_Billing.Controllers
                 var dataTable = new DataTable();
                 List<ChargeRow> rows = new List<ChargeRow>();
                 // Inserts the collection to Excel as a table with a header row.
+                const string ExcelAccountingFormat = @"_(""$""* #,##0.00_);_(""$""* \(#,##0.00\);_(""$""* ""-""??_);_(@_)";
 
                 foreach (Bill bill in bills)
                 {
@@ -711,9 +712,10 @@ namespace Service_Billing.Controllers
                                 row.ServiceCategory = serviceCategory?.Name;
                             }
                             row.TicketNumber = bill.TicketNumberAndRequester;
-                            row.Amount = String.Format("${0:.##}", (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal));
+                            row.Amount = (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal);
                             row.Quantity = fiscalHistory.QuantityAtFiscal;
-                            row.UnitPrice = String.Format("${0:.##}", fiscalHistory.UnitPriceAtFiscal.ToString());
+                            decimal unitPrice;
+                            row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
                             if (bill.DateCreated != null)
                                 row.Created = bill.DateCreated?.DateTime.ToShortDateString();
                             if (bill.StartDate != null)
@@ -753,9 +755,10 @@ namespace Service_Billing.Controllers
                             row.ServiceCategory = serviceCategory?.Name;
                         }
                         row.TicketNumber = bill.TicketNumberAndRequester;
-                        row.Amount = @String.Format("${0:.##}", bill.Amount);
+                        row.Amount = bill.Amount;
                         row.Quantity = bill.Quantity;
-                        row.UnitPrice = !String.IsNullOrEmpty(serviceCategory?.Costs) ? @String.Format("${0:.##}", serviceCategory.Costs) : "";
+                        decimal unitPrice;
+                        row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out  unitPrice) ? unitPrice : null;
                         if (bill.DateCreated != null)
                             row.Created = bill.DateCreated?.DateTime.ToShortDateString();
                         if (bill.StartDate != null)
@@ -787,8 +790,14 @@ namespace Service_Billing.Controllers
                 ws.Column("B").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
                 ws.Columns().AdjustToContents();
                 ws.Column("H").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //amount
+                ws.Column("H").Style.NumberFormat.SetFormat(ExcelAccountingFormat);
+
+                //ws.Column("H").Style.NumberFormat.SetNumberFormatId(43); // "Accounting" 
+                //cell.Style.NumberFormat.SetNumberFormatId(43);
+                //ws.Column("H").Cells().DataType = XLDataType.Number;
                 ws.Column("J").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center); //quantity
                 ws.Column("K").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Right); //unit price
+                ws.Column("K").Style.NumberFormat.SetFormat(ExcelAccountingFormat);
 
                 IXLTables tsTables = ws.Tables;
                 IXLTable firstTable = tsTables.FirstOrDefault();
@@ -1021,10 +1030,10 @@ namespace Service_Billing.Controllers
         public string? IdirOrURL { get; set; }
         public string? GDXBusArea { get; set; }
         public string? ServiceCategory { get; set; }
-        public string? Amount { get; set; }
+        public Decimal? Amount { get; set; }
         public string? FiscalPeriod { get; set; }
         public Decimal? Quantity { get; set; }
-        public string? UnitPrice { get; set; }
+        public Decimal? UnitPrice { get; set; }
         public string? TicketNumber { get; set; }
         public string? Created { get; set; }
         public string? Start { get; set; }
