@@ -782,10 +782,7 @@ namespace Service_Billing.Controllers
                                 rows.Add(row);
                             }
                         
-                    }
-                  
-                        
-                    
+                    }   
                 } 
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
@@ -855,7 +852,7 @@ namespace Service_Billing.Controllers
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
                
-                SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills);
+                SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills, searchParams?.QuarterFilter == "all");
 
 
                 model.ServicesAndSums = servicesAndSums;
@@ -895,8 +892,10 @@ namespace Service_Billing.Controllers
             List<ChargeRow> rows = new List<ChargeRow>();
             ws.Cell("A1").InsertTable(records);
             // Adjust column size to contents.
+            ws.Column("B").Style.NumberFormat.SetFormat("$##0");
             ws.Cell("D1").Value = "Grand Total";
             ws.Cell($"D{model.ServicesAndSums.Count() + 2}").Value = total;
+            ws.Column("D").Style.NumberFormat.SetFormat("$##0");
             ws.Column(3).Delete(); // don't need UOM
             ws.Columns().AdjustToContents();
             using var stream = new MemoryStream();
@@ -937,7 +936,7 @@ namespace Service_Billing.Controllers
             return Ok(200);
         }
 
-        private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills)
+        private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills, bool all = false)
         {
             SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
 
@@ -949,11 +948,33 @@ namespace Service_Billing.Controllers
                     if (servicesAndSums.ContainsKey(serviceCategory.Name))
                     {
                         servicesAndSums[serviceCategory.Name] += bill.Amount;
+                        if (all)
+                        {
+                            foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                            {
+                                if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
+                                    continue;
+                                servicesAndSums[serviceCategory.Name] += fiscalHistory.UnitPriceAtFiscal * fiscalHistory.QuantityAtFiscal;
+
+                            }
+                        }
                     }
                     else
                     {
-                        servicesAndSums.Add(!String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name
-                            : $"Nameless category with ID: {serviceCategory.ServiceId} ", bill.Amount);
+                        string serviceName = !String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name
+                            : $"Nameless category with ID: {serviceCategory.ServiceId} ";
+                        decimal? amount = (bill.Amount != null) ? bill.Amount : 0;
+                        servicesAndSums.Add(serviceName, amount);
+                        if(all)
+                            foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                            {
+                                if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
+                                    continue;
+
+                                amount = (fiscalHistory.UnitPriceAtFiscal != null && fiscalHistory.QuantityAtFiscal != null) ?
+                                    fiscalHistory.UnitPriceAtFiscal * fiscalHistory.QuantityAtFiscal : 0;
+                                servicesAndSums[serviceName] += amount;
+                            }
                     }
                 }
             }
@@ -994,15 +1015,7 @@ namespace Service_Billing.Controllers
         private string GetFilename(ChargeIndexSearchParamsModel? searchParams, string extension = "csv")
         {
             string fileName = "Charges";
-            //if (!string.IsNullOrEmpty(searchParams?.QuarterFilter))
-            //{
-            //    if (searchParams.QuarterFilter == "all")
-            //        fileName += "-all-Quarters";
-            //    if (bills.Any())
-            //    {
-            //        fileName += $"={bills.First().BillingCycle}";
-            //    }
-            //}
+
             Ministry? ministry = null;
             if (searchParams?.MinistryFilter > 0)
             {
