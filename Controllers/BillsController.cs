@@ -70,6 +70,9 @@ namespace Service_Billing.Controllers
             IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
 
+            IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll();
+            ViewData["PreviousFiscals"] = fiscalPeriods.Select(x => x.Period);
+
             if (ministries != null && ministries.Any())
             {
                 ViewData["Ministries"] = ministries;
@@ -86,8 +89,7 @@ namespace Service_Billing.Controllers
             ViewBag.BusAreas = busareas.ToList();
             switch (searchModel?.QuarterFilter)
             {
-                case "current":
-                default:
+                case "current":             
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
                     break;
                 case "previous":
@@ -98,6 +100,10 @@ namespace Service_Billing.Controllers
                     break;
                 case "all":
                     ViewData["FiscalPeriod"] = "all";
+                    break;
+                default:
+                    ViewData["FiscalPeriod"] = searchModel?.QuarterFilter;
+
                     break;
             }
             ViewData["searchModel"] = searchModel;
@@ -111,6 +117,9 @@ namespace Service_Billing.Controllers
             var isMinistryUser = User.IsInRole("GDXBillingService.User");
             string? ministryUserName = string.Empty;
             if (isMinistryUser) ministryUserName = User?.FindFirst("name")?.Value;
+            if (searchModel != null && !string.IsNullOrEmpty(searchModel.QuarterFilter) &&
+                searchModel.QuarterFilter.StartsWith("Fiscal"))
+                searchModel.QuarterString = searchModel.QuarterFilter;
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
             int count = bills.Any() ? bills.Count() : 0;
@@ -119,7 +128,7 @@ namespace Service_Billing.Controllers
             {
                 switch (searchModel.QuarterFilter)
                 {
-                    case "current": default:
+                    case "current":
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
                         break;
                     case "previous":
@@ -144,6 +153,10 @@ namespace Service_Billing.Controllers
                             if (bill.PreviousFiscalRecords.Any())
                                 count += bill.PreviousFiscalRecords.Where(x => x.FiscalPeriod.Id != bill.CurrentFiscalPeriodId).Count();
                         }
+                        break;
+                    default:
+                        searchModel.QuarterString = searchModel.QuarterFilter;
+                        ViewData["FiscalPeriod"] = searchModel.QuarterString;
                         break;
                 }
             }
@@ -521,8 +534,8 @@ namespace Service_Billing.Controllers
                 List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
                 switch (searchParams?.QuarterFilter)
                 {
-                    case "current":
-                    default:
+                    case "Current Quarter":
+                    
                         string fiscalPeriodString = _billRepository.DetermineCurrentQuarter();
                         FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
                         if(fiscalPeriod == null)
@@ -547,6 +560,10 @@ namespace Service_Billing.Controllers
                         break;
                     case "all":
                         // Just break. Effectively it's just one less Where clause
+                        break;
+                    default: //get charges from previous fiscal history.
+                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory(searchParams.QuarterString).ToList();
+                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
                         break;
                 }
                 if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && (searchParams?.QuarterFilter == "current" || searchParams?.QuarterFilter == "next"))

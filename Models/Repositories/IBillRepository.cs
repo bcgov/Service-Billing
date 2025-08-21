@@ -26,6 +26,6 @@ namespace Service_Billing.Models.Repositories
         DateTime DetermineStartOfNextQuarter();
         DateTime DetermineStartOfCurrentQuarter();
         DateTime DetermineEndOfQuarter(DateTime quarterStart);
-        IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory();
+        IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory(string quarter = "");
     }
 }

@@ -19,6 +19,7 @@
     bool all = searchModel.QuarterFilter == "all";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
     List<SelectListItem> businessAreas = new List<SelectListItem>();
+    IEnumerable<string> previousFiscals = ViewData["PreviousFiscals"] as IEnumerable<string>;
 
 
     /* I'm not sure if these will get used. Not quite sure how to filter by business area, and service category yet.*/
@@ -55,6 +56,11 @@
                                     <option value="previous" selected="@previous">Previous</option>
                                     <option value="next" selected="@next">Next</option>
                                     <option value="all" selected="@all">All</option>
+                                    @foreach(string period in previousFiscals)
+                                    {
+                                        <option value=@period selected="@(
+                                        period == searchModel?.QuarterFilter)">@period</option>
+                                    }
                                 </select>
                             </div>
 

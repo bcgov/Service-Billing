@@ -342,11 +342,14 @@ namespace Service_Billing.Models.Repositories
             return string.Empty;
         }
 
-        public IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory()
+        public IEnumerable<FiscalHistory> GetPreviousQuarterChargeHistory(string quarter = "")
         {
             try
             {
-                string previousQuarterString = GetPreviousQuarterString();
+                string previousQuarterString = quarter;
+                if (string.IsNullOrEmpty(previousQuarterString)) 
+                    previousQuarterString = GetPreviousQuarterString();
+
                 FiscalPeriod? previousQuarter = _fiscalPeriodRepository.GetByFiscalQuarterString(previousQuarterString);
                 if (previousQuarter == null)
                 {
