@@ -696,92 +696,96 @@ namespace Service_Billing.Controllers
                     ServiceCategory? serviceCategory = _categoryRepository.GetById(bill.ServiceCategoryId);
                     ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
 
+                    ChargeRow row = new ChargeRow();
+                    row.ChargeId = bill.Id;
+                    row.ClientNumber = bill.ClientAccountId;
+                    row.ClientName = bill.ClientAccount.Name;
+                    row.Program = bill.Title;
+                    if (serviceCategory != null)
+                    {
+                        row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                        row.ServiceCategory = serviceCategory?.Name;
+                    }
+                    row.TicketNumber = bill.TicketNumberAndRequester;
+                    row.Amount = bill.Amount;
+                    row.Quantity = bill.Quantity;
+                    decimal unitPrice;
+                    row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
+                    if (bill.DateCreated != null)
+                        row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                    if (bill.StartDate != null)
+                        row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                    if (bill.EndDate != null)
+                        row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                    row.CreatedBy = bill.CreatedBy;
+                    row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                    row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
+                    row.IdirOrURL = bill.IdirOrUrl;
+                    if (account != null)
+                    {
+                        if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                            row.ExpenseAuthority = account.ExpenseAuthorityName;
+
+                        var primaryContact = account.Contacts?
+                                .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
+                                    .Person?.DisplayName;
+                        row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
+                    }
+                    row.Notes = bill.Notes;
+                    rows.Add(row);
+
                     if (!string.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "all")
                     {
-                        foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
-                        {
-                            ChargeRow row = new ChargeRow();
-                            row.ChargeId = bill.Id;
-                            row.ClientNumber = bill.ClientAccountId;
-                            row.ClientName = bill.ClientAccount.Name;
-                            row.Program = bill.Title;
-                            if (serviceCategory != null)
+                            foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
                             {
-                                row.GDXBusArea = serviceCategory?.BusArea?.Name;
-                                row.ServiceCategory = serviceCategory?.Name;
+                                if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
+                                    continue;
+                                row = new ChargeRow();
+                                row.ChargeId = bill.Id;
+                                row.ClientNumber = bill.ClientAccountId;
+                                row.ClientName = bill.ClientAccount.Name;
+                                row.Program = bill.Title;
+                                if (serviceCategory != null)
+                                {
+                                    row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                                    row.ServiceCategory = serviceCategory?.Name;
+                                }
+                                row.TicketNumber = bill.TicketNumberAndRequester;
+                                row.Amount = (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal);
+                                row.Quantity = fiscalHistory.QuantityAtFiscal;
+                                
+                                row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
+                                if (bill.DateCreated != null)
+                                    row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                                if (bill.StartDate != null)
+                                    row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                                if (bill.EndDate != null)
+                                    row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                                row.CreatedBy = bill.CreatedBy;
+                                row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                                row.FiscalPeriod = fiscalHistory.FiscalPeriod?.Period;
+                                row.IdirOrURL = bill.IdirOrUrl;
+                                if (account != null)
+                                {
+                                    if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                        row.ExpenseAuthority = account.ExpenseAuthorityName;
+
+
+                                    var primaryContact = account.Contacts?
+                                        .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
+                                            .Person?.DisplayName;
+                                    row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
+                                }
+                                row.Notes = bill.Notes;
+                                rows.Add(row);
                             }
-                            row.TicketNumber = bill.TicketNumberAndRequester;
-                            row.Amount = (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal);
-                            row.Quantity = fiscalHistory.QuantityAtFiscal;
-                            decimal unitPrice;
-                            row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
-                            if (bill.DateCreated != null)
-                                row.Created = bill.DateCreated?.DateTime.ToShortDateString();
-                            if (bill.StartDate != null)
-                                row.Start = bill.StartDate?.DateTime.ToShortDateString();
-                            if (bill.EndDate != null)
-                                row.End = bill.EndDate?.DateTime.ToShortDateString();
-
-                            row.CreatedBy = bill.CreatedBy;
-                            row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                            row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
-                            row.IdirOrURL = bill.IdirOrUrl;
-                            if (account != null)
-                            {
-                                if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                                    row.ExpenseAuthority = account.ExpenseAuthorityName;
-
-
-                                var primaryContact = account.Contacts?
-                                    .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
-                                        .Person?.DisplayName;
-                                row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
-                            }
-                            row.Notes = bill.Notes;
-                            rows.Add(row);
-                        }
+                        
                     }
-                    else
-                    {
-                        ChargeRow row = new ChargeRow();
-                        row.ChargeId = bill.Id;
-                        row.ClientNumber = bill.ClientAccountId;
-                        row.ClientName = bill.ClientAccount.Name;
-                        row.Program = bill.Title;
-                        if (serviceCategory != null)
-                        {
-                            row.GDXBusArea = serviceCategory?.BusArea?.Name;
-                            row.ServiceCategory = serviceCategory?.Name;
-                        }
-                        row.TicketNumber = bill.TicketNumberAndRequester;
-                        row.Amount = bill.Amount;
-                        row.Quantity = bill.Quantity;
-                        decimal unitPrice;
-                        row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out  unitPrice) ? unitPrice : null;
-                        if (bill.DateCreated != null)
-                            row.Created = bill.DateCreated?.DateTime.ToShortDateString();
-                        if (bill.StartDate != null)
-                            row.Start = bill.StartDate?.DateTime.ToShortDateString();
-                        if (bill.EndDate != null)
-                            row.End = bill.EndDate?.DateTime.ToShortDateString();
-
-                        row.CreatedBy = bill.CreatedBy;
-                        row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                        row.FiscalPeriod = bill.MostRecentActiveFiscalPeriod?.Period;
-                        row.IdirOrURL = bill.IdirOrUrl;
-                        if (account != null)
-                        {
-                            if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                                row.ExpenseAuthority = account.ExpenseAuthorityName;
-
-                            var primaryContact = account.Contacts?
-                                    .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
-                                        .Person?.DisplayName;
-                            row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
-                        }
-                        row.Notes = bill.Notes;
-                        rows.Add(row);
-                    }
+                  
+                        
+                    
                 } 
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
