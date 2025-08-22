@@ -54,12 +54,12 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach(KeyValuePair<string, decimal?> serviceAndSum in Model.ServicesAndSums)
+            @foreach(KeyValuePair<string, decimal> serviceAndSum in Model.ServicesAndSums)
             {
                 total += @serviceAndSum.Value;
                 <tr>
                     <td>@serviceAndSum.Key</td>
-                    @if(serviceAndSum.Value != null && serviceAndSum.Value != 0)
+                    @if(serviceAndSum.Value != 0)
                     {
                         <td class="report-amount">@string.Format("${0:#,##0.##}", serviceAndSum.Value)</td>
                     } else
