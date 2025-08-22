@@ -70,8 +70,9 @@ namespace Service_Billing.Controllers
             IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
 
-            IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll();
-            ViewData["PreviousFiscals"] = fiscalPeriods.Select(x => x.Period);
+            IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll().OrderByDescending(x => x.Period);
+            List<string> fiscalPeriodsStrings = fiscalPeriods.Select(x => x.Period).ToList();
+            ViewData["PreviousFiscals"] = fiscalPeriodsStrings.Distinct();
 
             if (ministries != null && ministries.Any())
             {

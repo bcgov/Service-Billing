@@ -39,8 +39,14 @@
 <h1>Service Billing Charges</h1>
 
 <div>
-
-    <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
+    @if (!searchModel.QuarterFilter.StartsWith("Fiscal"))
+    {
+        <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
+    }
+    else
+    {
+        <h2>@ViewData["FiscalPeriod"]</h2>
+    }
     @if (!User.IsInRole("GDXBillingService.User"))
     {
         <div class="table-filter-section">
