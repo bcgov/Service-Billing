@@ -12,6 +12,10 @@ namespace Service_Billing.Models.Repositories
             _billingContext = billingContext;
         }
 
+        public IEnumerable<FiscalPeriod> GetAll()
+        {
+            return _billingContext.FiscalPeriods;
+        }
         public FiscalPeriod? GetByFiscalQuarterString(string fiscalPeriod)
         {
             return _billingContext.FiscalPeriods.FirstOrDefault(x => x.Period == fiscalPeriod);

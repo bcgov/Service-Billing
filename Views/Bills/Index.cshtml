@@ -19,6 +19,7 @@
     bool all = searchModel.QuarterFilter == "all";
     List<SelectListItem> serviceCategories = new List<SelectListItem>();
     List<SelectListItem> businessAreas = new List<SelectListItem>();
+    IEnumerable<string> previousFiscals = ViewData["PreviousFiscals"] as IEnumerable<string>;
 
 
     /* I'm not sure if these will get used. Not quite sure how to filter by business area, and service category yet.*/
@@ -38,8 +39,14 @@
 <h1>Service Billing Charges</h1>
 
 <div>
-
-    <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
+    @if (!searchModel.QuarterFilter.StartsWith("Fiscal"))
+    {
+        <h2>@searchModel?.QuarterFilter: @ViewData["FiscalPeriod"]</h2>
+    }
+    else
+    {
+        <h2>@ViewData["FiscalPeriod"]</h2>
+    }
     @if (!User.IsInRole("GDXBillingService.User"))
     {
         <div class="table-filter-section">
@@ -51,10 +58,15 @@
                             <div id="quarter-select">
                                 <label for="quarterFilter">Select Quarter</label>
                                 <select name="quarterFilter">
-                                    <option value="current" selected="@current">Current</option>
-                                    <option value="previous" selected="@previous">Previous</option>
+                                    <option value="current" selected="@current">Current (@ViewData["CurrentQuarterString"])</option>
+                                    <option value="previous" selected="@previous">Previous (@ViewData["PreviousQuarterString"])</option>
                                     <option value="next" selected="@next">Next</option>
                                     <option value="all" selected="@all">All</option>
+                                    @foreach(string period in previousFiscals)
+                                    {
+                                        <option value=@period selected="@(
+                                        period == searchModel?.QuarterFilter)">@period</option>
+                                    }
                                 </select>
                             </div>
 
