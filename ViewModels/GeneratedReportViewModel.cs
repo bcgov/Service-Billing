@@ -7,7 +7,7 @@ namespace Service_Billing.ViewModels
 {
     public class GeneratedReportViewModel
     {
-        public SortedDictionary<string, decimal?> ServicesAndSums { get; set; }
+        public SortedDictionary<string, decimal> ServicesAndSums { get; set; }
         public string BillingQuarter { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Ministry { get; set; } = string.Empty;

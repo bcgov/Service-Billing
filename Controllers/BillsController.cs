@@ -876,7 +876,7 @@ namespace Service_Billing.Controllers
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
                
-                SortedDictionary<string, decimal?> servicesAndSums = GetServicesAndSums(bills, searchParams?.QuarterFilter == "all");
+                SortedDictionary<string, decimal> servicesAndSums = GetServicesAndSums(bills, searchParams?.QuarterFilter == "all");
 
 
                 model.ServicesAndSums = servicesAndSums;
@@ -960,9 +960,9 @@ namespace Service_Billing.Controllers
             return Ok(200);
         }
 
-        private SortedDictionary<string, decimal?> GetServicesAndSums(IEnumerable<Bill> bills, bool all = false)
+        private SortedDictionary<string, decimal> GetServicesAndSums(IEnumerable<Bill> bills, bool all = false)
         {
-            SortedDictionary<string, decimal?> servicesAndSums = new SortedDictionary<string, decimal?>();
+            SortedDictionary<string, decimal> servicesAndSums = new SortedDictionary<string, decimal>();
 
             foreach (Bill bill in bills)
             {
@@ -971,14 +971,15 @@ namespace Service_Billing.Controllers
                 {
                     if (servicesAndSums.ContainsKey(serviceCategory.Name))
                     {
-                        servicesAndSums[serviceCategory.Name] += bill.Amount;
+                        servicesAndSums[serviceCategory.Name] += (bill.Amount != null) ? bill.Amount.Value : 0;
                         if (all)
                         {
                             foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
                             {
                                 if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
                                     continue;
-                                servicesAndSums[serviceCategory.Name] += fiscalHistory.UnitPriceAtFiscal * fiscalHistory.QuantityAtFiscal;
+                                decimal? amount = fiscalHistory.UnitPriceAtFiscal * fiscalHistory.QuantityAtFiscal;
+                                servicesAndSums[serviceCategory.Name] += (amount != null) ? amount.Value : 0;
 
                             }
                         }
@@ -987,7 +988,7 @@ namespace Service_Billing.Controllers
                     {
                         string serviceName = !String.IsNullOrEmpty(serviceCategory.Name) ? serviceCategory.Name
                             : $"Nameless category with ID: {serviceCategory.ServiceId} ";
-                        decimal? amount = (bill.Amount != null) ? bill.Amount : 0;
+                        decimal amount = (bill.Amount != null) ? bill.Amount.Value : 0;
                         servicesAndSums.Add(serviceName, amount);
                         if(all)
                             foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
@@ -996,7 +997,7 @@ namespace Service_Billing.Controllers
                                     continue;
 
                                 amount = (fiscalHistory.UnitPriceAtFiscal != null && fiscalHistory.QuantityAtFiscal != null) ?
-                                    fiscalHistory.UnitPriceAtFiscal * fiscalHistory.QuantityAtFiscal : 0;
+                                    fiscalHistory.UnitPriceAtFiscal.Value * fiscalHistory.QuantityAtFiscal.Value : 0;
                                 servicesAndSums[serviceName] += amount;
                             }
                     }
