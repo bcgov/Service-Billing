@@ -58,8 +58,8 @@
                             <div id="quarter-select">
                                 <label for="quarterFilter">Select Quarter</label>
                                 <select name="quarterFilter">
-                                    <option value="current" selected="@current">Current</option>
-                                    <option value="previous" selected="@previous">Previous</option>
+                                    <option value="current" selected="@current">Current (@ViewData["CurrentQuarterString"])</option>
+                                    <option value="previous" selected="@previous">Previous (@ViewData["PreviousQuarterString"])</option>
                                     <option value="next" selected="@next">Next</option>
                                     <option value="all" selected="@all">All</option>
                                     @foreach(string period in previousFiscals)

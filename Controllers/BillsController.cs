@@ -69,10 +69,15 @@ namespace Service_Billing.Controllers
             IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
             IEnumerable<BusinessArea> busareas = _businessAreaRepository.GetAll();
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
-
+            string previousQuarterString = _billRepository.GetPreviousQuarterString();
+            string currentQuarterString = _billRepository.DetermineCurrentQuarter();
+            ViewData["PreviousQuarterString"] = previousQuarterString;
+            ViewData["CurrentQuarterString"] = currentQuarterString;
             IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll().OrderByDescending(x => x.Period);
             List<string> fiscalPeriodsStrings = fiscalPeriods.Select(x => x.Period).ToList();
-            ViewData["PreviousFiscals"] = fiscalPeriodsStrings.Distinct();
+            fiscalPeriodsStrings.Remove(previousQuarterString);
+            fiscalPeriodsStrings.Remove(currentQuarterString);
+            ViewData["PreviousFiscals"] = fiscalPeriodsStrings.Distinct(); // not sure why there's duplicate entries in DEV...
 
             if (ministries != null && ministries.Any())
             {
@@ -87,6 +92,7 @@ namespace Service_Billing.Controllers
                 }
                 ViewBag.ServiceCategories = categories.ToList();
             }
+           
             ViewBag.BusAreas = busareas.ToList();
             switch (searchModel?.QuarterFilter)
             {
@@ -94,7 +100,7 @@ namespace Service_Billing.Controllers
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
                     break;
                 case "previous":
-                    ViewData["FiscalPeriod"] = _billRepository.GetPreviousQuarterString();
+                    ViewData["FiscalPeriod"] = previousQuarterString;
                     break;
                 case "next":
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
