@@ -9,12 +9,6 @@ namespace Service_Billing.Models
         [Key]
         public int ServiceId { get; set; }
 
-        //[Required (ErrorMessage = "Select the Government Digital Experience (GDX) business area from the drop down.")]
-        //[Display(Name = "GDX Business Area")]
-        //public string? GDXBusArea { get; set; }
-
-        //[Required(ErrorMessage = "Add the name of the digital asset / web property / IDIR. Don't use acronyms.")]
-
         public int BusAreaId { get; set; }
         [ForeignKey("BusAreaId")]
         public virtual BusinessArea? BusArea { get; set; }

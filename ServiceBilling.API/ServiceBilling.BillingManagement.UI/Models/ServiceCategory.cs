@@ -11,7 +11,7 @@ namespace ServiceBilling.BillingManagement.UI.Models
         public string Name { get; set; } = string.Empty;
 
         [StringLength(100)]
-        [Display(Name = "GDX Business Area")]
+        [Display(Name = "Business Area")]
         [Required(ErrorMessage = "Please enter a business area")]
         public string GdxBusinessArea { get; set; } = string.Empty;
         public string Costs { get; set; } = string.Empty;

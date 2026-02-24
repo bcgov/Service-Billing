@@ -833,7 +833,7 @@ namespace Service_Billing.Controllers
                 firstTable.Field("ClientNumber").Name = "Client Number";
                 firstTable.Field("ClientName").Name = "Client Name";
                 firstTable.Field("IdirOrURL").Name = "IDIR or URL";
-                firstTable.Field("GDXBusArea").Name = "GDX Business Area";
+                firstTable.Field("GDXBusArea").Name = "Business Area";
                 firstTable.Field("ServiceCategory").Name = "Service Category";
                 firstTable.Field("FiscalPeriod").Name = "Fiscal Period";
                 firstTable.Field("UnitPrice").Name = "Unit Price";
