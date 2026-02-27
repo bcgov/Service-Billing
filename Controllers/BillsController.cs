@@ -357,7 +357,6 @@ namespace Service_Billing.Controllers
                         ViewData["Categories"] = categories;
                         ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
 
-                       
                         if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
                         {
                             bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
@@ -373,16 +372,18 @@ namespace Service_Billing.Controllers
                         string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
 
                         ModelState.AddModelError("StartDate",
-                            $"Start date cannot be beyond the next fiscal period ({nextQuarter}). Current fiscal period is {currentQuarter}. ");
+                            $"Start date cannot be beyond the next fiscal period ({nextQuarter}). Current fiscal period is {currentQuarter}. " +
+                            $"Please contact an administrator if you need to create a charge for a future period.");
 
                         // Re-populate the view data
                         IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
                         ViewData["Categories"] = categories;
                         ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
 
+
                         if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
                         {
-                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId); ;
                         }
 
                         return View(bill);
@@ -401,23 +402,41 @@ namespace Service_Billing.Controllers
 
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
+
+                // Determine which fiscal period this charge belongs to based on StartDate
                 DetermineCurrentQuarter(bill, bill.StartDate);
-                FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
+
+                // Ensure the fiscal period exists for the charge's start date
+                FiscalPeriod? fiscalPeriod = await EnsureFiscalPeriodExists(bill.StartDate);
+
                 if (fiscalPeriod == null)
-                    throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
+                {
+                    throw new Exception($"Unable to create or retrieve fiscal period for start date {bill.StartDate}");
+                }
+
+                // Set the bill's CurrentFiscalPeriodId to match the fiscal period for its start date
+                bill.CurrentFiscalPeriodId = fiscalPeriod.Id;
                 bill.MostRecentActiveFiscalPeriod = fiscalPeriod;
-                _logger.LogInformation($"New charge is valid");
+
+                _logger.LogInformation($"New charge is valid. Assigned to fiscal period: {fiscalPeriod.Period} (ID: {fiscalPeriod.Id})");
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
 
-                // Has a StartDate Earlier than the start of this Quarter been selected?
+                // Has a StartDate earlier than the start of the current quarter been selected?
+                // If so, we need to promote it to the current quarter and create fiscal history
                 if (bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter())
                 {
-                    await _billRepository.PromoteCharge(
-                        bill,
-                        _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter())
-                    );
+                    FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter());
+                    if (currentFiscalPeriod != null)
+                    {
+                        await _billRepository.PromoteCharge(bill, currentFiscalPeriod);
+                        _logger.LogInformation($"Charge {bill.Id} promoted from {fiscalPeriod.Period} to {currentFiscalPeriod.Period}");
+                    }
+                    else
+                    {
+                        _logger.LogError($"Could not find current fiscal period to promote charge {bill.Id}");
+                    }
                 }
 
                 return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
@@ -434,6 +453,52 @@ namespace Service_Billing.Controllers
 
                 return View(bill);
             }
+        }
+
+        // Helper method to ensure fiscal period exists, creating it if necessary
+        private async Task<FiscalPeriod?> EnsureFiscalPeriodExists(DateTimeOffset? startDate)
+        {
+            if (startDate == null)
+            {
+                startDate = DateTimeOffset.Now;
+            }
+
+            // Determine the fiscal period string for the start date
+            string fiscalPeriodString = _billRepository.DetermineCurrentQuarter(startDate.Value.DateTime);
+
+            _logger.LogInformation($"Looking for fiscal period: {fiscalPeriodString}");
+
+            // Try to get the fiscal period from the database
+            FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+
+            // If it doesn't exist, create it
+            if (fiscalPeriod == null)
+            {
+                _logger.LogInformation($"Fiscal period {fiscalPeriodString} does not exist. Creating it now.");
+
+                fiscalPeriod = new FiscalPeriod(fiscalPeriodString);
+
+                // Save the new fiscal period to the database
+                _fiscalPeriodRepository.SaveFiscalPeriod(fiscalPeriod);
+
+                // Retrieve it again to ensure we have the generated ID
+                fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+
+                if (fiscalPeriod != null)
+                {
+                    _logger.LogInformation($"Created fiscal period {fiscalPeriodString} with ID: {fiscalPeriod.Id}");
+                }
+                else
+                {
+                    _logger.LogError($"Failed to create fiscal period {fiscalPeriodString}");
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"Found existing fiscal period {fiscalPeriodString} with ID: {fiscalPeriod.Id}");
+            }
+
+            return fiscalPeriod;
         }
 
         // Helper method to get the start of the previous quarter
