@@ -256,6 +256,18 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                // Exclude nested navigation properties.
+                ModelState.Remove("Bill.ClientAccount.STOB");
+                ModelState.Remove("Bill.ClientAccount.Project");
+                ModelState.Remove("Bill.ClientAccount.Approver");
+                ModelState.Remove("Bill.ClientAccount.ServiceLine");
+                ModelState.Remove("Bill.ClientAccount.ClientNumber");
+                ModelState.Remove("Bill.ClientAccount.OrganizationId");
+                ModelState.Remove("Bill.ClientAccount.PrimaryContact");
+                ModelState.Remove("Bill.ClientAccount.ExpenseAuthorityName");
+                ModelState.Remove("Bill.ClientAccount.ResponsibilityCentre");
+                ModelState.Remove("Bill.ServiceCategory.Name");
+                ModelState.Remove("Bill.ServiceCategory.Description");
                 // Validate the model state first
                 if (!ModelState.IsValid)
                 {
@@ -380,10 +392,9 @@ namespace Service_Billing.Controllers
                         ViewData["Categories"] = categories;
                         ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
 
-
                         if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
                         {
-                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId); ;
+                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                         }
 
                         return View(bill);
@@ -423,19 +434,38 @@ namespace Service_Billing.Controllers
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
 
-                // Has a StartDate earlier than the start of the current quarter been selected?
-                // If so, we need to promote it to the current quarter and create fiscal history
-                if (bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter())
+                // Determine if this charge should be promoted to the current quarter
+                DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                bool shouldPromoteToCurrentQuarter = false;
+
+                if (bill?.StartDate != null && bill.StartDate.Value < currentQuarterStart)
                 {
-                    FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter());
-                    if (currentFiscalPeriod != null)
+                    // Check if the charge ended before the current quarter started
+                    if (bill.EndDate.HasValue && bill.EndDate.Value < currentQuarterStart)
                     {
-                        await _billRepository.PromoteCharge(bill, currentFiscalPeriod);
-                        _logger.LogInformation($"Charge {bill.Id} promoted from {fiscalPeriod.Period} to {currentFiscalPeriod.Period}");
+                        // Charge ended before current quarter - do NOT promote
+                        _logger.LogInformation($"Charge {bill.Id} started in {fiscalPeriod.Period} and ended on {bill.EndDate.Value.Date}. " +
+                            $"Since it ended before current quarter ({currentQuarterStart.Date}), it will NOT be promoted.");
+                        shouldPromoteToCurrentQuarter = false;
                     }
                     else
                     {
-                        _logger.LogError($"Could not find current fiscal period to promote charge {bill.Id}");
+                        // Charge is either ongoing (no EndDate) or extends into/past current quarter - DO promote
+                        shouldPromoteToCurrentQuarter = true;
+                    }
+
+                    if (shouldPromoteToCurrentQuarter)
+                    {
+                        FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter());
+                        if (currentFiscalPeriod != null)
+                        {
+                            await _billRepository.PromoteCharge(bill, currentFiscalPeriod);
+                            _logger.LogInformation($"Charge {bill.Id} promoted from {fiscalPeriod.Period} to {currentFiscalPeriod.Period}");
+                        }
+                        else
+                        {
+                            _logger.LogError($"Could not find current fiscal period to promote charge {bill.Id}");
+                        }
                     }
                 }
 
@@ -556,35 +586,40 @@ namespace Service_Billing.Controllers
                 {
                     return null;
                 }
-                /* if UOM is month, then we should adjust the quantity such that the client is not charged for any months
-                 * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
-                 * will typically be set to three, unless it has an end date sooner than the end of that quarter
-                 * */
+
+                // Calculate quantity based on start and end dates for month-based services
                 if (category?.UOM?.ToLower() == "month" && !quantityChanged)
                 {
-                    DateTimeOffset start = new DateTimeOffset();
-                    DateTimeOffset end = new DateTimeOffset();
-                    DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
-                    DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
-                    int startMonthDifference = 0;
-                    int endMonthDifference = 0;
-                    if (!String.IsNullOrEmpty(startDate))
+                    if (!String.IsNullOrEmpty(startDate) && !String.IsNullOrEmpty(endDate))
                     {
-                        if (DateTimeOffset.TryParse(startDate, out start) && start > quarterStart)
+                        if (DateTimeOffset.TryParse(startDate, out DateTimeOffset start) && 
+                            DateTimeOffset.TryParse(endDate, out DateTimeOffset end))
                         {
-                            startMonthDifference = start.Month - quarterStart.Month;
+                            // Calculate the actual number of months between start and end dates
+                            int months = ((end.Year - start.Year) * 12) + end.Month - start.Month + 1;
+                            quantity = Math.Max(months, 0);
+                            
+                            _logger.LogInformation($"Calculated quantity for month-based service: {months} months from {start:yyyy-MM-dd} to {end:yyyy-MM-dd}");
+                        }
+                        else
+                        {
+                            _logger.LogWarning($"Failed to parse dates: startDate='{startDate}', endDate='{endDate}'");
                         }
                     }
-                    if (!String.IsNullOrEmpty(endDate))
+                    else if (!String.IsNullOrEmpty(startDate))
                     {
-                        if (DateTimeOffset.TryParse(endDate, out end) && end < quarterEnd)
+                        // If only start date, calculate within current quarter
+                        if (DateTimeOffset.TryParse(startDate, out DateTimeOffset start))
                         {
-                            int monthScalar = (int)(end.Year - quarterEnd.Year) > 0 ? (int)(end.Year - quarterEnd.Year) : 1;
-                            endMonthDifference = Math.Min(monthScalar * quarterEnd.Month - end.Month, 3);
+                            DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                            DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
+                            
+                            int startMonthDifference = start > quarterStart ? start.Month - quarterStart.Month : 0;
+                            quantity = Math.Max(3 - startMonthDifference, 0);
                         }
                     }
-                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 0);
                 }
+
                 decimal newAmount;
                 string cost = !String.IsNullOrEmpty(category?.Costs) ? category.Costs : "0";
                 if (!string.IsNullOrEmpty(cost) && cost.Contains('$'))

@@ -100,56 +100,52 @@
     </div>
 </div>
 
-@section Scripts{
+@section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
     <script>
         $(document).ready(function () {
-            var userSetQuantity = false;
-            // nav link highlighting
-            $('li').removeClass("active-nav-link");
-            $('#order-service-link').addClass("active-nav-link");
             calculateAmount = (quantityChanged) => {
-                if(!$("#quantity")){
-                    $("#quantity").val(1);
-                }
-                var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#startDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
+                var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
-
+                xhr.responseType = "json";
                 xhr.onreadystatechange = function () {
                     if (this.readyState == 4 && this.status == 200) {
-                        var response = JSON.parse(xhr.response);
-                        $("#Amount").val(response['amount']);
-                        $("#uom").val(response['uom']);
-                        $("#quantity").val(response['quantity']);
+                        var response = xhr.response;
+                        if (response) {
+                            $("#Amount").val(response.amount);
+                            $("#uom").val(response.uom);
+                            $("#quantity").val(response.quantity);  // lowercase to match HTML id="quantity"
+                            console.log("Updated - Amount: " + response.amount + ", Quantity: " + response.quantity + ", UOM: " + response.uom);
+                        }
                     }
                 };
                 xhr.open('get', url);
                 xhr.send();
             }
+            
             $("#categorySelect").on("change", (e) => {
-                if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
+                calculateAmount(false);
+                if ($("#categorySelect").val() < 21) {
                     $("#categoryWarning").hide();
                 }
                 var id = $('#categorySelect').val();
-                $("#categoryIdInput").val(id);   
-                calculateAmount(false);
+                $("#ServiceCategoryId").val(id);
             });
-
-            $("#quantity").on("change", (e) => {
-                userSetQuantity = true;
+            
+            $("#quantity").on("change", (e) => {  // lowercase to match HTML
                 calculateAmount(true);
             });
-
+            
             $("#StartDate").on("change", (e) => {
                 calculateAmount(false);
             });
-
+            
             $("#endDate").on("change", (e) => {
                 calculateAmount(false);
             });
-
+            
             var clientsMatchingSearch = [];
             createClientSelect = () => {
                 var url = "../../Bills/GetClients";
@@ -172,7 +168,7 @@
                 xhr.open('get', url);
                 xhr.send();
 
-                $("#ClientAccount_Name").autocomplete({ // a bit mislabelled since this is for the autocomplete
+                $("#ClientAccount_Name").autocomplete({
                     source: clientsMatchingSearch,
                     delay: 500,
                     select: function (event, ui) {
