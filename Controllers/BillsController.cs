@@ -587,37 +587,69 @@ namespace Service_Billing.Controllers
                     return null;
                 }
 
+                string quantityExplanation = "";
+
                 // Calculate quantity based on start and end dates for month-based services
                 if (category?.UOM?.ToLower() == "month" && !quantityChanged)
                 {
-                    if (!String.IsNullOrEmpty(startDate) && !String.IsNullOrEmpty(endDate))
+                    if (!String.IsNullOrEmpty(startDate) && DateTimeOffset.TryParse(startDate, out DateTimeOffset start))
                     {
-                        if (DateTimeOffset.TryParse(startDate, out DateTimeOffset start) && 
-                            DateTimeOffset.TryParse(endDate, out DateTimeOffset end))
+                        DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                        DateTimeOffset currentQuarterEnd = _billRepository.DetermineEndOfQuarter(currentQuarterStart.Date);
+                        DateTimeOffset previousQuarterStart = GetPreviousQuarterStart();
+                        DateTimeOffset nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                        DateTimeOffset nextQuarterEnd = _billRepository.DetermineEndOfQuarter(nextQuarterStart.DateTime);
+
+                        DateTimeOffset? end = null;
+                        if (!String.IsNullOrEmpty(endDate) && DateTimeOffset.TryParse(endDate, out DateTimeOffset parsedEnd))
                         {
-                            // Calculate the actual number of months between start and end dates
-                            int months = ((end.Year - start.Year) * 12) + end.Month - start.Month + 1;
+                            end = parsedEnd;
+                        }
+
+                        // Determine which quarter to calculate for
+                        if (start < currentQuarterStart)
+                        {
+                            // Start date is in previous quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value < currentQuarterStart ? end.Value : currentQuarterStart.AddDays(-1);
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
                             quantity = Math.Max(months, 0);
                             
-                            _logger.LogInformation($"Calculated quantity for month-based service: {months} months from {start:yyyy-MM-dd} to {end:yyyy-MM-dd}");
+                            string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
+                            quantityExplanation = end.HasValue && end.Value < currentQuarterStart 
+                                ? $"Billing for {quantity} month(s) in {previousQuarter} (from {start:MMM d} to {relevantEnd:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {previousQuarter} (charge will be promoted to current quarter)";
+                        }
+                        else if (start >= nextQuarterStart)
+                        {
+                            // Start date is in next quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value <= nextQuarterEnd ? end.Value : nextQuarterEnd;
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
+                            quantity = Math.Max(Math.Min(months, 3), 0);
+                            
+                            string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
+                            quantityExplanation = end.HasValue 
+                                ? $"Billing for {quantity} month(s) in {nextQuarter} (from {start:MMM d} to {end.Value:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {nextQuarter}";
                         }
                         else
                         {
-                            _logger.LogWarning($"Failed to parse dates: startDate='{startDate}', endDate='{endDate}'");
-                        }
-                    }
-                    else if (!String.IsNullOrEmpty(startDate))
-                    {
-                        // If only start date, calculate within current quarter
-                        if (DateTimeOffset.TryParse(startDate, out DateTimeOffset start))
-                        {
-                            DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
-                            DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
+                            // Start date is in current quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value <= currentQuarterEnd ? end.Value : currentQuarterEnd;
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
+                            quantity = Math.Max(months, 0);
                             
-                            int startMonthDifference = start > quarterStart ? start.Month - quarterStart.Month : 0;
-                            quantity = Math.Max(3 - startMonthDifference, 0);
+                            string currentQuarter = _billRepository.DetermineCurrentQuarter();
+                            quantityExplanation = end.HasValue && end.Value <= currentQuarterEnd
+                                ? $"Billing for {quantity} month(s) in {currentQuarter} (from {start:MMM d} to {end.Value:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {currentQuarter} (started {start:MMM d, yyyy})";
                         }
+
+                        _logger.LogInformation($"Calculated quantity: {quantity} months. {quantityExplanation}");
                     }
+                }
+                else if (category?.UOM?.ToLower() != "month")
+                {
+                    quantityExplanation = $"Unit of measure is {category?.UOM}, not month-based";
                 }
 
                 decimal newAmount;
@@ -635,10 +667,16 @@ namespace Service_Billing.Controllers
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
 
-                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name) ? category.Name : "NoCategoryName", newAmount * quantity, quantity);
-                recordEntry.UOM = UOM;
+                var result = new
+                {
+                    serviceCategory = !String.IsNullOrEmpty(category?.Name) ? category.Name : "NoCategoryName",
+                    amount = newAmount * quantity,
+                    uom = UOM,
+                    quantity = quantity,
+                    quantityExplanation = quantityExplanation
+                };
 
-                return new JsonResult(recordEntry);
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
@@ -753,6 +791,7 @@ namespace Service_Billing.Controllers
                 List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
                 switch (searchParams?.QuarterFilter)
                 {
+                    case "current":
                     case "Current Quarter":
 
                         string fiscalPeriodString = _billRepository.DetermineCurrentQuarter();

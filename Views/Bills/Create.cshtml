@@ -5,9 +5,9 @@
     Layout = "_Layout";
 }
 @{
-    IEnumerable<ServiceCategory> categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
-    string? currentUserName = ViewData["CurrentUser"] != null ? ViewData["CurrentUser"].ToString() : "";
-    DateTimeOffset startDateFormatted = Model.StartDate.Value;
+    IEnumerable<ServiceCategory>? categories = ViewData["Categories"] as IEnumerable<ServiceCategory>;
+    string? currentUserName = ViewData["CurrentUser"]?.ToString() ?? "";
+    DateTimeOffset startDateFormatted = Model.StartDate ?? DateTimeOffset.Now;
     string startDateString = startDateFormatted.ToString("yyyy-MM-dd");
 }
 
@@ -40,7 +40,7 @@
                 <input asp-for="IdirOrUrl" class="form-control"/>
                 <span asp-validation-for="IdirOrUrl" class="text-danger"></span>
             </div>
-            <input type="hidden" asp-for="@Model.ServiceCategoryId" id="categoryIdInput" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
+            <input type="hidden" asp-for="@Model.ServiceCategoryId" id="ServiceCategoryId" class="form-control" data-val="true" data-val-required="A Service Category must be selected" />
             @await Component.InvokeAsync("ServiceCategoryInput", new { categories =  categories })
    
             
@@ -54,13 +54,14 @@
             </div>
             <div class="form-group">
                 <label>Unit of Measure</label>
-                <input id="uom" class="form-control" readonly="true" />
+                <input id="uom" class="form-control" readonly />
             </div>
 
             <div class="form-group" title="For monthly charges, this is calculated based on the start date and end date (if provided). Clients are not charged for past months in a fiscal quarter. If a monthly charge is included in the following fiscal quarter, its quantity will be set to 3 (for each month in the quarter), unless an end date is set that is earlier than the end of the new quarter.">
                 <label asp-for="Quantity" class="control-label"></label>
                 <input asp-for="Quantity" class="form-control" id="quantity" data-val="true" data-val-required="A quantity must be provided" />
                 <span asp-validation-for="Quantity" class="text-danger"></span>
+                <div id="quantityExplanation" class="input-info text-muted small mt-1"></div>
             </div>
             <div class="form-group">
                 <label asp-for="TicketNumberAndRequester" class="control-label"></label>
@@ -116,8 +117,8 @@
                         if (response) {
                             $("#Amount").val(response.amount);
                             $("#uom").val(response.uom);
-                            $("#quantity").val(response.quantity);  // lowercase to match HTML id="quantity"
-                            console.log("Updated - Amount: " + response.amount + ", Quantity: " + response.quantity + ", UOM: " + response.uom);
+                            $("#quantity").val(response.quantity);
+                            $("#quantityExplanation").text(response.quantityExplanation || "");
                         }
                     }
                 };

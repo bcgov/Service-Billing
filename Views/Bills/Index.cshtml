@@ -9,17 +9,21 @@
 }
 
 @{
-    IEnumerable<Ministry> ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
-    ChargeIndexSearchParamsModel searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
-    if (string.IsNullOrEmpty(searchModel?.QuarterFilter))
-        searchModel.QuarterFilter = "Current Quarter";
-    bool current = searchModel.QuarterFilter == "current";
-    bool previous = searchModel.QuarterFilter == "previous";
-    bool next = searchModel.QuarterFilter == "next";
-    bool all = searchModel.QuarterFilter == "all";
-    List<SelectListItem> serviceCategories = new List<SelectListItem>();
-    List<SelectListItem> businessAreas = new List<SelectListItem>();
-    IEnumerable<string> previousFiscals = ViewData["PreviousFiscals"] as IEnumerable<string>;
+IEnumerable<Ministry>? ministries = ViewData["Ministries"] as IEnumerable<Ministry>;
+ChargeIndexSearchParamsModel? searchModel = ViewData["searchModel"] as ChargeIndexSearchParamsModel;
+if (searchModel == null)
+{
+    searchModel = new ChargeIndexSearchParamsModel();
+}
+if (string.IsNullOrEmpty(searchModel.QuarterFilter))
+    searchModel.QuarterFilter = "Current Quarter";
+bool current = searchModel.QuarterFilter == "current";
+bool previous = searchModel.QuarterFilter == "previous";
+bool next = searchModel.QuarterFilter == "next";
+bool all = searchModel.QuarterFilter == "all";
+List<SelectListItem> serviceCategories = new List<SelectListItem>();
+List<SelectListItem> businessAreas = new List<SelectListItem>();
+IEnumerable<string>? previousFiscals = ViewData["PreviousFiscals"] as IEnumerable<string>;
 
 
     /* I'm not sure if these will get used. Not quite sure how to filter by business area, and service category yet.*/
@@ -62,10 +66,9 @@
                                     <option value="previous" selected="@previous">Previous (@ViewData["PreviousQuarterString"])</option>
                                     <option value="next" selected="@next">Next</option>
                                     <option value="all" selected="@all">All</option>
-                                    @foreach(string period in previousFiscals)
+                                    @foreach(string period in previousFiscals ?? Enumerable.Empty<string>())
                                     {
-                                        <option value=@period selected="@(
-                                        period == searchModel?.QuarterFilter)">@period</option>
+                                        <option value="@period" selected="@(period == searchModel?.QuarterFilter)">@period</option>
                                     }
                                 </select>
                             </div>
@@ -79,7 +82,7 @@
                                     {
                                         if (searchModel?.MinistryFilter > 0 && searchModel?.MinistryFilter == ministry.Id)
                                         {
-                                            <option selected="true" value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
+                                            <option selected value="@ministry.Id">@ministry.Acronym - @ministry.Title</option>
                                         }
                                         else
                                         {
@@ -141,7 +144,7 @@
                             </div>
                             <div>
                                 <label for="keyword">Keyword</label>
-                                <input type="text" name="keyword" value="@searchModel.Keyword"
+                                <input type="text" name="keyword" value="@(searchModel?.Keyword ?? string.Empty)"
                                        title="Search program names, URLs or notes" />
                             </div>
                         </div>
