@@ -401,6 +401,24 @@ namespace Service_Billing.Controllers
                     }
                 }
 
+                // Validate that EndDate is not before StartDate
+                if (bill.StartDate.HasValue && bill.EndDate.HasValue && bill.EndDate.Value < bill.StartDate.Value)
+                {
+                    ModelState.AddModelError("EndDate", "End date cannot be before the start date.");
+
+                    // Re-populate the view data
+                    IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                    ViewData["Categories"] = categories;
+                    ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
+
+                    if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
+                    {
+                        bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    }
+
+                    return View(bill);
+                }
+
                 // Continue with normal processing...
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
@@ -440,12 +458,30 @@ namespace Service_Billing.Controllers
 
                 if (bill?.StartDate != null && bill.StartDate.Value < currentQuarterStart)
                 {
+                    // Charge starts in a previous quarter - create FiscalHistory for that quarter first
+                    if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                    {
+                        if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                        {
+                            // Create FiscalHistory record for the quarter the charge was created in
+                            FiscalHistory historicalRecord = new FiscalHistory(
+                                bill.Id,
+                                fiscalPeriod.Id,
+                                unitPrice,
+                                bill.Quantity,
+                                bill.Notes
+                            );
+                            _fiscalHistoryRepository.SaveFiscalHistoryInfo(historicalRecord);
+                            _logger.LogInformation($"Created FiscalHistory record for charge {bill.Id} in {fiscalPeriod.Period} with quantity {bill.Quantity}");
+                        }
+                    }
+
                     // Check if the charge ended before the current quarter started
                     if (bill.EndDate.HasValue && bill.EndDate.Value < currentQuarterStart)
                     {
                         // Charge ended before current quarter - do NOT promote
-                        _logger.LogInformation($"Charge {bill.Id} started in {fiscalPeriod.Period} and ended on {bill.EndDate.Value.Date}. " +
-                            $"Since it ended before current quarter ({currentQuarterStart.Date}), it will NOT be promoted.");
+                        _logger.LogInformation($"Charge {bill.Id} created with StartDate={bill.StartDate.Value.Date:yyyy-MM-dd} and EndDate={bill.EndDate.Value.Date:yyyy-MM-dd}. " +
+                            $"Both dates are in {fiscalPeriod.Period}. Charge will remain in {fiscalPeriod.Period} and will NOT be promoted to current quarter.");
                         shouldPromoteToCurrentQuarter = false;
                     }
                     else
@@ -467,6 +503,10 @@ namespace Service_Billing.Controllers
                             _logger.LogError($"Could not find current fiscal period to promote charge {bill.Id}");
                         }
                     }
+                }
+                else if (bill?.StartDate != null && bill.StartDate.Value >= currentQuarterStart)
+                {
+                    _logger.LogInformation($"Charge {bill.Id} created with StartDate in current or future quarter ({fiscalPeriod.Period}). No promotion needed.");
                 }
 
                 return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
@@ -809,8 +849,22 @@ namespace Service_Billing.Controllers
                         query = query.Where(b => b.ClientAccount.IsActive);
                         break;
                     case "previous":
-                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
-                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
+                        string previousQuarterString = _billRepository.GetPreviousQuarterString();
+                        FiscalPeriod? previousFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(previousQuarterString);
+
+                        if (previousFiscalPeriod != null)
+                        {
+                            // Get bills that have FiscalHistory for the previous quarter (promoted FROM previous quarter)
+                            previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
+                            List<int> billIdsWithHistory = previousQuarterChargeIds.Select(x => x.BillId).ToList();
+
+                            // Include bills that are currently assigned to the previous quarter (stayed IN previous quarter)
+                            query = query.Where(b => billIdsWithHistory.Contains(b.Id) || b.CurrentFiscalPeriodId == previousFiscalPeriod.Id);
+                        }
+                        else
+                        {
+                            throw new Exception($"Could not find fiscal period for previous quarter: {previousQuarterString}");
+                        }
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
@@ -825,9 +879,25 @@ namespace Service_Billing.Controllers
                     case "all":
                         // Just break. Effectively it's just one less Where clause
                         break;
-                    default: //get charges from previous fiscal history.
-                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory(searchParams.QuarterString).ToList();
-                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
+                    default: //get charges from previous fiscal history or bills currently in that quarter
+                        if (!string.IsNullOrEmpty(searchParams.QuarterString))
+                        {
+                            FiscalPeriod? historicalFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(searchParams.QuarterString);
+
+                            if (historicalFiscalPeriod != null)
+                            {
+                                // Get bills that have FiscalHistory for this quarter (promoted FROM this quarter)
+                                previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory(searchParams.QuarterString).ToList();
+                                List<int> billIdsWithHistory = previousQuarterChargeIds.Select(x => x.BillId).ToList();
+
+                                // Include bills that are currently assigned to this quarter (stayed IN this quarter)
+                                query = query.Where(b => billIdsWithHistory.Contains(b.Id) || b.CurrentFiscalPeriodId == historicalFiscalPeriod.Id);
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Could not find fiscal period for quarter string: {searchParams.QuarterString}");
+                            }
+                        }
                         break;
                 }
                 if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && (searchParams?.QuarterFilter == "current" || searchParams?.QuarterFilter == "next"))

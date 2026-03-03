@@ -270,9 +270,14 @@ namespace Service_Billing.Models.Repositories
         private void AddBillFiscalHistoryToContext(int chargeId, int currentFiscalId, int newFiscalId, decimal unitPriceAtFiscal, decimal quantity, string notes)
         {
             FiscalHistory fiscalHistory = new FiscalHistory(chargeId, currentFiscalId, unitPriceAtFiscal, quantity, notes);
-            if (_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(newFiscalId, chargeId) == null) // and it should be null!
+            // Check if FiscalHistory already exists for the OLD period (currentFiscalId) to prevent duplicates
+            if (_fiscalHistoryRepository.GetFiscalHistoryByIdAndChargeId(currentFiscalId, chargeId) == null)
             {
                 _billingContext.FiscalHistory.Add(fiscalHistory);
+            }
+            else
+            {
+                _logger.LogInformation($"FiscalHistory already exists for charge {chargeId} in period {currentFiscalId}. Skipping duplicate creation.");
             }
         }
 
@@ -493,6 +498,7 @@ namespace Service_Billing.Models.Repositories
             // Get the original bill from database to compare dates
             Bill? originalBill = _billingContext.Bills.AsNoTracking()
                 .Include(b => b.MostRecentActiveFiscalPeriod)
+                .Include(b => b.ServiceCategory)
                 .FirstOrDefault(b => b.Id == editedBill.Id);
 
             if (originalBill != null)
@@ -500,8 +506,9 @@ namespace Service_Billing.Models.Repositories
                 // Check if the bill is in the current fiscal period
                 string currentQuarterString = DetermineCurrentQuarter();
                 FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(currentQuarterString);
+                DateTime currentQuarterStart = DetermineStartOfCurrentQuarter();
 
-                if (currentFiscalPeriod != null && editedBill.CurrentFiscalPeriodId == currentFiscalPeriod.Id)
+                if (currentFiscalPeriod != null)
                 {
                     // Check if start or end dates changed
                     bool datesChanged = originalBill.StartDate != editedBill.StartDate || 
@@ -509,21 +516,58 @@ namespace Service_Billing.Models.Repositories
 
                     if (datesChanged)
                     {
-                        // Recalculate quantity for the current quarter
-                        DateTime currentQuarterStart = DetermineStartOfCurrentQuarter();
-                        DateTime currentQuarterEnd = DetermineEndOfQuarter(currentQuarterStart);
-
-                        decimal newQuantity = CalculateQuantityForQuarter(editedBill, currentQuarterStart, currentQuarterEnd);
-
-                        _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity}");
-                        editedBill.Quantity = newQuantity;
-
-                        // Recalculate amount based on new quantity
-                        if (editedBill.ServiceCategory != null && !String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
+                        // Check if bill is currently in the current quarter
+                        if (editedBill.CurrentFiscalPeriodId == currentFiscalPeriod.Id)
                         {
-                            if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
+                            // Recalculate quantity for the current quarter
+                            DateTime currentQuarterEnd = DetermineEndOfQuarter(currentQuarterStart);
+                            decimal newQuantity = CalculateQuantityForQuarter(editedBill, currentQuarterStart, currentQuarterEnd);
+
+                            _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity}");
+                            editedBill.Quantity = newQuantity;
+
+                            // Recalculate amount based on new quantity
+                            if (editedBill.ServiceCategory != null && !String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
                             {
-                                editedBill.Amount = unitPrice * newQuantity;
+                                if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
+                                {
+                                    editedBill.Amount = unitPrice * newQuantity;
+                                }
+                            }
+                        }
+                        // Check if bill is in a previous quarter but now extends into current quarter
+                        else if (editedBill.CurrentFiscalPeriodId != currentFiscalPeriod.Id)
+                        {
+                            // Check if the bill now extends into or past the current quarter
+                            bool shouldPromote = (editedBill.EndDate == null || editedBill.EndDate.Value >= currentQuarterStart);
+
+                            if (shouldPromote)
+                            {
+                                _logger.LogInformation($"Bill {editedBill.Id} end date changed. Bill now extends into current quarter. Promoting from period {editedBill.CurrentFiscalPeriodId} to {currentFiscalPeriod.Id}");
+
+                                // Before promoting, ensure the ServiceCategory is loaded
+                                if (editedBill.ServiceCategory == null && originalBill.ServiceCategory != null)
+                                {
+                                    editedBill.ServiceCategory = originalBill.ServiceCategory;
+                                }
+
+                                // Save current changes first
+                                EntityEntry? tempEntry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedBill, userName);
+                                Bill? tempBill = tempEntry?.Entity as Bill;
+                                if (tempBill != null)
+                                {
+                                    _billingContext.Update(tempBill);
+                                    await _billingContext.SaveChangesAsync();
+                                }
+
+                                // Reload the bill to get the saved version
+                                Bill? savedBill = GetBill(editedBill.Id);
+                                if (savedBill != null)
+                                {
+                                    await PromoteCharge(savedBill, currentFiscalPeriod, currentQuarterStart, true);
+                                }
+
+                                return; // Exit early since promotion handles the update
                             }
                         }
                     }
