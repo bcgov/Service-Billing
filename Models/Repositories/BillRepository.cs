@@ -278,22 +278,67 @@ namespace Service_Billing.Models.Repositories
 
         private decimal GetBillQuantityForNewQuarter(Bill bill, DateTime quarterStart)
         {
-            if (bill.EndDate == null)
-                return (decimal)3.0;
+            DateTime quarterEnd = DetermineEndOfQuarter(quarterStart);
+            return CalculateQuantityForQuarter(bill, quarterStart, quarterEnd);
+        }
 
-            else //find out how many months they should be billed for
+        public decimal CalculateQuantityForQuarter(Bill bill, DateTime quarterStart, DateTime quarterEnd)
+        {
+            // If bill hasn't started yet in this quarter, quantity is 0
+            if (bill.StartDate.HasValue && bill.StartDate.Value.Date > quarterEnd)
+                return 0;
+
+            // If bill has already ended before this quarter, quantity is 0
+            if (bill.EndDate.HasValue && bill.EndDate.Value.Date < quarterStart)
+                return 0;
+
+            // Determine the effective start date within this quarter
+            DateTime effectiveStart = bill.StartDate.HasValue && bill.StartDate.Value.Date > quarterStart
+                ? bill.StartDate.Value.Date
+                : quarterStart;
+
+            // Determine the effective end date within this quarter
+            DateTime effectiveEnd = quarterEnd;
+            if (bill.EndDate.HasValue && bill.EndDate.Value.Date < quarterEnd)
+                effectiveEnd = bill.EndDate.Value.Date;
+
+            // Calculate months between effective start and end
+            int months = ((effectiveEnd.Year - effectiveStart.Year) * 12) + effectiveEnd.Month - effectiveStart.Month + 1;
+
+            // Ensure quantity is between 0 and 3 (max months in a quarter)
+            return Math.Max(Math.Min((decimal)months, 3.0m), 0m);
+        }
+
+        private DateTime DetermineStartOfQuarterForPeriod(string fiscalPeriodString)
+        {
+            // Parse fiscal period string like "Fiscal 25/26 Quarter 4"
+            // Extract the year and quarter
+            if (string.IsNullOrEmpty(fiscalPeriodString) || !fiscalPeriodString.StartsWith("Fiscal"))
+                throw new ArgumentException("Invalid fiscal period string format");
+
+            string[] parts = fiscalPeriodString.Split(' ');
+            if (parts.Length < 4)
+                throw new ArgumentException("Invalid fiscal period string format");
+
+            string[] years = parts[1].Split('/');
+            if (!int.TryParse(years[1], out int year))
+                throw new ArgumentException("Cannot parse year from fiscal period string");
+
+            int fullYear = 2000 + year; // Convert "26" to 2026
+
+            string quarterPart = parts[3]; // The quarter number is the 4th element
+            if (!int.TryParse(quarterPart, out int quarter))
+                throw new ArgumentException("Cannot parse quarter from fiscal period string");
+
+            // Fiscal quarters: Q1=Apr-Jun, Q2=Jul-Sep, Q3=Oct-Dec, Q4=Jan-Mar
+            return quarter switch
             {
-                int billEndMonth = bill.EndDate.Value.Month;
-                int quarterStartMonth = quarterStart.Month;
-                if (bill.EndDate.Value.Year > quarterStart.Year)
-                {
-                    int monthsScalar = bill.EndDate.Value.Year - quarterStart.Year;
-                    billEndMonth *= (monthsScalar * 12);
-                }
-                int duration = billEndMonth - quarterStartMonth + 1;
-
-                return duration < 3 ? (decimal)duration : (decimal)3.0;
-            }
+                1 => new DateTime(fullYear - 1, 4, 1),  // April of previous calendar year
+                2 => new DateTime(fullYear - 1, 7, 1),  // July of previous calendar year
+                3 => new DateTime(fullYear - 1, 10, 1), // October of previous calendar year
+                4 => new DateTime(fullYear, 1, 1),      // January of current calendar year
+                _ => throw new ArgumentException($"Invalid quarter number: {quarter}")
+            };
         }
 
         public IEnumerable<Bill> GetCurrentQuarterBills()
@@ -409,7 +454,6 @@ namespace Service_Billing.Models.Repositories
             Bill newBill = new Bill();
             newBill.Title = bill.Title;
             newBill.ServiceCategoryId = bill.ServiceCategoryId;
-            newBill.Amount = bill.Amount;
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
             //    newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
@@ -418,11 +462,26 @@ namespace Service_Billing.Models.Repositories
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
             newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
-            newBill.Quantity = bill.Quantity;
             newBill.Notes = bill.Notes;
             newBill.EndDate = bill.EndDate;
             newBill.DateModified = bill.DateModified;
             newBill.CreatedBy = bill.CreatedBy;
+
+            // Calculate the correct quantity based on the fiscal period this bill is being created in
+            FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
+            if (fiscalPeriod != null)
+            {
+                DateTime periodStart = DetermineStartOfQuarterForPeriod(fiscalPeriod.Period);
+                DateTime periodEnd = DetermineEndOfQuarter(periodStart);
+                newBill.Quantity = CalculateQuantityForQuarter(bill, periodStart, periodEnd);
+                _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with calculated quantity: {newBill.Quantity}");
+            }
+            else
+            {
+                newBill.Quantity = bill.Quantity;
+            }
+
+            newBill.Amount = bill.Amount;
 
             await _billingContext.AddAsync(newBill);
             await _billingContext.SaveChangesAsync();
@@ -431,6 +490,46 @@ namespace Service_Billing.Models.Repositories
 
         public async Task Update(Bill editedBill, string userName = "system")
         {
+            // Get the original bill from database to compare dates
+            Bill? originalBill = _billingContext.Bills.AsNoTracking()
+                .Include(b => b.MostRecentActiveFiscalPeriod)
+                .FirstOrDefault(b => b.Id == editedBill.Id);
+
+            if (originalBill != null)
+            {
+                // Check if the bill is in the current fiscal period
+                string currentQuarterString = DetermineCurrentQuarter();
+                FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(currentQuarterString);
+
+                if (currentFiscalPeriod != null && editedBill.CurrentFiscalPeriodId == currentFiscalPeriod.Id)
+                {
+                    // Check if start or end dates changed
+                    bool datesChanged = originalBill.StartDate != editedBill.StartDate || 
+                                       originalBill.EndDate != editedBill.EndDate;
+
+                    if (datesChanged)
+                    {
+                        // Recalculate quantity for the current quarter
+                        DateTime currentQuarterStart = DetermineStartOfCurrentQuarter();
+                        DateTime currentQuarterEnd = DetermineEndOfQuarter(currentQuarterStart);
+
+                        decimal newQuantity = CalculateQuantityForQuarter(editedBill, currentQuarterStart, currentQuarterEnd);
+
+                        _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity}");
+                        editedBill.Quantity = newQuantity;
+
+                        // Recalculate amount based on new quantity
+                        if (editedBill.ServiceCategory != null && !String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
+                        {
+                            if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
+                            {
+                                editedBill.Amount = unitPrice * newQuantity;
+                            }
+                        }
+                    }
+                }
+            }
+
             EntityEntry? entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedBill, userName);
             Bill? bill = entry?.Entity as Bill;
             if (bill != null)

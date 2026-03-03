@@ -789,6 +789,10 @@ namespace Service_Billing.Controllers
                     && !User.IsInRole("GDXBillingService.Owner"));
 
                 List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
+                bool isNextQuarter = false;
+                DateTime nextQuarterStart = DateTime.MinValue;
+                DateTime nextQuarterEnd = DateTime.MinValue;
+
                 switch (searchParams?.QuarterFilter)
                 {
                     case "current":
@@ -810,8 +814,10 @@ namespace Service_Billing.Controllers
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
-                        DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
-                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                        nextQuarterEnd = _billRepository.DetermineEndOfQuarter(nextQuarterStart);
+                        isNextQuarter = true;
+                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > nextQuarterStart));
                         query = query.Where(b => b.IsActive);
                         query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
@@ -894,6 +900,25 @@ namespace Service_Billing.Controllers
                         {
                             bill.Amount = chargeHistory.UnitPriceAtFiscal * chargeHistory.QuantityAtFiscal;
                             bill.Quantity = chargeHistory.QuantityAtFiscal;
+                        }
+                    }
+                }
+
+                //if we're looking at next quarter's charges, calculate the correct quantities based on end dates
+                if (isNextQuarter)
+                {
+                    foreach (Bill bill in result)
+                    {
+                        decimal calculatedQuantity = _billRepository.CalculateQuantityForQuarter(bill, nextQuarterStart, nextQuarterEnd);
+                        bill.Quantity = calculatedQuantity;
+
+                        // Recalculate amount based on the new quantity
+                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                        {
+                            if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                            {
+                                bill.Amount = unitPrice * calculatedQuantity;
+                            }
                         }
                     }
                 }
