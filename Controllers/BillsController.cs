@@ -268,6 +268,13 @@ namespace Service_Billing.Controllers
                 ModelState.Remove("Bill.ClientAccount.ResponsibilityCentre");
                 ModelState.Remove("Bill.ServiceCategory.Name");
                 ModelState.Remove("Bill.ServiceCategory.Description");
+
+                // Validate that EndDate is not before StartDate
+                if (model.Bill.StartDate.HasValue && model.Bill.EndDate.HasValue && model.Bill.EndDate.Value < model.Bill.StartDate.Value)
+                {
+                    ModelState.AddModelError("Bill.EndDate", "End date cannot be before the start date.");
+                }
+
                 // Validate the model state first
                 if (!ModelState.IsValid)
                 {
