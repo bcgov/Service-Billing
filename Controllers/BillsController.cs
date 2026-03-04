@@ -269,6 +269,53 @@ namespace Service_Billing.Controllers
                 ModelState.Remove("Bill.ServiceCategory.Name");
                 ModelState.Remove("Bill.ServiceCategory.Description");
 
+                // Get the original bill to check if StartDate is being changed
+                Bill? originalBill = _billRepository.GetBill(model.Bill.Id);
+
+                // Only validate StartDate if it's being changed from the original value
+                if (originalBill != null && model.Bill.StartDate.HasValue && 
+                    originalBill.StartDate.HasValue && 
+                    model.Bill.StartDate.Value.Date != originalBill.StartDate.Value.Date)
+                {
+                    DateTimeOffset previousQuarterStart = GetPreviousQuarterStart();
+                    DateTimeOffset nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                    DateTimeOffset quarterAfterNextStart = GetQuarterAfterNext(nextQuarterStart);
+
+                    // Check if the original charge has a StartDate before the previous quarter
+                    // If so, it has historical records and the StartDate should not be changed at all
+                    if (originalBill.StartDate.Value < previousQuarterStart)
+                    {
+                        ModelState.AddModelError("Bill.StartDate",
+                            "This charge's start date has been recognized in historical fiscal periods and cannot be changed. " +
+                            "Changing this date would corrupt historical billing records. " +
+                            "Please contact a Service Billing administrator if you need to make corrections.");
+                    }
+                    // For recent charges (within editable range), validate the new StartDate
+                    else
+                    {
+                        // Check if new date is too far in the past (before previous quarter)
+                        if (model.Bill.StartDate.Value < previousQuarterStart)
+                        {
+                            string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
+
+                            ModelState.AddModelError("Bill.StartDate",
+                                $"Start date cannot be earlier than the previous fiscal period ({previousQuarter}). " +
+                                $"If you need to backdate this charge further, please contact a Service Billing administrator.");
+                        }
+
+                        // Check if date is too far in the future (beyond next quarter)
+                        if (model.Bill.StartDate.Value >= quarterAfterNextStart)
+                        {
+                            string currentQuarter = _billRepository.DetermineCurrentQuarter();
+                            string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
+
+                            ModelState.AddModelError("Bill.StartDate",
+                                $"Start date cannot be beyond the next fiscal period ({nextQuarter}). Current fiscal period is {currentQuarter}. " +
+                                $"Please contact an administrator if you need to set a future start date.");
+                        }
+                    }
+                }
+
                 // Validate that EndDate is not before StartDate
                 if (model.Bill.StartDate.HasValue && model.Bill.EndDate.HasValue && model.Bill.EndDate.Value < model.Bill.StartDate.Value)
                 {
