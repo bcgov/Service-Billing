@@ -141,10 +141,16 @@
             
             $("#StartDate").on("change", (e) => {
                 calculateAmount(false);
+                // Clear any validation errors for StartDate when user changes it
+                $("span[data-valmsg-for='StartDate']").text("");
+                $("span[data-valmsg-for='StartDate']").removeClass("field-validation-error").addClass("field-validation-valid");
             });
-            
+
             $("#endDate").on("change", (e) => {
                 calculateAmount(false);
+                // Clear any validation errors for EndDate when user changes it
+                $("span[data-valmsg-for='EndDate']").text("");
+                $("span[data-valmsg-for='EndDate']").removeClass("field-validation-error").addClass("field-validation-valid");
             });
             
             var clientsMatchingSearch = [];
