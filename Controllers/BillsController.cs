@@ -512,28 +512,27 @@ namespace Service_Billing.Controllers
 
                 if (bill?.StartDate != null && bill.StartDate.Value < currentQuarterStart)
                 {
-                    // Charge starts in a previous quarter - create FiscalHistory for that quarter first
-                    if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
-                    {
-                        if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
-                        {
-                            // Create FiscalHistory record for the quarter the charge was created in
-                            FiscalHistory historicalRecord = new FiscalHistory(
-                                bill.Id,
-                                fiscalPeriod.Id,
-                                unitPrice,
-                                bill.Quantity,
-                                bill.Notes
-                            );
-                            _fiscalHistoryRepository.SaveFiscalHistoryInfo(historicalRecord);
-                            _logger.LogInformation($"Created FiscalHistory record for charge {bill.Id} in {fiscalPeriod.Period} with quantity {bill.Quantity}");
-                        }
-                    }
-
                     // Check if the charge ended before the current quarter started
                     if (bill.EndDate.HasValue && bill.EndDate.Value < currentQuarterStart)
                     {
                         // Charge ended before current quarter - do NOT promote
+                        // Create FiscalHistory for this charge since it stays in the previous quarter
+                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                        {
+                            if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                            {
+                                FiscalHistory historicalRecord = new FiscalHistory(
+                                    bill.Id,
+                                    fiscalPeriod.Id,
+                                    unitPrice,
+                                    bill.Quantity,
+                                    bill.Notes
+                                );
+                                _fiscalHistoryRepository.SaveFiscalHistoryInfo(historicalRecord);
+                                _logger.LogInformation($"Created FiscalHistory record for charge {bill.Id} in {fiscalPeriod.Period} (charge ended in this quarter)");
+                            }
+                        }
+
                         _logger.LogInformation($"Charge {bill.Id} created with StartDate={bill.StartDate.Value.Date:yyyy-MM-dd} and EndDate={bill.EndDate.Value.Date:yyyy-MM-dd}. " +
                             $"Both dates are in {fiscalPeriod.Period}. Charge will remain in {fiscalPeriod.Period} and will NOT be promoted to current quarter.");
                         shouldPromoteToCurrentQuarter = false;
@@ -541,6 +540,7 @@ namespace Service_Billing.Controllers
                     else
                     {
                         // Charge is either ongoing (no EndDate) or extends into/past current quarter - DO promote
+                        // PromoteCharge will handle creating the FiscalHistory for the previous quarter
                         shouldPromoteToCurrentQuarter = true;
                     }
 
