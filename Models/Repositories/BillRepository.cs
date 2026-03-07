@@ -472,18 +472,24 @@ namespace Service_Billing.Models.Repositories
             newBill.DateModified = bill.DateModified;
             newBill.CreatedBy = bill.CreatedBy;
 
-            // Calculate the correct quantity based on the fiscal period this bill is being created in
+            // Calculate the correct quantity based on the fiscal period - only for month-based services
             FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
-            if (fiscalPeriod != null)
+            if (fiscalPeriod != null && bill.ServiceCategory != null && 
+                !string.IsNullOrEmpty(bill.ServiceCategory.UOM) && 
+                bill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
             {
                 DateTime periodStart = DetermineStartOfQuarterForPeriod(fiscalPeriod.Period);
                 DateTime periodEnd = DetermineEndOfQuarter(periodStart);
                 newBill.Quantity = CalculateQuantityForQuarter(bill, periodStart, periodEnd);
-                _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with calculated quantity: {newBill.Quantity}");
+                _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with calculated quantity: {newBill.Quantity} (month-based service)");
             }
             else
             {
                 newBill.Quantity = bill.Quantity;
+                if (fiscalPeriod != null)
+                {
+                    _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with user-provided quantity: {newBill.Quantity} (non-month UOM)");
+                }
             }
 
             newBill.Amount = bill.Amount;
@@ -519,20 +525,30 @@ namespace Service_Billing.Models.Repositories
                         // Check if bill is currently in the current quarter
                         if (editedBill.CurrentFiscalPeriodId == currentFiscalPeriod.Id)
                         {
-                            // Recalculate quantity for the current quarter
-                            DateTime currentQuarterEnd = DetermineEndOfQuarter(currentQuarterStart);
-                            decimal newQuantity = CalculateQuantityForQuarter(editedBill, currentQuarterStart, currentQuarterEnd);
-
-                            _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity}");
-                            editedBill.Quantity = newQuantity;
-
-                            // Recalculate amount based on new quantity
-                            if (editedBill.ServiceCategory != null && !String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
+                            // Only recalculate quantity for month-based services
+                            if (editedBill.ServiceCategory != null && 
+                                !string.IsNullOrEmpty(editedBill.ServiceCategory.UOM) && 
+                                editedBill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
                             {
-                                if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
+                                // Recalculate quantity for the current quarter
+                                DateTime currentQuarterEnd = DetermineEndOfQuarter(currentQuarterStart);
+                                decimal newQuantity = CalculateQuantityForQuarter(editedBill, currentQuarterStart, currentQuarterEnd);
+
+                                _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity} (month-based service)");
+                                editedBill.Quantity = newQuantity;
+
+                                // Recalculate amount based on new quantity
+                                if (!String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
                                 {
-                                    editedBill.Amount = unitPrice * newQuantity;
+                                    if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
+                                    {
+                                        editedBill.Amount = unitPrice * newQuantity;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                _logger.LogInformation($"Bill {editedBill.Id} dates changed, but UOM is not month-based. Quantity unchanged: {editedBill.Quantity}");
                             }
                         }
                         // Check if bill is in a previous quarter but now extends into current quarter
