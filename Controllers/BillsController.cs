@@ -71,12 +71,14 @@ namespace Service_Billing.Controllers
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             string previousQuarterString = _billRepository.GetPreviousQuarterString();
             string currentQuarterString = _billRepository.DetermineCurrentQuarter();
+            string nextQuarterString = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
             ViewData["PreviousQuarterString"] = previousQuarterString;
             ViewData["CurrentQuarterString"] = currentQuarterString;
             IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll().OrderByDescending(x => x.Period);
             List<string> fiscalPeriodsStrings = fiscalPeriods.Select(x => x.Period).ToList();
             fiscalPeriodsStrings.Remove(previousQuarterString);
             fiscalPeriodsStrings.Remove(currentQuarterString);
+            fiscalPeriodsStrings.Remove(nextQuarterString); // Remove next quarter - should use "Next" filter instead
             ViewData["PreviousFiscals"] = fiscalPeriodsStrings.Distinct(); // not sure why there's duplicate entries in DEV...
 
             if (ministries != null && ministries.Any())
