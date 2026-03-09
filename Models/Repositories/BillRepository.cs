@@ -200,7 +200,7 @@ namespace Service_Billing.Models.Repositories
                 }
                 IEnumerable<Bill> billsToPromote = _billingContext.Bills.Where(b => b.ServiceCategoryId != null
                 && fixedServiceIds.Contains((int)b.ServiceCategoryId)
-                && (b.EndDate == null || b.EndDate > quarterStart)
+                && (b.EndDate == null || b.EndDate >= quarterStart)
                 && b.IsActive);
 
                 foreach (Bill bill in billsToPromote)

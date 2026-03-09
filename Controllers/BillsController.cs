@@ -925,7 +925,7 @@ namespace Service_Billing.Controllers
                         nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
                         nextQuarterEnd = _billRepository.DetermineEndOfQuarter(nextQuarterStart);
                         isNextQuarter = true;
-                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > nextQuarterStart));
+                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate >= nextQuarterStart));
                         query = query.Where(b => b.IsActive);
                         query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
