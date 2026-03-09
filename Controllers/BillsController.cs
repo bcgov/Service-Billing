@@ -283,7 +283,7 @@ namespace Service_Billing.Controllers
 
                     // Check if the original charge has a StartDate before the previous quarter
                     // If so, it has historical records and the StartDate should not be changed at all
-                    if (originalBill.StartDate.Value < previousQuarterStart)
+                    if (originalBill.StartDate.Value.Date < previousQuarterStart.Date)
                     {
                         ModelState.AddModelError("Bill.StartDate",
                             "This charge's start date has been recognized in historical fiscal periods and cannot be changed. " +
@@ -294,7 +294,7 @@ namespace Service_Billing.Controllers
                     else
                     {
                         // Check if new date is too far in the past (before previous quarter)
-                        if (model.Bill.StartDate.Value < previousQuarterStart)
+                        if (model.Bill.StartDate.Value.Date < previousQuarterStart.Date)
                         {
                             string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
 
@@ -304,7 +304,7 @@ namespace Service_Billing.Controllers
                         }
 
                         // Check if date is too far in the future (beyond next quarter)
-                        if (model.Bill.StartDate.Value >= quarterAfterNextStart)
+                        if (model.Bill.StartDate.Value.Date >= quarterAfterNextStart.Date)
                         {
                             string currentQuarter = _billRepository.DetermineCurrentQuarter();
                             string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
@@ -410,7 +410,7 @@ namespace Service_Billing.Controllers
                     DateTimeOffset quarterAfterNextStart = GetQuarterAfterNext(nextQuarterStart);
 
                     // Check if date is too far in the past (before previous quarter)
-                    if (bill.StartDate.Value < previousQuarterStart)
+                    if (bill.StartDate.Value.Date < previousQuarterStart.Date)
                     {
                         string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
 
@@ -432,7 +432,7 @@ namespace Service_Billing.Controllers
                     }
 
                     // Check if date is too far in the future (beyond next quarter)
-                    if (bill.StartDate.Value >= quarterAfterNextStart)
+                    if (bill.StartDate.Value.Date >= quarterAfterNextStart.Date)
                     {
                         string currentQuarter = _billRepository.DetermineCurrentQuarter();
                         string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
@@ -510,10 +510,10 @@ namespace Service_Billing.Controllers
                 DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
                 bool shouldPromoteToCurrentQuarter = false;
 
-                if (bill?.StartDate != null && bill.StartDate.Value < currentQuarterStart)
+                if (bill?.StartDate != null && bill.StartDate.Value.Date < currentQuarterStart.Date)
                 {
                     // Check if the charge ended before the current quarter started
-                    if (bill.EndDate.HasValue && bill.EndDate.Value < currentQuarterStart)
+                    if (bill.EndDate.HasValue && bill.EndDate.Value.Date < currentQuarterStart.Date)
                     {
                         // Charge ended before current quarter - do NOT promote
                         // Create FiscalHistory for this charge since it stays in the previous quarter
