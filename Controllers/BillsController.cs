@@ -1019,14 +1019,49 @@ namespace Service_Billing.Controllers
                 //if we're looking at a previous quarter's charges, make the amounts and quantities reflect what it was for that quarter
                 if (previousQuarterChargeIds.Any())
                 {
+                    // Determine which fiscal period we're viewing (if it's a specific historical quarter)
+                    FiscalPeriod? viewingFiscalPeriod = null;
+                    if (!string.IsNullOrEmpty(searchParams?.QuarterString))
+                    {
+                        viewingFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(searchParams.QuarterString);
+                    }
+
                     foreach (Bill bill in result)
                     {
                         FiscalHistory? chargeHistory = previousQuarterChargeIds.FirstOrDefault(x => x.BillId == bill.Id);
                         if (chargeHistory != null)
                         {
+                            // Bill has FiscalHistory for this quarter (was promoted FROM this quarter)
                             bill.Amount = chargeHistory.UnitPriceAtFiscal * chargeHistory.QuantityAtFiscal;
                             bill.Quantity = chargeHistory.QuantityAtFiscal;
                         }
+                        else if (viewingFiscalPeriod != null && bill.CurrentFiscalPeriodId == viewingFiscalPeriod.Id)
+                        {
+                            // Bill stayed in this quarter (no FiscalHistory) - recalculate for this quarter
+                            DateTime periodStart = _billRepository.DetermineStartOfQuarterForPeriod(viewingFiscalPeriod.Period);
+                            DateTime periodEnd = _billRepository.DetermineEndOfQuarter(periodStart);
+
+                            // Only recalculate for month-based services
+                            if (bill.ServiceCategory != null && 
+                                !string.IsNullOrEmpty(bill.ServiceCategory.UOM) && 
+                                bill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
+                            {
+                                decimal calculatedQuantity = _billRepository.CalculateQuantityForQuarter(bill, periodStart, periodEnd);
+                                bill.Quantity = calculatedQuantity;
+
+                                // Recalculate amount using current unit price (we don't have historical prices)
+                                if (!String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                                {
+                                    if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                                    {
+                                        bill.Amount = unitPrice * calculatedQuantity;
+                                        _logger.LogInformation($"Recalculated amount for bill {bill.Id} in {viewingFiscalPeriod.Period}: Quantity={calculatedQuantity}, Amount={bill.Amount}");
+                                    }
+                                }
+                            }
+                            // For non-month services, use database values as-is
+                        }
+                        // Note: Bills with CurrentFiscalPeriodId != this quarter are from other contexts
                     }
                 }
 
@@ -1107,6 +1142,11 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public IActionResult WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
         {
+            // Set QuarterString if viewing a specific historical quarter
+            if (searchParams != null && !string.IsNullOrEmpty(searchParams.QuarterFilter) &&
+                searchParams.QuarterFilter.StartsWith("Fiscal"))
+                searchParams.QuarterString = searchParams.QuarterFilter;
+
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             try
             {
@@ -1262,6 +1302,11 @@ namespace Service_Billing.Controllers
 
         public IActionResult ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
         {
+            // Set QuarterString if viewing a specific historical quarter
+            if (searchParams != null && !string.IsNullOrEmpty(searchParams.QuarterFilter) &&
+                searchParams.QuarterFilter.StartsWith("Fiscal"))
+                searchParams.QuarterString = searchParams.QuarterFilter;
+
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try

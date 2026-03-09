@@ -314,7 +314,7 @@ namespace Service_Billing.Models.Repositories
             return Math.Max(Math.Min((decimal)months, 3.0m), 0m);
         }
 
-        private DateTime DetermineStartOfQuarterForPeriod(string fiscalPeriodString)
+        public DateTime DetermineStartOfQuarterForPeriod(string fiscalPeriodString)
         {
             // Parse fiscal period string like "Fiscal 25/26 Quarter 4"
             // Extract the year and quarter
