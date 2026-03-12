@@ -71,12 +71,14 @@ namespace Service_Billing.Controllers
             IEnumerable<Ministry> ministries = _ministryRepository.GetAll();
             string previousQuarterString = _billRepository.GetPreviousQuarterString();
             string currentQuarterString = _billRepository.DetermineCurrentQuarter();
+            string nextQuarterString = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
             ViewData["PreviousQuarterString"] = previousQuarterString;
             ViewData["CurrentQuarterString"] = currentQuarterString;
             IEnumerable<FiscalPeriod> fiscalPeriods = _fiscalPeriodRepository.GetAll().OrderByDescending(x => x.Period);
             List<string> fiscalPeriodsStrings = fiscalPeriods.Select(x => x.Period).ToList();
             fiscalPeriodsStrings.Remove(previousQuarterString);
             fiscalPeriodsStrings.Remove(currentQuarterString);
+            fiscalPeriodsStrings.Remove(nextQuarterString); // Remove next quarter - should use "Next" filter instead
             ViewData["PreviousFiscals"] = fiscalPeriodsStrings.Distinct(); // not sure why there's duplicate entries in DEV...
 
             if (ministries != null && ministries.Any())
@@ -92,11 +94,11 @@ namespace Service_Billing.Controllers
                 }
                 ViewBag.ServiceCategories = categories.ToList();
             }
-           
+
             ViewBag.BusAreas = busareas.ToList();
             switch (searchModel?.QuarterFilter)
             {
-                case "current":             
+                case "current":
                     ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
                     break;
                 case "previous":
@@ -130,8 +132,8 @@ namespace Service_Billing.Controllers
 
             IEnumerable<Bill> bills = QueryForCharges(searchModel, !String.IsNullOrEmpty(ministryUserName) ? ministryUserName : String.Empty);
             int count = bills.Any() ? bills.Count() : 0;
-            
-            if(searchModel != null && !String.IsNullOrEmpty(searchModel.QuarterFilter))
+
+            if (searchModel != null && !String.IsNullOrEmpty(searchModel.QuarterFilter))
             {
                 switch (searchModel.QuarterFilter)
                 {
@@ -154,7 +156,7 @@ namespace Service_Billing.Controllers
                     case "all":
                         ViewData["FiscalPeriod"] = "all";
                         count = 0;
-                        foreach(Bill bill in bills)
+                        foreach (Bill bill in bills)
                         {
                             count++;
                             if (bill.PreviousFiscalRecords.Any())
@@ -172,7 +174,7 @@ namespace Service_Billing.Controllers
                 ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter();
             }
             ViewData["ChargesReturnedByQuery"] = count;
-          
+
             return PartialView("ChargesTable", bills);
         }
 
@@ -191,18 +193,18 @@ namespace Service_Billing.Controllers
                 ViewData["serviceCategory"] = serviceCategory != null ? serviceCategory : "";
                 ViewData["isNew"] = isNew;
                 ViewData["isEdited"] = isEdited;
-                if(historyId > 0)
+                if (historyId > 0)
                 {
                     FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
                     if (fiscalHistory == null)
                     {
                         throw new Exception("Tried to view charge details with fiscal history Id present, but no fiscal history was found");
                     }
-                    else 
-                    { 
+                    else
+                    {
                         ViewData["historyData"] = fiscalHistory;
                         ViewData["periodString"] = fiscalHistory?.FiscalPeriod?.Period;
-                    }   
+                    }
                 }
 
                 ViewData["ChangeLogs"] = _changeLogRepository.GetByEnityIdAndType(bill.Id, "charge");
@@ -226,12 +228,12 @@ namespace Service_Billing.Controllers
             _logger.LogInformation($"Editing Bill with ID: {id}");
             if (bill == null)
                 _logger.LogWarning($"Bill with Id: {id} was not found in database");
-            
+
             if (bill == null)
                 return NotFound();
 
             EditChargeViewModel model;
-            if(historyId != null)
+            if (historyId != null)
             {
                 FiscalHistory? fiscalHistory = bill.PreviousFiscalRecords?.FirstOrDefault(x => x.Id == historyId);
                 model = new EditChargeViewModel(bill, fiscalHistory);
@@ -256,10 +258,84 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                // Exclude nested navigation properties.
+                ModelState.Remove("Bill.ClientAccount.STOB");
+                ModelState.Remove("Bill.ClientAccount.Project");
+                ModelState.Remove("Bill.ClientAccount.Approver");
+                ModelState.Remove("Bill.ClientAccount.ServiceLine");
+                ModelState.Remove("Bill.ClientAccount.ClientNumber");
+                ModelState.Remove("Bill.ClientAccount.OrganizationId");
+                ModelState.Remove("Bill.ClientAccount.PrimaryContact");
+                ModelState.Remove("Bill.ClientAccount.ExpenseAuthorityName");
+                ModelState.Remove("Bill.ClientAccount.ResponsibilityCentre");
+                ModelState.Remove("Bill.ServiceCategory.Name");
+                ModelState.Remove("Bill.ServiceCategory.Description");
+
+                // Get the original bill to check if StartDate is being changed
+                Bill? originalBill = _billRepository.GetBill(model.Bill.Id);
+
+                // Only validate StartDate if it's being changed from the original value
+                if (originalBill != null && model.Bill.StartDate.HasValue && 
+                    originalBill.StartDate.HasValue && 
+                    model.Bill.StartDate.Value.Date != originalBill.StartDate.Value.Date)
+                {
+                    DateTimeOffset previousQuarterStart = GetPreviousQuarterStart();
+                    DateTimeOffset nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                    DateTimeOffset quarterAfterNextStart = GetQuarterAfterNext(nextQuarterStart);
+
+                    // Check if the original charge has a StartDate before the previous quarter
+                    // If so, it has historical records and the StartDate should not be changed at all
+                    if (originalBill.StartDate.Value.Date < previousQuarterStart.Date)
+                    {
+                        ModelState.AddModelError("Bill.StartDate",
+                            "This charge's start date has been recognized in historical fiscal periods and cannot be changed. " +
+                            "Changing this date would corrupt historical billing records. " +
+                            "Please contact a Service Billing administrator if you need to make corrections.");
+                    }
+                    // For recent charges (within editable range), validate the new StartDate
+                    else
+                    {
+                        // Check if new date is too far in the past (before previous quarter)
+                        if (model.Bill.StartDate.Value.Date < previousQuarterStart.Date)
+                        {
+                            string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
+
+                            ModelState.AddModelError("Bill.StartDate",
+                                $"Start date cannot be earlier than the previous fiscal period ({previousQuarter}). " +
+                                $"If you need to backdate this charge further, please contact a Service Billing administrator.");
+                        }
+
+                        // Check if date is too far in the future (beyond next quarter)
+                        if (model.Bill.StartDate.Value.Date >= quarterAfterNextStart.Date)
+                        {
+                            string currentQuarter = _billRepository.DetermineCurrentQuarter();
+                            string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
+
+                            ModelState.AddModelError("Bill.StartDate",
+                                $"Start date cannot be beyond the next fiscal period ({nextQuarter}). Current fiscal period is {currentQuarter}. " +
+                                $"Please contact an administrator if you need to set a future start date.");
+                        }
+                    }
+                }
+
+                // Validate that EndDate is not before StartDate
+                if (model.Bill.StartDate.HasValue && model.Bill.EndDate.HasValue && model.Bill.EndDate.Value < model.Bill.StartDate.Value)
+                {
+                    ModelState.AddModelError("Bill.EndDate", "End date cannot be before the start date.");
+                }
+
+                // Validate the model state first
+                if (!ModelState.IsValid)
+                {
+                    // Re-populate the categories
+                    model.Categories = _categoryRepository.GetAll();
+                    return View(model);
+                }
+
                 model.Bill.ServiceCategory = _categoryRepository.GetById(model.Bill.ServiceCategoryId);
                 model.Bill.DateModified = GetUserLocalTime();
                 string user = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
-                
+
                 await _billRepository.Update(model.Bill, user);
                 if (model.FiscalHistory != null && model.FiscalHistory.Id > 0)
                 {
@@ -283,9 +359,11 @@ namespace Service_Billing.Controllers
                 ModelState.AddModelError("", "Unable to save changes. " +
                     "Try again, and if the problem persists, " +
                     "see your system administrator.");
-            }
 
-            return RedirectToAction(nameof(Index));
+                // Re-populate the categories
+                model.Categories = _categoryRepository.GetAll();
+                return View(model);
+            }
         }
 
 
@@ -297,13 +375,13 @@ namespace Service_Billing.Controllers
             ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
             Bill bill = new Bill();
 
-           /* offloading this bit to Bill's constructor
-            DateTime utcDate = DateTime.UtcNow;
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-            bill.StartDate = pacificTime;
-            bill.DateCreated = pacificTime;
-            */
+            /* offloading this bit to Bill's constructor
+             DateTime utcDate = DateTime.UtcNow;
+             TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
+             DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+             bill.StartDate = pacificTime;
+             bill.DateCreated = pacificTime;
+             */
 
             DetermineCurrentQuarter(bill, bill.DateCreated);
             if (accountId > 0)
@@ -321,39 +399,170 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken] 
+        [ValidateAntiForgeryToken]
         public async Task<ActionResult> Create(Bill bill)
         {
             try
             {
+                // Manually validate the StartDate - allow previous quarter, current quarter, and next quarter only
+                if (bill.StartDate.HasValue)
+                {
+                    DateTimeOffset previousQuarterStart = GetPreviousQuarterStart();
+                    DateTimeOffset nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                    DateTimeOffset quarterAfterNextStart = GetQuarterAfterNext(nextQuarterStart);
+
+                    // Check if date is too far in the past (before previous quarter)
+                    if (bill.StartDate.Value.Date < previousQuarterStart.Date)
+                    {
+                        string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
+
+                        ModelState.AddModelError("StartDate",
+                            $"Start date cannot be earlier than the previous fiscal period ({previousQuarter}). " +
+                            $"If you need to create a charge with an earlier start date, please contact a Service Billing administrator.");
+
+                        // Re-populate the view data
+                        IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                        ViewData["Categories"] = categories;
+                        ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
+
+                        if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
+                        {
+                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                        }
+
+                        return View(bill);
+                    }
+
+                    // Check if date is too far in the future (beyond next quarter)
+                    if (bill.StartDate.Value.Date >= quarterAfterNextStart.Date)
+                    {
+                        string currentQuarter = _billRepository.DetermineCurrentQuarter();
+                        string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
+
+                        ModelState.AddModelError("StartDate",
+                            $"Start date cannot be beyond the next fiscal period ({nextQuarter}). Current fiscal period is {currentQuarter}. " +
+                            $"Please contact an administrator if you need to create a charge for a future period.");
+
+                        // Re-populate the view data
+                        IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                        ViewData["Categories"] = categories;
+                        ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
+
+                        if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
+                        {
+                            bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                        }
+
+                        return View(bill);
+                    }
+                }
+
+                // Validate that EndDate is not before StartDate
+                if (bill.StartDate.HasValue && bill.EndDate.HasValue && bill.EndDate.Value < bill.StartDate.Value)
+                {
+                    ModelState.AddModelError("EndDate", "End date cannot be before the start date.");
+
+                    // Re-populate the view data
+                    IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                    ViewData["Categories"] = categories;
+                    ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
+
+                    if (_clientAccountRepository.GetClientAccount(bill.ClientAccountId) != null)
+                    {
+                        bill.ClientAccount = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
+                    }
+
+                    return View(bill);
+                }
+
+                // Continue with normal processing...
                 ClientAccount? account = _clientAccountRepository.GetClientAccount(bill.ClientAccountId);
                 ServiceCategory? category = _categoryRepository.GetById(bill.ServiceCategoryId);
                 if (account == null || category == null)
                 {
                     throw new Exception("Could not find either a client account or service category when attempting to create new charge entry.");
                 }
-                if(string.IsNullOrEmpty(bill.CreatedBy))
+                if (string.IsNullOrEmpty(bill.CreatedBy))
                     bill.CreatedBy = await GetMyName();
-              
+
                 bill.ClientAccount = account;
                 bill.ServiceCategory = category;
-                DetermineCurrentQuarter(bill, bill.StartDate); // Note: StartDate could be earlier than current quarter
-                FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
+
+                // Determine which fiscal period this charge belongs to based on StartDate
+                DetermineCurrentQuarter(bill, bill.StartDate);
+
+                // Ensure the fiscal period exists for the charge's start date
+                FiscalPeriod? fiscalPeriod = await EnsureFiscalPeriodExists(bill.StartDate);
+
                 if (fiscalPeriod == null)
-                    throw new Exception($"A fiscal period with id: {bill.CurrentFiscalPeriodId} could not be found");
+                {
+                    throw new Exception($"Unable to create or retrieve fiscal period for start date {bill.StartDate}");
+                }
+
+                // Set the bill's CurrentFiscalPeriodId to match the fiscal period for its start date
+                bill.CurrentFiscalPeriodId = fiscalPeriod.Id;
                 bill.MostRecentActiveFiscalPeriod = fiscalPeriod;
-                _logger.LogInformation($"New charge is valid");
+
+                _logger.LogInformation($"New charge is valid. Assigned to fiscal period: {fiscalPeriod.Period} (ID: {fiscalPeriod.Id})");
 
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
 
-                // Has a StartDate Earlier than the start of this Quarter been selected?
-                if(bill?.StartDate != null && bill.StartDate.Value < _billRepository.DetermineStartOfCurrentQuarter()) 
+                // Determine if this charge should be promoted to the current quarter
+                DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                bool shouldPromoteToCurrentQuarter = false;
+
+                if (bill?.StartDate != null && bill.StartDate.Value.Date < currentQuarterStart.Date)
                 {
-                    await _billRepository.PromoteCharge(
-                        bill, 
-                        _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter())
-                    );
+                    // Check if the charge ended before the current quarter started
+                    if (bill.EndDate.HasValue && bill.EndDate.Value.Date < currentQuarterStart.Date)
+                    {
+                        // Charge ended before current quarter - do NOT promote
+                        // Create FiscalHistory for this charge since it stays in the previous quarter
+                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                        {
+                            if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                            {
+                                FiscalHistory historicalRecord = new FiscalHistory(
+                                    bill.Id,
+                                    fiscalPeriod.Id,
+                                    unitPrice,
+                                    bill.Quantity,
+                                    bill.Notes
+                                );
+                                _fiscalHistoryRepository.SaveFiscalHistoryInfo(historicalRecord);
+                                _logger.LogInformation($"Created FiscalHistory record for charge {bill.Id} in {fiscalPeriod.Period} (charge ended in this quarter)");
+                            }
+                        }
+
+                        _logger.LogInformation($"Charge {bill.Id} created with StartDate={bill.StartDate.Value.Date:yyyy-MM-dd} and EndDate={bill.EndDate.Value.Date:yyyy-MM-dd}. " +
+                            $"Both dates are in {fiscalPeriod.Period}. Charge will remain in {fiscalPeriod.Period} and will NOT be promoted to current quarter.");
+                        shouldPromoteToCurrentQuarter = false;
+                    }
+                    else
+                    {
+                        // Charge is either ongoing (no EndDate) or extends into/past current quarter - DO promote
+                        // PromoteCharge will handle creating the FiscalHistory for the previous quarter
+                        shouldPromoteToCurrentQuarter = true;
+                    }
+
+                    if (shouldPromoteToCurrentQuarter)
+                    {
+                        FiscalPeriod? currentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(_billRepository.DetermineCurrentQuarter());
+                        if (currentFiscalPeriod != null)
+                        {
+                            await _billRepository.PromoteCharge(bill, currentFiscalPeriod);
+                            _logger.LogInformation($"Charge {bill.Id} promoted from {fiscalPeriod.Period} to {currentFiscalPeriod.Period}");
+                        }
+                        else
+                        {
+                            _logger.LogError($"Could not find current fiscal period to promote charge {bill.Id}");
+                        }
+                    }
+                }
+                else if (bill?.StartDate != null && bill.StartDate.Value >= currentQuarterStart)
+                {
+                    _logger.LogInformation($"Charge {bill.Id} created with StartDate in current or future quarter ({fiscalPeriod.Period}). No promotion needed.");
                 }
 
                 return RedirectToAction($"Details", new { id = bill?.Id, historyId = string.Empty, isNew = true });
@@ -362,9 +571,103 @@ namespace Service_Billing.Controllers
             {
                 _logger.LogError($"Creating a new charge failed to write to database. Exception: {ex.InnerException}");
                 ModelState.AddModelError("", "Unable to save changes. Try again, and if the problem persists see your system administrator.");
+
+                // Re-populate the view data
+                IEnumerable<ServiceCategory> categories = _categoryRepository.GetAll();
+                ViewData["Categories"] = categories;
+                ViewData["CurrentUser"] = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "";
+
+                return View(bill);
+            }
+        }
+
+        // Helper method to ensure fiscal period exists, creating it if necessary
+        private async Task<FiscalPeriod?> EnsureFiscalPeriodExists(DateTimeOffset? startDate)
+        {
+            if (startDate == null)
+            {
+                startDate = DateTimeOffset.Now;
             }
 
-            return View();
+            // Determine the fiscal period string for the start date
+            string fiscalPeriodString = _billRepository.DetermineCurrentQuarter(startDate.Value.DateTime);
+
+            _logger.LogInformation($"Looking for fiscal period: {fiscalPeriodString}");
+
+            // Try to get the fiscal period from the database
+            FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+
+            // If it doesn't exist, create it
+            if (fiscalPeriod == null)
+            {
+                _logger.LogInformation($"Fiscal period {fiscalPeriodString} does not exist. Creating it now.");
+
+                fiscalPeriod = new FiscalPeriod(fiscalPeriodString);
+
+                // Save the new fiscal period to the database
+                _fiscalPeriodRepository.SaveFiscalPeriod(fiscalPeriod);
+
+                // Retrieve it again to ensure we have the generated ID
+                fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
+
+                if (fiscalPeriod != null)
+                {
+                    _logger.LogInformation($"Created fiscal period {fiscalPeriodString} with ID: {fiscalPeriod.Id}");
+                }
+                else
+                {
+                    _logger.LogError($"Failed to create fiscal period {fiscalPeriodString}");
+                }
+            }
+            else
+            {
+                _logger.LogInformation($"Found existing fiscal period {fiscalPeriodString} with ID: {fiscalPeriod.Id}");
+            }
+
+            return fiscalPeriod;
+        }
+
+        // Helper method to get the start of the previous quarter
+        private DateTimeOffset GetPreviousQuarterStart()
+        {
+            DateTime currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+
+            switch (currentQuarterStart.Month)
+            {
+                case 4:  // Q1 -> go back to Q4 (January of same year)
+                    return new DateTimeOffset(currentQuarterStart.Year, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8));
+                case 7:  // Q2 -> go back to Q1 (April of same year)
+                    return new DateTimeOffset(currentQuarterStart.Year, 4, 1, 0, 0, 0, TimeSpan.FromHours(-8));
+                case 10: // Q3 -> go back to Q2 (July of same year)
+                    return new DateTimeOffset(currentQuarterStart.Year, 7, 1, 0, 0, 0, TimeSpan.FromHours(-8));
+                case 1:  // Q4 -> go back to Q3 (October of previous year)
+                    return new DateTimeOffset(currentQuarterStart.Year - 1, 10, 1, 0, 0, 0, TimeSpan.FromHours(-8));
+                default:
+                    return new DateTimeOffset(currentQuarterStart, TimeSpan.FromHours(-8));
+            }
+        }
+
+        // Helper method for calculating quarter after next
+        private DateTimeOffset GetQuarterAfterNext(DateTimeOffset nextQuarterStart)
+        {
+            int month = nextQuarterStart.Month;
+            int year = nextQuarterStart.Year;
+
+            int quarterAfterNextMonth = month switch
+            {
+                4 => 7,   // Q1 -> Q2
+                7 => 10,  // Q2 -> Q3
+                10 => 1,  // Q3 -> Q4 (next calendar year)
+                1 => 4,   // Q4 -> Q1
+                _ => throw new InvalidOperationException($"Invalid quarter start month: {month}")
+            };
+
+            if (month == 10)
+            {
+                year++;
+            }
+
+            return new DateTimeOffset(year, quarterAfterNextMonth, 1, 0, 0, 0, nextQuarterStart.Offset);
         }
 
         [HttpGet]
@@ -379,37 +682,74 @@ namespace Service_Billing.Controllers
                 {
                     return null;
                 }
-                /* if UOM is month, then we should adjust the quantity such that the client is not charged for any months
-                 * past the start of the quarter. When such a bill is advanced to the future fiscal period, its quantity
-                 * will typically be set to three, unless it has an end date sooner than the end of that quarter
-                 * */
-                if(category?.UOM?.ToLower() == "month" && !quantityChanged)
+
+                string quantityExplanation = "";
+
+                // Calculate quantity based on start and end dates for month-based services
+                if (category?.UOM?.ToLower() == "month" && !quantityChanged)
                 {
-                    DateTimeOffset start = new DateTimeOffset();
-                    DateTimeOffset end = new DateTimeOffset();
-                    DateTimeOffset quarterStart = _billRepository.DetermineStartOfCurrentQuarter();
-                    DateTimeOffset quarterEnd = _billRepository.DetermineEndOfQuarter(quarterStart.Date);
-                    int startMonthDifference = 0;
-                    int endMonthDifference = 0;
-                    if (!String.IsNullOrEmpty(startDate))
+                    if (!String.IsNullOrEmpty(startDate) && DateTimeOffset.TryParse(startDate, out DateTimeOffset start))
                     {
-                        if (DateTimeOffset.TryParse(startDate, out start) && start > quarterStart)
+                        DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();
+                        DateTimeOffset currentQuarterEnd = _billRepository.DetermineEndOfQuarter(currentQuarterStart.Date);
+                        DateTimeOffset previousQuarterStart = GetPreviousQuarterStart();
+                        DateTimeOffset nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                        DateTimeOffset nextQuarterEnd = _billRepository.DetermineEndOfQuarter(nextQuarterStart.DateTime);
+
+                        DateTimeOffset? end = null;
+                        if (!String.IsNullOrEmpty(endDate) && DateTimeOffset.TryParse(endDate, out DateTimeOffset parsedEnd))
                         {
-                            startMonthDifference = start.Month - quarterStart.Month;
+                            end = parsedEnd;
                         }
-                    }
-                    if (!String.IsNullOrEmpty(endDate))
-                    {
-                        if (DateTimeOffset.TryParse(endDate, out end) && end < quarterEnd)
+
+                        // Determine which quarter to calculate for
+                        if (start < currentQuarterStart)
                         {
-                            int monthScalar = (int)(end.Year - quarterEnd.Year) > 0 ? (int)(end.Year - quarterEnd.Year) : 1;
-                            endMonthDifference = Math.Min(monthScalar * quarterEnd.Month - end.Month, 3);
+                            // Start date is in previous quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value < currentQuarterStart ? end.Value : currentQuarterStart.AddDays(-1);
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
+                            quantity = Math.Max(months, 0);
+                            
+                            string previousQuarter = _billRepository.DetermineCurrentQuarter(previousQuarterStart.DateTime);
+                            quantityExplanation = end.HasValue && end.Value < currentQuarterStart 
+                                ? $"Billing for {quantity} month(s) in {previousQuarter} (from {start:MMM d} to {relevantEnd:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {previousQuarter} (charge will be promoted to current quarter)";
                         }
+                        else if (start >= nextQuarterStart)
+                        {
+                            // Start date is in next quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value <= nextQuarterEnd ? end.Value : nextQuarterEnd;
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
+                            quantity = Math.Max(Math.Min(months, 3), 0);
+                            
+                            string nextQuarter = _billRepository.DetermineCurrentQuarter(nextQuarterStart.DateTime);
+                            quantityExplanation = end.HasValue 
+                                ? $"Billing for {quantity} month(s) in {nextQuarter} (from {start:MMM d} to {end.Value:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {nextQuarter}";
+                        }
+                        else
+                        {
+                            // Start date is in current quarter
+                            DateTimeOffset relevantEnd = end.HasValue && end.Value <= currentQuarterEnd ? end.Value : currentQuarterEnd;
+                            int months = ((relevantEnd.Year - start.Year) * 12) + relevantEnd.Month - start.Month + 1;
+                            quantity = Math.Max(months, 0);
+                            
+                            string currentQuarter = _billRepository.DetermineCurrentQuarter();
+                            quantityExplanation = end.HasValue && end.Value <= currentQuarterEnd
+                                ? $"Billing for {quantity} month(s) in {currentQuarter} (from {start:MMM d} to {end.Value:MMM d, yyyy})"
+                                : $"Billing for {quantity} month(s) in {currentQuarter} (started {start:MMM d, yyyy})";
+                        }
+
+                        _logger.LogInformation($"Calculated quantity: {quantity} months. {quantityExplanation}");
                     }
-                    quantity = Math.Max(3 - (startMonthDifference + endMonthDifference), 0);
                 }
+                else if (category?.UOM?.ToLower() != "month")
+                {
+                    quantityExplanation = $"Unit of measure is {category?.UOM}, not month-based";
+                }
+
                 decimal newAmount;
-                string cost = !String.IsNullOrEmpty(category?.Costs)? category.Costs : "0";
+                string cost = !String.IsNullOrEmpty(category?.Costs) ? category.Costs : "0";
                 if (!string.IsNullOrEmpty(cost) && cost.Contains('$'))
                 {
                     cost = cost.Replace('$', ' ');
@@ -422,11 +762,17 @@ namespace Service_Billing.Controllers
                 if (category?.ServiceId == 5)
                     newAmount = 85;
                 string? UOM = !string.IsNullOrEmpty(category?.UOM) ? category.UOM : "n/a";
-               
-                RecordEntry recordEntry = new RecordEntry(!String.IsNullOrEmpty(category?.Name)? category.Name : "NoCategoryName", newAmount * quantity, quantity);
-                recordEntry.UOM = UOM;
 
-                return new JsonResult(recordEntry);
+                var result = new
+                {
+                    serviceCategory = !String.IsNullOrEmpty(category?.Name) ? category.Name : "NoCategoryName",
+                    amount = newAmount * quantity,
+                    uom = UOM,
+                    quantity = quantity,
+                    quantityExplanation = quantityExplanation
+                };
+
+                return new JsonResult(result);
             }
             catch (Exception ex)
             {
@@ -485,7 +831,7 @@ namespace Service_Billing.Controllers
                     bill.BillingCycle = new DateTimeOffset(today.Year, 1, 1, 0, 0, 0, today.Offset).ToString("yyyy-MM-dd");
                     string fiscalPeriodString = $"Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}";
                     FiscalPeriod? CurrentFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
-                    if(CurrentFiscalPeriod == null )
+                    if (CurrentFiscalPeriod == null)
                     {
                         _logger.LogError($"No existing Fiscal Period entity found for current Fiscal {(today.Year - 1).ToString().Substring(2)}/{year1.Substring(2)} {quarter}");
                     }
@@ -493,14 +839,14 @@ namespace Service_Billing.Controllers
                     {
                         bill.CurrentFiscalPeriodId = CurrentFiscalPeriod.Id;
                     }
-                    
+
                     return;
             }
             FiscalPeriod? CurrentFiscal = _fiscalPeriodRepository.GetFiscalPeriodByString($"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}");
             if (CurrentFiscal == null)
                 _logger.LogError($"could not find a fiscal period entity for \"Fiscal {year1.Substring(2)}/{year2.Substring(2)} {quarter}\" ");
             else
-                bill.CurrentFiscalPeriodId= CurrentFiscal.Id;
+                bill.CurrentFiscalPeriodId = CurrentFiscal.Id;
         }
 
         [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
@@ -532,20 +878,25 @@ namespace Service_Billing.Controllers
                     .Include(b => b.PreviousFiscalRecords)
                     .ThenInclude(r => r.FiscalPeriod);
 
-               //Todo: Give this some more thought. Can probably simplify this logic.
+                //Todo: Give this some more thought. Can probably simplify this logic.
                 bool restrictToOwnedServices = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && User.IsInRole("GDXBillingService.Owner"));
                 bool restrictToUserContact = (!User.IsInRole("GDXBillingService.FinancialOfficer")
                     && !User.IsInRole("GDXBillingService.Owner"));
 
                 List<FiscalHistory> previousQuarterChargeIds = new List<FiscalHistory>();
+                bool isNextQuarter = false;
+                DateTime nextQuarterStart = DateTime.MinValue;
+                DateTime nextQuarterEnd = DateTime.MinValue;
+
                 switch (searchParams?.QuarterFilter)
                 {
+                    case "current":
                     case "Current Quarter":
-                    
+
                         string fiscalPeriodString = _billRepository.DetermineCurrentQuarter();
                         FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(fiscalPeriodString);
-                        if(fiscalPeriod == null)
+                        if (fiscalPeriod == null)
                         {
                             throw new Exception($"No Fiscal Period entity was found that matches \"{fiscalPeriodString}\"");
                         }
@@ -554,13 +905,29 @@ namespace Service_Billing.Controllers
                         query = query.Where(b => b.ClientAccount.IsActive);
                         break;
                     case "previous":
-                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
-                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
+                        string previousQuarterString = _billRepository.GetPreviousQuarterString();
+                        FiscalPeriod? previousFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(previousQuarterString);
+
+                        if (previousFiscalPeriod != null)
+                        {
+                            // Get bills that have FiscalHistory for the previous quarter (promoted FROM previous quarter)
+                            previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory().ToList();
+                            List<int> billIdsWithHistory = previousQuarterChargeIds.Select(x => x.BillId).ToList();
+
+                            // Include bills that are currently assigned to the previous quarter (stayed IN previous quarter)
+                            query = query.Where(b => billIdsWithHistory.Contains(b.Id) || b.CurrentFiscalPeriodId == previousFiscalPeriod.Id);
+                        }
+                        else
+                        {
+                            throw new Exception($"Could not find fiscal period for previous quarter: {previousQuarterString}");
+                        }
                         break;
                     case "next":
                         List<int> idsOfFixedServices = _billRepository.GetFixedServices();
-                        DateTime startOfNextQuarter = _billRepository.DetermineStartOfNextQuarter();
-                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate > startOfNextQuarter));
+                        nextQuarterStart = _billRepository.DetermineStartOfNextQuarter();
+                        nextQuarterEnd = _billRepository.DetermineEndOfQuarter(nextQuarterStart);
+                        isNextQuarter = true;
+                        query = query.Where(b => idsOfFixedServices.Contains(b.ServiceCategoryId) && (b.EndDate == null || b.EndDate >= nextQuarterStart));
                         query = query.Where(b => b.IsActive);
                         query = query.Where(b => b.ClientAccount.IsActive);
                         ViewData["FiscalPeriod"] = _billRepository.DetermineCurrentQuarter(_billRepository.DetermineStartOfNextQuarter());
@@ -568,9 +935,25 @@ namespace Service_Billing.Controllers
                     case "all":
                         // Just break. Effectively it's just one less Where clause
                         break;
-                    default: //get charges from previous fiscal history.
-                        previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory(searchParams.QuarterString).ToList();
-                        query = query.Where(b => previousQuarterChargeIds.Select(x => x.BillId).Contains(b.Id));
+                    default: //get charges from previous fiscal history or bills currently in that quarter
+                        if (!string.IsNullOrEmpty(searchParams.QuarterString))
+                        {
+                            FiscalPeriod? historicalFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(searchParams.QuarterString);
+
+                            if (historicalFiscalPeriod != null)
+                            {
+                                // Get bills that have FiscalHistory for this quarter (promoted FROM this quarter)
+                                previousQuarterChargeIds = _billRepository.GetPreviousQuarterChargeHistory(searchParams.QuarterString).ToList();
+                                List<int> billIdsWithHistory = previousQuarterChargeIds.Select(x => x.BillId).ToList();
+
+                                // Include bills that are currently assigned to this quarter (stayed IN this quarter)
+                                query = query.Where(b => billIdsWithHistory.Contains(b.Id) || b.CurrentFiscalPeriodId == historicalFiscalPeriod.Id);
+                            }
+                            else
+                            {
+                                _logger.LogWarning($"Could not find fiscal period for quarter string: {searchParams.QuarterString}");
+                            }
+                        }
                         break;
                 }
                 if (!String.IsNullOrEmpty(searchParams?.QuarterFilter) && (searchParams?.QuarterFilter == "current" || searchParams?.QuarterFilter == "next"))
@@ -621,12 +1004,12 @@ namespace Service_Billing.Controllers
                 {
                     query = query.Where(b => b.ClientAccount.Contacts.Any(c =>
                         c.Person != null &&
-                        c.Person.Name.ToLower().Contains(searchParams.Contact.ToLower())) || 
+                        c.Person.Name.ToLower().Contains(searchParams.Contact.ToLower())) ||
                         (!String.IsNullOrEmpty(b.ClientAccount.ExpenseAuthorityName) && b.ClientAccount.ExpenseAuthorityName.ToLower().Contains(searchParams.Contact.ToLower())));
                 }
 
                 query = query.OrderBy(c => c.ClientAccount.Id).ThenBy(c => c.Title).Include(c => c.MostRecentActiveFiscalPeriod);
-                
+
                 IEnumerable<Bill> result = query.AsNoTracking().ToList<Bill>();
                 if (restrictToUserContact)
                 { //user is a ministry client, and we should only show charges related to accounts they are a contact on
@@ -636,20 +1019,74 @@ namespace Service_Billing.Controllers
                 //if we're looking at a previous quarter's charges, make the amounts and quantities reflect what it was for that quarter
                 if (previousQuarterChargeIds.Any())
                 {
+                    // Determine which fiscal period we're viewing (if it's a specific historical quarter)
+                    FiscalPeriod? viewingFiscalPeriod = null;
+                    if (!string.IsNullOrEmpty(searchParams?.QuarterString))
+                    {
+                        viewingFiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodByString(searchParams.QuarterString);
+                    }
+
                     foreach (Bill bill in result)
                     {
                         FiscalHistory? chargeHistory = previousQuarterChargeIds.FirstOrDefault(x => x.BillId == bill.Id);
-                        if(chargeHistory != null)
+                        if (chargeHistory != null)
                         {
+                            // Bill has FiscalHistory for this quarter (was promoted FROM this quarter)
                             bill.Amount = chargeHistory.UnitPriceAtFiscal * chargeHistory.QuantityAtFiscal;
                             bill.Quantity = chargeHistory.QuantityAtFiscal;
+                        }
+                        else if (viewingFiscalPeriod != null && bill.CurrentFiscalPeriodId == viewingFiscalPeriod.Id)
+                        {
+                            // Bill stayed in this quarter (no FiscalHistory) - recalculate for this quarter
+                            DateTime periodStart = _billRepository.DetermineStartOfQuarterForPeriod(viewingFiscalPeriod.Period);
+                            DateTime periodEnd = _billRepository.DetermineEndOfQuarter(periodStart);
+
+                            // Only recalculate for month-based services
+                            if (bill.ServiceCategory != null && 
+                                !string.IsNullOrEmpty(bill.ServiceCategory.UOM) && 
+                                bill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
+                            {
+                                decimal calculatedQuantity = _billRepository.CalculateQuantityForQuarter(bill, periodStart, periodEnd);
+                                bill.Quantity = calculatedQuantity;
+
+                                // Recalculate amount using current unit price (we don't have historical prices)
+                                if (!String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                                {
+                                    if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                                    {
+                                        bill.Amount = unitPrice * calculatedQuantity;
+                                        _logger.LogInformation($"Recalculated amount for bill {bill.Id} in {viewingFiscalPeriod.Period}: Quantity={calculatedQuantity}, Amount={bill.Amount}");
+                                    }
+                                }
+                            }
+                            // For non-month services, use database values as-is
+                        }
+                        // Note: Bills with CurrentFiscalPeriodId != this quarter are from other contexts
+                    }
+                }
+
+                //if we're looking at next quarter's charges, calculate the correct quantities based on end dates
+                if (isNextQuarter)
+                {
+                    foreach (Bill bill in result)
+                    {
+                        decimal calculatedQuantity = _billRepository.CalculateQuantityForQuarter(bill, nextQuarterStart, nextQuarterEnd);
+                        bill.Quantity = calculatedQuantity;
+
+                        // Recalculate amount based on the new quantity
+                        if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
+                        {
+                            if (decimal.TryParse(bill.ServiceCategory.Costs, out decimal unitPrice))
+                            {
+                                bill.Amount = unitPrice * calculatedQuantity;
+                            }
                         }
                     }
                 }
 
                 return result;
             }
-            
+
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
@@ -678,11 +1115,11 @@ namespace Service_Billing.Controllers
                 {
                     if (contact.Person.DisplayName == ministryUserName)
                         return true;
-                    if((!String.IsNullOrEmpty(account.ExpenseAuthorityName) && (account.ExpenseAuthorityName.ToLower().Contains(surname) && account.ExpenseAuthorityName.ToLower().Contains(firstName)) ||
+                    if ((!String.IsNullOrEmpty(account.ExpenseAuthorityName) && (account.ExpenseAuthorityName.ToLower().Contains(surname) && account.ExpenseAuthorityName.ToLower().Contains(firstName)) ||
                         !String.IsNullOrEmpty(account.Approver) && (account.Approver.ToLower().Contains(surname) && account.Approver.ToLower().Contains(firstName)) ||
                         !String.IsNullOrEmpty(account.FinancialContact) && (account.FinancialContact.ToLower().Contains(surname) && account.FinancialContact.ToLower().Contains(firstName)) ||
                         !String.IsNullOrEmpty(account.PrimaryContact) && (account.PrimaryContact.ToLower().Contains(surname) && account.PrimaryContact.ToLower().Contains(firstName))))
-                        return true;                  
+                        return true;
                 }
             }
 
@@ -705,6 +1142,11 @@ namespace Service_Billing.Controllers
         [HttpGet]
         public IActionResult WriteToExcel(ChargeIndexSearchParamsModel? searchParams)
         {
+            // Set QuarterString if viewing a specific historical quarter
+            if (searchParams != null && !string.IsNullOrEmpty(searchParams.QuarterFilter) &&
+                searchParams.QuarterFilter.StartsWith("Fiscal"))
+                searchParams.QuarterString = searchParams.QuarterFilter;
+
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             try
             {
@@ -761,53 +1203,53 @@ namespace Service_Billing.Controllers
 
                     if (!string.IsNullOrEmpty(searchParams?.QuarterFilter) && searchParams?.QuarterFilter == "all")
                     {
-                            foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                        foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
+                        {
+                            if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
+                                continue;
+                            row = new ChargeRow();
+                            row.ChargeId = bill.Id;
+                            row.ClientNumber = bill.ClientAccountId;
+                            row.ClientName = bill.ClientAccount.Name;
+                            row.Program = bill.Title;
+                            if (serviceCategory != null)
                             {
-                                if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)
-                                    continue;
-                                row = new ChargeRow();
-                                row.ChargeId = bill.Id;
-                                row.ClientNumber = bill.ClientAccountId;
-                                row.ClientName = bill.ClientAccount.Name;
-                                row.Program = bill.Title;
-                                if (serviceCategory != null)
-                                {
-                                    row.GDXBusArea = serviceCategory?.BusArea?.Name;
-                                    row.ServiceCategory = serviceCategory?.Name;
-                                }
-                                row.TicketNumber = bill.TicketNumberAndRequester;
-                                row.Amount = (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal);
-                                row.Quantity = fiscalHistory.QuantityAtFiscal;
-                                
-                                row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
-                                if (bill.DateCreated != null)
-                                    row.Created = bill.DateCreated?.DateTime.ToShortDateString();
-                                if (bill.StartDate != null)
-                                    row.Start = bill.StartDate?.DateTime.ToShortDateString();
-                                if (bill.EndDate != null)
-                                    row.End = bill.EndDate?.DateTime.ToShortDateString();
-
-                                row.CreatedBy = bill.CreatedBy;
-                                row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
-                                row.FiscalPeriod = fiscalHistory.FiscalPeriod?.Period;
-                                row.IdirOrURL = bill.IdirOrUrl;
-                                if (account != null)
-                                {
-                                    if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
-                                        row.ExpenseAuthority = account.ExpenseAuthorityName;
-
-
-                                    var primaryContact = account.Contacts?
-                                        .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
-                                            .Person?.DisplayName;
-                                    row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
-                                }
-                                row.Notes = bill.Notes;
-                                rows.Add(row);
+                                row.GDXBusArea = serviceCategory?.BusArea?.Name;
+                                row.ServiceCategory = serviceCategory?.Name;
                             }
-                        
-                    }   
-                } 
+                            row.TicketNumber = bill.TicketNumberAndRequester;
+                            row.Amount = (fiscalHistory.QuantityAtFiscal * fiscalHistory.UnitPriceAtFiscal);
+                            row.Quantity = fiscalHistory.QuantityAtFiscal;
+
+                            row.UnitPrice = decimal.TryParse(serviceCategory.Costs, out unitPrice) ? unitPrice : null;
+                            if (bill.DateCreated != null)
+                                row.Created = bill.DateCreated?.DateTime.ToShortDateString();
+                            if (bill.StartDate != null)
+                                row.Start = bill.StartDate?.DateTime.ToShortDateString();
+                            if (bill.EndDate != null)
+                                row.End = bill.EndDate?.DateTime.ToShortDateString();
+
+                            row.CreatedBy = bill.CreatedBy;
+                            row.AggregateGLCode = bill.ClientAccount.AggregatedGLCode;
+                            row.FiscalPeriod = fiscalHistory.FiscalPeriod?.Period;
+                            row.IdirOrURL = bill.IdirOrUrl;
+                            if (account != null)
+                            {
+                                if (!String.IsNullOrEmpty(account.ExpenseAuthorityName))
+                                    row.ExpenseAuthority = account.ExpenseAuthorityName;
+
+
+                                var primaryContact = account.Contacts?
+                                    .FirstOrDefault(c => c.ContactType == "primary" && c.Person != null)?
+                                        .Person?.DisplayName;
+                                row.PrimaryContact = !string.IsNullOrEmpty(primaryContact) ? primaryContact : string.Empty;
+                            }
+                            row.Notes = bill.Notes;
+                            rows.Add(row);
+                        }
+
+                    }
+                }
                 ws.Cell("A1").InsertTable(rows);
                 // Adjust column size to contents.
                 ws.Column("A").Style.Alignment.SetHorizontal(XLAlignmentHorizontalValues.Center);
@@ -825,7 +1267,7 @@ namespace Service_Billing.Controllers
 
                 IXLTables tsTables = ws.Tables;
                 IXLTable firstTable = tsTables.FirstOrDefault();
-                if(firstTable == null) 
+                if (firstTable == null)
                 {
                     throw new Exception("No table was found for this worksheet.");
                 }
@@ -833,7 +1275,7 @@ namespace Service_Billing.Controllers
                 firstTable.Field("ClientNumber").Name = "Client Number";
                 firstTable.Field("ClientName").Name = "Client Name";
                 firstTable.Field("IdirOrURL").Name = "IDIR or URL";
-                firstTable.Field("GDXBusArea").Name = "GDX Business Area";
+                firstTable.Field("GDXBusArea").Name = "Business Area";
                 firstTable.Field("ServiceCategory").Name = "Service Category";
                 firstTable.Field("FiscalPeriod").Name = "Fiscal Period";
                 firstTable.Field("UnitPrice").Name = "Unit Price";
@@ -860,6 +1302,11 @@ namespace Service_Billing.Controllers
 
         public IActionResult ShowReport(ChargeIndexSearchParamsModel? searchParams = null)
         {
+            // Set QuarterString if viewing a specific historical quarter
+            if (searchParams != null && !string.IsNullOrEmpty(searchParams.QuarterFilter) &&
+                searchParams.QuarterFilter.StartsWith("Fiscal"))
+                searchParams.QuarterString = searchParams.QuarterFilter;
+
             IEnumerable<Bill> bills = QueryForCharges(searchParams);
             bills = bills.Where(b => b.ServiceCategoryId != 38 && b.ServiceCategoryId != 69);
             try
@@ -875,7 +1322,7 @@ namespace Service_Billing.Controllers
                 model.Title = !String.IsNullOrEmpty(searchParams?.TitleFilter) ? searchParams.TitleFilter : string.Empty;
                 model.Authority = !String.IsNullOrEmpty(searchParams?.AuthorityFilter) ? searchParams.AuthorityFilter : string.Empty; ;
                 model.ClientNumber = searchParams?.ClientNumber > 0 ? (int)searchParams.ClientNumber : -1;
-               
+
                 SortedDictionary<string, decimal> servicesAndSums = GetServicesAndSums(bills, searchParams?.QuarterFilter == "all");
 
 
@@ -990,7 +1437,7 @@ namespace Service_Billing.Controllers
                             : $"Nameless category with ID: {serviceCategory.ServiceId} ";
                         decimal amount = (bill.Amount != null) ? bill.Amount.Value : 0;
                         servicesAndSums.Add(serviceName, amount);
-                        if(all)
+                        if (all)
                             foreach (FiscalHistory fiscalHistory in bill.PreviousFiscalRecords.OrderByDescending(x => x.Id))
                             {
                                 if (bill.CurrentFiscalPeriodId == fiscalHistory.FiscalPeriod.Id)

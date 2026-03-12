@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -46,6 +47,7 @@ namespace Service_Billing.Models
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         [Display(Name = "Start Date")]
         public DateTimeOffset? StartDate { get; set; }
+
         [Display(Name = "Billing Cycle")]
         public string? BillingCycle { get; set; }
         [Display(Name = "Created By")]
