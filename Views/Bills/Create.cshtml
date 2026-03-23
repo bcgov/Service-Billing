@@ -107,17 +107,20 @@
     }
     <script>
         $(document).ready(function () {
-            // Track whether user has manually edited the amount
+            // Track whether user has manually edited the amount or quantity
             var amountManuallyEdited = false;
+            var quantityManuallyEdited = false;
 
             // nav link highlighting
             $('li').removeClass("active-nav-link");
             $('#order-service-link').addClass("active-nav-link");
 
             calculateAmount = (quantityChanged) => {
-                if(!$("#quantity")){
+                // Ensure quantity has a default value if empty
+                if(!$("#quantity").val() || $("#quantity").val() === ""){
                     $("#quantity").val(1);
                 }
+
                 var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "json";
@@ -130,9 +133,13 @@
                                 $("#Amount").val(response.amount);
                             }
 
+                            // Only update quantity if user hasn't manually edited it
+                            if (!quantityManuallyEdited) {
+                                $("#quantity").val(response.quantity);
+                                $("#quantityExplanation").text(response.quantityExplanation || "");
+                            }
+
                             $("#uom").val(response.uom);
-                            $("#quantity").val(response.quantity);
-                            $("#quantityExplanation").text(response.quantityExplanation || "");
                         }
                     }
                 };
@@ -145,9 +152,15 @@
                 amountManuallyEdited = true;
             });
 
+            // Track when user manually edits the quantity field
+            $("#quantity").on("input", function() {
+                quantityManuallyEdited = true;
+            });
+
             $("#categorySelect").on("change", (e) => {
-                // Reset manual edit flag when service changes (new pricing)
+                // Reset manual edit flags when service changes (new pricing/UOM)
                 amountManuallyEdited = false;
+                quantityManuallyEdited = false;
                 calculateAmount(false);
 
                 if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices

@@ -124,8 +124,9 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
-            // Track whether user has manually edited the amount
+            // Track whether user has manually edited the amount or quantity
             var amountManuallyEdited = false;
+            var quantityManuallyEdited = false;
 
             calculateAmount = (quantityChanged) => {
                 var serviceId = $("#categorySelect").val();
@@ -163,9 +164,13 @@
                                     $("#amount").val(response.amount);
                                 }
 
+                                // Only update quantity if user hasn't manually edited it
+                                if (!quantityManuallyEdited) {
+                                    $("#quantity").val(response.quantity);
+                                    $("#quantityExplanation").text(response.quantityExplanation || "");
+                                }
+
                                 $("#Bill_ServiceCategory_UOM").val(response.uom);
-                                $("#quantity").val(response.quantity);
-                                $("#quantityExplanation").text(response.quantityExplanation || "");
 
                                 console.log("Updated fields - Amount: " + response.amount + ", Quantity: " + response.quantity + ", UOM: " + response.uom);
                             } else {
@@ -185,10 +190,16 @@
                 amountManuallyEdited = true;
             });
 
+            // Track when user manually edits the quantity field
+            $("#quantity").on("input", function() {
+                quantityManuallyEdited = true;
+            });
+
             $("#categorySelect").on("change", (e) => {
                 console.log("Category changed");
-                // Reset manual edit flag when service changes (new pricing)
+                // Reset manual edit flags when service changes (new pricing/UOM)
                 amountManuallyEdited = false;
+                quantityManuallyEdited = false;
                 calculateAmount(false);
                 if ($("#categorySelect").val() < 21) {
                     $("#categoryWarning").hide();

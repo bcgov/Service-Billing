@@ -445,6 +445,7 @@ namespace Service_Billing.Models.Repositories
             Bill newBill = new Bill();
             newBill.Title = bill.Title;
             newBill.ServiceCategoryId = bill.ServiceCategoryId;
+            newBill.Amount = bill.Amount; // Use amount from form (client-side handles calculation and user overrides)
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
             //    newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
@@ -453,32 +454,11 @@ namespace Service_Billing.Models.Repositories
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
             newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
+            newBill.Quantity = bill.Quantity; // Use quantity from form (client-side handles calculation and user overrides)
             newBill.Notes = bill.Notes;
             newBill.EndDate = bill.EndDate;
             newBill.DateModified = bill.DateModified;
             newBill.CreatedBy = bill.CreatedBy;
-
-            // Calculate the correct quantity based on the fiscal period - only for month-based services
-            FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
-            if (fiscalPeriod != null && bill.ServiceCategory != null && 
-                !string.IsNullOrEmpty(bill.ServiceCategory.UOM) && 
-                bill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
-            {
-                DateTime periodStart = DetermineStartOfQuarterForPeriod(fiscalPeriod.Period);
-                DateTime periodEnd = DetermineEndOfQuarter(periodStart);
-                newBill.Quantity = CalculateQuantityForQuarter(bill, periodStart, periodEnd);
-                _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with calculated quantity: {newBill.Quantity} (month-based service)");
-            }
-            else
-            {
-                newBill.Quantity = bill.Quantity;
-                if (fiscalPeriod != null)
-                {
-                    _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with user-provided quantity: {newBill.Quantity} (non-month UOM)");
-                }
-            }
-
-            newBill.Amount = bill.Amount;
 
             await _billingContext.AddAsync(newBill);
             await _billingContext.SaveChangesAsync();
