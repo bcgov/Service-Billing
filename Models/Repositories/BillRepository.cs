@@ -237,24 +237,10 @@ namespace Service_Billing.Models.Repositories
                 AddBillFiscalHistoryToContext(bill.Id, bill.CurrentFiscalPeriodId, newFiscalPeriod.Id, unitPriceAtFiscal, bill.Quantity.Value, bill.Notes);
 
                 bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Value.Date);
-                if (bill.Quantity != newQuantityForCharge)
-                {
-                    bill.Quantity = newQuantityForCharge;
-                    if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
-                    {
-                        decimal unitPrice;
-                        if (!decimal.TryParse(bill.ServiceCategory.Costs, out unitPrice))
-                        {
-                            _logger.LogError($"No unit Price found for bill with ID: {bill.Id}. The service category {bill.ServiceCategory.Name} has no unit price set.");
-                        }
-                        else
-                            bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
-                    }
-                    else
-                        _logger.LogError($"No service category found for charge with ID: {bill.Id}! Could not update charge amount!");
 
-                }
+                // Preserve the existing quantity - users will manage quantity changes themselves
+                _logger.LogInformation($"Promoted charge {bill.Id} to {newFiscalPeriod.Period} with quantity: {bill.Quantity}");
+
                 _billingContext.Update(bill);
 
                 if (saveDBChanges)

@@ -107,7 +107,17 @@
     }
     <script>
         $(document).ready(function () {
+            // Track whether user has manually edited the amount
+            var amountManuallyEdited = false;
+
+            // nav link highlighting
+            $('li').removeClass("active-nav-link");
+            $('#order-service-link').addClass("active-nav-link");
+
             calculateAmount = (quantityChanged) => {
+                if(!$("#quantity")){
+                    $("#quantity").val(1);
+                }
                 var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "json";
@@ -115,7 +125,11 @@
                     if (this.readyState == 4 && this.status == 200) {
                         var response = xhr.response;
                         if (response) {
-                            $("#Amount").val(response.amount);
+                            // Only update amount if user hasn't manually edited it
+                            if (!amountManuallyEdited) {
+                                $("#Amount").val(response.amount);
+                            }
+
                             $("#uom").val(response.uom);
                             $("#quantity").val(response.quantity);
                             $("#quantityExplanation").text(response.quantityExplanation || "");
@@ -125,20 +139,28 @@
                 xhr.open('get', url);
                 xhr.send();
             }
-            
+
+            // Track when user manually edits the amount field
+            $("#Amount").on("input", function() {
+                amountManuallyEdited = true;
+            });
+
             $("#categorySelect").on("change", (e) => {
+                // Reset manual edit flag when service changes (new pricing)
+                amountManuallyEdited = false;
                 calculateAmount(false);
-                if ($("#categorySelect").val() < 21) {
+
+                if ($("#categorySelect").val() < 21) { //id's greater than 21 are older categories, with slightly different names and prices
                     $("#categoryWarning").hide();
                 }
                 var id = $('#categorySelect').val();
                 $("#ServiceCategoryId").val(id);
             });
-            
-            $("#quantity").on("change", (e) => {  // lowercase to match HTML
+
+            $("#quantity").on("change", (e) => {
                 calculateAmount(true);
             });
-            
+
             $("#StartDate").on("change", (e) => {
                 calculateAmount(false);
                 // Clear any validation errors for StartDate when user changes it
@@ -152,7 +174,7 @@
                 $("span[data-valmsg-for='EndDate']").text("");
                 $("span[data-valmsg-for='EndDate']").removeClass("field-validation-error").addClass("field-validation-valid");
             });
-            
+
             var clientsMatchingSearch = [];
             createClientSelect = () => {
                 var url = "../../Bills/GetClients";
@@ -187,6 +209,6 @@
             }
             createClientSelect();
         });
-        
+
     </script>
 }

@@ -124,12 +124,15 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function () {
+            // Track whether user has manually edited the amount
+            var amountManuallyEdited = false;
+
             calculateAmount = (quantityChanged) => {
                 var serviceId = $("#categorySelect").val();
                 var quantity = $("#quantity").val();
                 var startDate = $("#startDate").val();
                 var endDate = $("#endDate").val();
-                
+
                 // Debug log to see what we're sending
                 console.log("Calling GetBillAmount with:", {
                     serviceId: serviceId,
@@ -138,14 +141,14 @@
                     endDate: endDate,
                     quantityChanged: quantityChanged
                 });
-                
+
                 var url = '@Url.Action("GetBillAmount", "Bills")' + 
                     "?serviceId=" + serviceId + 
                     "&quantity=" + quantity + 
                     "&startDate=" + startDate + 
                     "&endDate=" + endDate + 
                     "&quantityChanged=" + quantityChanged;
-                
+
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "json";
                 xhr.onreadystatechange = function () {
@@ -155,7 +158,11 @@
                             console.log("Received response:", response);
 
                             if (response) {
-                                $("#amount").val(response.amount);
+                                // Only update amount if user hasn't manually edited it
+                                if (!amountManuallyEdited) {
+                                    $("#amount").val(response.amount);
+                                }
+
                                 $("#Bill_ServiceCategory_UOM").val(response.uom);
                                 $("#quantity").val(response.quantity);
                                 $("#quantityExplanation").text(response.quantityExplanation || "");
@@ -172,9 +179,16 @@
                 xhr.open('get', url);
                 xhr.send();
             }
-            
+
+            // Track when user manually edits the amount field
+            $("#amount").on("input", function() {
+                amountManuallyEdited = true;
+            });
+
             $("#categorySelect").on("change", (e) => {
                 console.log("Category changed");
+                // Reset manual edit flag when service changes (new pricing)
+                amountManuallyEdited = false;
                 calculateAmount(false);
                 if ($("#categorySelect").val() < 21) {
                     $("#categoryWarning").hide();
@@ -182,12 +196,12 @@
                 var id = $('#categorySelect').val();
                 $("#categoryIdInput").val(id);
             });
-            
+
             $("#quantity").on("change", (e) => {
                 console.log("Quantity manually changed");
                 calculateAmount(true);
             });
-            
+
             $("#startDate").on("change", (e) => {
                 calculateAmount(false);
                 // Clear any validation errors for StartDate when user changes it
