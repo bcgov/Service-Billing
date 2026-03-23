@@ -404,6 +404,9 @@ namespace Service_Billing.Controllers
         {
             try
             {
+                // Log the incoming values to debug amount reset issue
+                _logger.LogInformation($"Create POST received - Amount: {bill.Amount}, Quantity: {bill.Quantity}, ServiceCategoryId: {bill.ServiceCategoryId}");
+
                 // Manually validate the StartDate - allow previous quarter, current quarter, and next quarter only
                 if (bill.StartDate.HasValue)
                 {
@@ -505,8 +508,14 @@ namespace Service_Billing.Controllers
 
                 _logger.LogInformation($"New charge is valid. Assigned to fiscal period: {fiscalPeriod.Period} (ID: {fiscalPeriod.Id})");
 
+                // Log values before CreateBill
+                _logger.LogInformation($"About to create bill - Amount: {bill.Amount}, Quantity: {bill.Quantity}");
+
                 int billId = await _billRepository.CreateBill(bill);
                 bill = _billRepository.GetBill(billId);
+
+                // Log values after CreateBill
+                _logger.LogInformation($"After CreateBill - Amount: {bill.Amount}, Quantity: {bill.Quantity}");
 
                 // Determine if this charge should be promoted to the current quarter
                 DateTimeOffset currentQuarterStart = _billRepository.DetermineStartOfCurrentQuarter();

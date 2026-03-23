@@ -503,14 +503,7 @@ namespace Service_Billing.Models.Repositories
                                 _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity} (month-based service)");
                                 editedBill.Quantity = newQuantity;
 
-                                // Recalculate amount based on new quantity
-                                if (!String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
-                                {
-                                    if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
-                                    {
-                                        editedBill.Amount = unitPrice * newQuantity;
-                                    }
-                                }
+                                // Note: Amount is NOT recalculated here - client-side handles user overrides
                             }
                             else
                             {
