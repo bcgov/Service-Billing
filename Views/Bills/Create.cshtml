@@ -121,7 +121,10 @@
                     $("#quantity").val(1);
                 }
 
-                var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + quantityChanged;
+                // If quantity was manually edited, always tell server to use the provided quantity
+                var useProvidedQuantity = quantityChanged || quantityManuallyEdited;
+
+                var url = '@Url.Action("GetBillAmount", "Bills")' + "?serviceId=" + $("#categorySelect").val() + "&quantity=" + $("#quantity").val() + "&startDate=" + $("#StartDate").val() + "&endDate=" + $("#endDate").val() + "&quantityChanged=" + useProvidedQuantity;
                 var xhr = new XMLHttpRequest();
                 xhr.responseType = "json";
                 xhr.onreadystatechange = function () {
