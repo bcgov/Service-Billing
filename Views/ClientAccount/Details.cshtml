@@ -18,6 +18,7 @@
     IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Client Account Information</h1>
+@Html.AntiForgeryToken()
 <div>
     <h4>@Model.Id-@Model.Name</h4>
     <hr />
@@ -341,11 +342,15 @@
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-
                     window.location.reload();
+                }
+                else if (this.readyState == 4) {
+                    alert('Failed to ' + (active ? 'reactivate' : 'deactivate') + ' charge. Status: ' + this.status);
                 }
             };
             xhr.open('post', url);
+            // Add anti-forgery token
+            xhr.setRequestHeader("RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
             xhr.send();
         });
 
@@ -419,11 +424,15 @@
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-
                     window.location.reload();
+                }
+                else if (this.readyState == 4) {
+                    alert('Failed to ' + (active ? 'reactivate' : 'deactivate') + ' client. Status: ' + this.status);
                 }
             };
             xhr.open('post', url);
+            // Add anti-forgery token
+            xhr.setRequestHeader("RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
             xhr.send();
         });
         // $(document).ready(() => {

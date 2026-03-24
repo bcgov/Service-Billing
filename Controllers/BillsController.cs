@@ -1400,6 +1400,7 @@ namespace Service_Billing.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetIsActiveForCharge(int id, bool active)
         {
             Bill? charge = _billRepository.GetBill(id);
