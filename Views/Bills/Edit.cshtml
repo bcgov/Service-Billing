@@ -213,6 +213,8 @@
 
             $("#quantity").on("change", (e) => {
                 console.log("Quantity manually changed");
+                // Reset amount flag when quantity changes - amount should recalculate based on new quantity
+                amountManuallyEdited = false;
                 calculateAmount(true);
             });
 
