@@ -338,7 +338,7 @@
         });
 
         const setIsActiveForCharge = ((id, active) => {
-            var url = "../../Bills/SetIsActiveForCharge?id=" + id + "&active=" + active;
+            var url = "../../Bills/SetIsActiveForCharge";
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
@@ -349,9 +349,14 @@
                 }
             };
             xhr.open('post', url);
-            // Add anti-forgery token
-            xhr.setRequestHeader("RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
-            xhr.send();
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Send anti-forgery token and parameters as form data
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var formData = '__RequestVerificationToken=' + encodeURIComponent(token) + 
+                          '&id=' + encodeURIComponent(id) + 
+                          '&active=' + encodeURIComponent(active);
+            xhr.send(formData);
         });
 
         $(function () {
@@ -420,7 +425,7 @@
         });
 
         const setIsActiveForClient = ((id, active) => {
-            var url = "../../ClientAccount/SetIsActiveForClient?id=" + id + "&active=" + active;
+            var url = "../../ClientAccount/SetIsActiveForClient";
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
@@ -431,9 +436,14 @@
                 }
             };
             xhr.open('post', url);
-            // Add anti-forgery token
-            xhr.setRequestHeader("RequestVerificationToken", $('input[name="__RequestVerificationToken"]').val());
-            xhr.send();
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Send anti-forgery token and parameters as form data
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var formData = '__RequestVerificationToken=' + encodeURIComponent(token) + 
+                          '&id=' + encodeURIComponent(id) + 
+                          '&active=' + encodeURIComponent(active);
+            xhr.send(formData);
         });
         // $(document).ready(() => {
         //    if (@isNew) {
