@@ -18,6 +18,7 @@
     IEnumerable<ChangeLogEntry>? changeLogs = ViewData["ChangeLogs"] as IEnumerable<ChangeLogEntry>;
 }
 <h1>Client Account Information</h1>
+@Html.AntiForgeryToken()
 <div>
     <h4>@Model.Id-@Model.Name</h4>
     <hr />
@@ -337,16 +338,25 @@
         });
 
         const setIsActiveForCharge = ((id, active) => {
-            var url = "../../Bills/SetIsActiveForCharge?id=" + id + "&active=" + active;
+            var url = "../../Bills/SetIsActiveForCharge";
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-
                     window.location.reload();
+                }
+                else if (this.readyState == 4) {
+                    alert('Failed to ' + (active ? 'reactivate' : 'deactivate') + ' charge. Status: ' + this.status);
                 }
             };
             xhr.open('post', url);
-            xhr.send();
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Send anti-forgery token and parameters as form data
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var formData = '__RequestVerificationToken=' + encodeURIComponent(token) + 
+                          '&id=' + encodeURIComponent(id) + 
+                          '&active=' + encodeURIComponent(active);
+            xhr.send(formData);
         });
 
         $(function () {
@@ -415,16 +425,25 @@
         });
 
         const setIsActiveForClient = ((id, active) => {
-            var url = "../../ClientAccount/SetIsActiveForClient?id=" + id + "&active=" + active;
+            var url = "../../ClientAccount/SetIsActiveForClient";
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-
                     window.location.reload();
+                }
+                else if (this.readyState == 4) {
+                    alert('Failed to ' + (active ? 'reactivate' : 'deactivate') + ' client. Status: ' + this.status);
                 }
             };
             xhr.open('post', url);
-            xhr.send();
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            // Send anti-forgery token and parameters as form data
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var formData = '__RequestVerificationToken=' + encodeURIComponent(token) + 
+                          '&id=' + encodeURIComponent(id) + 
+                          '&active=' + encodeURIComponent(active);
+            xhr.send(formData);
         });
         // $(document).ready(() => {
         //    if (@isNew) {

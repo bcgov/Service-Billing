@@ -72,6 +72,7 @@ namespace Service_Billing.Models.Repositories
 
                 entry = MarkModifiedFields<T>(entity, entityId, entityTypeString, entry);
                 _billingContext.ChangeTracker.DetectChanges();
+
                 // Check if the property has changed
                 string changes = string.Empty;
                 if (entry?.State == EntityState.Modified)
@@ -142,6 +143,7 @@ namespace Service_Billing.Models.Repositories
                 object? originalEntity = GetOriginalEntity<T>(id, typeString);
                 if (originalEntity == null)
                     throw new Exception("Could not resolve original entity when trying to mark modified fields");
+
                 PropertyInfo[]? properties = null;
                 if (originalEntity is Bill)
                     properties = typeof(Bill).GetProperties();

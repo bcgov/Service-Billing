@@ -720,6 +720,7 @@ namespace Service_Billing.Controllers
 
         [ServiceFilter(typeof(GroupAuthorizeActionFilter))]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "GDXBillingService.FinancialOfficer")]
         public IActionResult SetIsActiveForClient(int id, bool active)
         {

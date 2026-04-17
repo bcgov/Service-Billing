@@ -61,12 +61,30 @@ namespace Service_Billing.Models.Repositories
 
         public async Task Update(ClientAccount editedAccount, string userName = "system", bool saveChanges = true)
         {
+            if (_context.Entry(editedAccount).State != EntityState.Detached)
+            {
+                if (saveChanges)
+                    _context.SaveChanges(true);
+                return;
+            }
+
+            // Detach any existing tracked entity to avoid conflicts
+            var existingEntry = _context.ChangeTracker.Entries<ClientAccount>()
+                .FirstOrDefault(e => e.Entity.Id == editedAccount.Id);
+
+            if (existingEntry != null)
+            {
+                existingEntry.State = EntityState.Detached;
+            }
+
             EntityEntry entry = await _changeLogRepository.MakeChangeLogAndReturnEntry(editedAccount, userName);
             ClientAccount? account = entry.Entity as ClientAccount;
+
             if (account != null)
             {
-                _context.Update(account);
-                if(saveChanges) // there's a problem if we try to bulk update client accounts, say when a ministry acronym changes
+                // Don't call _context.Update(account) here - the entity is already attached 
+                // and tracked with the correct modified state from MarkModifiedFields
+                if(saveChanges)
                     await _context.SaveChangesAsync(true);
             }
             else

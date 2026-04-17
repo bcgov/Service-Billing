@@ -237,24 +237,10 @@ namespace Service_Billing.Models.Repositories
                 AddBillFiscalHistoryToContext(bill.Id, bill.CurrentFiscalPeriodId, newFiscalPeriod.Id, unitPriceAtFiscal, bill.Quantity.Value, bill.Notes);
 
                 bill.CurrentFiscalPeriodId = newFiscalPeriod.Id;
-                decimal newQuantityForCharge = GetBillQuantityForNewQuarter(bill, quarterStart.Value.Date);
-                if (bill.Quantity != newQuantityForCharge)
-                {
-                    bill.Quantity = newQuantityForCharge;
-                    if (bill.ServiceCategory != null && !String.IsNullOrEmpty(bill.ServiceCategory.Costs))
-                    {
-                        decimal unitPrice;
-                        if (!decimal.TryParse(bill.ServiceCategory.Costs, out unitPrice))
-                        {
-                            _logger.LogError($"No unit Price found for bill with ID: {bill.Id}. The service category {bill.ServiceCategory.Name} has no unit price set.");
-                        }
-                        else
-                            bill.Amount = decimal.Parse(bill.ServiceCategory.Costs) * newQuantityForCharge;
-                    }
-                    else
-                        _logger.LogError($"No service category found for charge with ID: {bill.Id}! Could not update charge amount!");
 
-                }
+                // Preserve the existing quantity - users will manage quantity changes themselves
+                _logger.LogInformation($"Promoted charge {bill.Id} to {newFiscalPeriod.Period} with quantity: {bill.Quantity}");
+
                 _billingContext.Update(bill);
 
                 if (saveDBChanges)
@@ -459,6 +445,7 @@ namespace Service_Billing.Models.Repositories
             Bill newBill = new Bill();
             newBill.Title = bill.Title;
             newBill.ServiceCategoryId = bill.ServiceCategoryId;
+            newBill.Amount = bill.Amount; // Use amount from form (client-side handles calculation and user overrides)
             newBill.BillingCycle = bill.BillingCycle;
             newBill.ClientAccountId = bill.ClientAccountId;
             //    newBill.MostRecentActiveFiscalPeriod = bill.MostRecentActiveFiscalPeriod;
@@ -467,32 +454,11 @@ namespace Service_Billing.Models.Repositories
             newBill.StartDate = bill.StartDate;
             newBill.IsActive = bill.IsActive;
             newBill.TicketNumberAndRequester = bill.TicketNumberAndRequester;
+            newBill.Quantity = bill.Quantity; // Use quantity from form (client-side handles calculation and user overrides)
             newBill.Notes = bill.Notes;
             newBill.EndDate = bill.EndDate;
             newBill.DateModified = bill.DateModified;
             newBill.CreatedBy = bill.CreatedBy;
-
-            // Calculate the correct quantity based on the fiscal period - only for month-based services
-            FiscalPeriod? fiscalPeriod = _fiscalPeriodRepository.GetFiscalPeriodById(bill.CurrentFiscalPeriodId);
-            if (fiscalPeriod != null && bill.ServiceCategory != null && 
-                !string.IsNullOrEmpty(bill.ServiceCategory.UOM) && 
-                bill.ServiceCategory.UOM.Equals("month", StringComparison.OrdinalIgnoreCase))
-            {
-                DateTime periodStart = DetermineStartOfQuarterForPeriod(fiscalPeriod.Period);
-                DateTime periodEnd = DetermineEndOfQuarter(periodStart);
-                newBill.Quantity = CalculateQuantityForQuarter(bill, periodStart, periodEnd);
-                _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with calculated quantity: {newBill.Quantity} (month-based service)");
-            }
-            else
-            {
-                newBill.Quantity = bill.Quantity;
-                if (fiscalPeriod != null)
-                {
-                    _logger.LogInformation($"Creating bill in {fiscalPeriod.Period} with user-provided quantity: {newBill.Quantity} (non-month UOM)");
-                }
-            }
-
-            newBill.Amount = bill.Amount;
 
             await _billingContext.AddAsync(newBill);
             await _billingContext.SaveChangesAsync();
@@ -537,14 +503,7 @@ namespace Service_Billing.Models.Repositories
                                 _logger.LogInformation($"Bill {editedBill.Id} dates changed. Recalculating quantity for current quarter: {newQuantity} (month-based service)");
                                 editedBill.Quantity = newQuantity;
 
-                                // Recalculate amount based on new quantity
-                                if (!String.IsNullOrEmpty(editedBill.ServiceCategory.Costs))
-                                {
-                                    if (decimal.TryParse(editedBill.ServiceCategory.Costs, out decimal unitPrice))
-                                    {
-                                        editedBill.Amount = unitPrice * newQuantity;
-                                    }
-                                }
+                                // Note: Amount is NOT recalculated here - client-side handles user overrides
                             }
                             else
                             {
