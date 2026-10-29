@@ -1,4 +1,5 @@
 ﻿
+using Service_Billing.Extensions;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -66,11 +67,9 @@ namespace Service_Billing.Models
         public Bill()
         {
             this.Quantity = 1;
-            DateTime utcDate = DateTime.UtcNow;
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-            this.DateCreated = pacificTime;
-            this.StartDate = pacificTime;
+            DateTimeOffset bcNow = BcDateTime.BcNow();
+            this.DateCreated = bcNow;
+            this.StartDate = bcNow;
             this.IsActive = true;
             PreviousFiscalRecords = new Collection<FiscalHistory>();
         }
