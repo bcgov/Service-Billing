@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Graph;
 using Microsoft.Identity.Web;
 using Service_Billing.Data;
+using Service_Billing.Extensions;
 using Service_Billing.Models;
 using Service_Billing.Models.Repositories;
 using Service_Billing.ViewModels;
@@ -595,7 +596,7 @@ namespace Service_Billing.Controllers
         {
             if (startDate == null)
             {
-                startDate = DateTimeOffset.Now;
+                startDate = BcDateTime.BcNow();
             }
 
             // Determine the fiscal period string for the start date
@@ -759,7 +760,7 @@ namespace Service_Billing.Controllers
 
         public void DetermineCurrentQuarter(Bill bill, DateTimeOffset? date = null)
         {
-            DateTimeOffset today = DateTimeOffset.Now;
+            DateTimeOffset today = BcDateTime.BcNow();
             if (date != null)
                 today = date.Value;
             string quarter = "";
@@ -1056,13 +1057,9 @@ namespace Service_Billing.Controllers
             }
         }
 
-        private DateTime GetUserLocalTime()
+        private DateTimeOffset GetUserLocalTime()
         {
-            DateTime utcDate = DateTime.UtcNow;
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
-
-            return pacificTime;
+            return BcDateTime.BcNow();
         }
 
         private bool IsAccountContact(string ministryUserName, ClientAccount account)

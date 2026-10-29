@@ -1,4 +1,5 @@
 ﻿
+using Service_Billing.Extensions;
 using Service_Billing.Models.Repositories;
 namespace Service_Billing.HostedServices
 {
@@ -58,8 +59,8 @@ namespace Service_Billing.HostedServices
                 while (!stoppingToken.IsCancellationRequested)
                 {
                     /* Logic for deciding whether or not promoting charges to next quarter is appropriate */
-                    DateTime now = DateTime.UtcNow; //Note that this is server time
-                    if (now.Day == 1) //is it the first of the month?
+                    DateTimeOffset now = BcDateTime.BcNow();
+                    if (now.Day == 1) //is it the first of the month in BC wall-clock time?
                     {
                         switch (now.Month)
                         {
@@ -84,7 +85,7 @@ namespace Service_Billing.HostedServices
                         shouldRun = true;
                     }
 
-                    _logger.LogInformation($"A quick check to see if quarterly charges need to be updated was done by the app hosted service at {DateTime.Now} (server time)");
+                    _logger.LogInformation($"A quick check to see if quarterly charges need to be updated was done by the app hosted service at {BcDateTime.BcNow()} (BC local time)");
 
                     await Task.Delay(5400_000, stoppingToken);
                 }

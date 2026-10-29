@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Org.BouncyCastle.Asn1.X509.Qualified;
 using Service_Billing.Data;
+using Service_Billing.Extensions;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
@@ -52,9 +53,7 @@ namespace Service_Billing.Models.Repositories
         {
             try
             {
-                DateTime utcDate = DateTime.UtcNow;
-                TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-                DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(utcDate, pacificZone);
+                DateTimeOffset bcNow = BcDateTime.BcNow();
 
                 if (entity == null)
                     throw new Exception("Null entity passed to MakeChangeLogEntry");
@@ -108,7 +107,7 @@ namespace Service_Billing.Models.Repositories
                         }
                     }
                     if (changes != String.Empty)
-                        await _billingContext.ChangeLogs.AddAsync(new ChangeLogEntry(entityId, pacificTime, userName, changes, entityTypeString));
+                        await _billingContext.ChangeLogs.AddAsync(new ChangeLogEntry(entityId, bcNow, userName, changes, entityTypeString));
                 }
 
                 return entry;

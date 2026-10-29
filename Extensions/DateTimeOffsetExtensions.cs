@@ -9,9 +9,8 @@
                 return nullValue;
             }
 
-            var pstZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
-            var pstTime = TimeZoneInfo.ConvertTime(dateTimeOffset.Value, pstZone);
-            return pstTime.ToString(format);
+            var bcTime = BcDateTime.ConvertToBc(dateTimeOffset.Value);
+            return bcTime.ToString(format);
         }
     }
 }

@@ -9,6 +9,7 @@ using Service_Billing.Models.Repositories;
 using Microsoft.Identity.Client;
 using Service_Billing.Services.Email;
 using Microsoft.AspNetCore.Authorization;
+using Service_Billing.Extensions;
 using Service_Billing.Filters;
 using Service_Billing.Services.GraphApi;
 using ClosedXML.Excel;
@@ -379,8 +380,7 @@ namespace Service_Billing.Controllers
         {
             IEnumerable<Models.Contact> existingContacts = _contactRepository.GetContactsByAccountId(accountId).ToList();
             IEnumerable<Models.Contact> removedContacts = existingContacts.Where(x => !contactIds.Contains(x.Id));
-            TimeZoneInfo pacificZone = TimeZoneInfo.FindSystemTimeZoneById("America/Los_Angeles"); // Handles both PST and PDT
-            DateTime pacificTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificZone);
+            DateTimeOffset bcNow = BcDateTime.BcNow();
             string changes = string.Empty;
 
             for(int i = 0; i < contactIds.Length; i++)
@@ -428,7 +428,7 @@ namespace Service_Billing.Controllers
             if(!String.IsNullOrEmpty(changes))
             {
                 string userName = User.Claims.FirstOrDefault(c => c.Type == "name")?.Value ?? "NAME NOT DETERMINED";
-                ChangeLogEntry logEntry = new ChangeLogEntry(accountId, pacificTime, userName, changes, "clientAccount");
+                ChangeLogEntry logEntry = new ChangeLogEntry(accountId, bcNow, userName, changes, "clientAccount");
 
                 await _changeLogRepository.CreateEntry(logEntry);
             }
